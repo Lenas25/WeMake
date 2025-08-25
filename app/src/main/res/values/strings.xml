@@ -1,3 +1,28 @@
 <resources>
+    <!-- App -->
     <string name="app_name">WeMake</string>
+    <string name="developer">Elena Suarez y Jorge Flores</string>
+    <string name="develop">Desarrollado por</string>
+    <string name="version">version 1.0.0</string>
+
+    <!-- Welcome -->
+    <string name="title">WeMake</string>
+    <string name="description">El caos es cosa del pasado. La organización en equipo nunca fue tan simple y divertida.</string>
+    <string name="btn_main">Comenzar!</string>
+
+    <!-- Login and Register -->
+    <string name="title_login">Ingresa a tu cuenta</string>
+    <string name="lbl_user">Ingresa tu correo</string>
+    <string name="txt_user">example@wemake.pe</string>
+    <string name="lbl_password">Ingresa tu contraseña</string>
+    <string name="btn_login">Ingresar!</string>
+    <string name="lbl_new_account">No tienes una cuenta? Registrate</string>
+
+
+    <string name="title_signup">Crear una cuenta</string>
+    <string name="lbl_password_confirm">Confirma la contraseña</string>
+    <string name="lbl_login">Ya tienes una cuenta? Inicia Sesión</string>
+
+    <!-- Home -->
+
 </resources>
