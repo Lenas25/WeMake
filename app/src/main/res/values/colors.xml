@@ -1,9 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="white">#FFFDF5</color>
-    <color name="black">#1F1F1F</color>
-    <color name="colorPrimary">#95B1EE</color>
-    <color name="colorPrimaryDark">#364C84</color>
-    <color name="secondary">#364C84</color>
-    <color name="accent">#E7F1A8</color>
+    <!-- Colores base / neutros -->
+    <color name="white">#FFFFFF</color> <!-- Blanco puro para fondos y textos claros -->
+    <color name="black">#000000</color> <!-- Negro puro, para textos o iconos muy contrastados -->
+    <color name="gray_50">#F9FAFB</color> <!-- Gris muy claro, útil para fondos sutiles -->
+    <color name="gray_100">#F3F4F6</color> <!-- Otro gris claro -->
+    <color name="gray_400">#9CA3AF</color> <!-- Gris medio para textos secundarios o líneas divisorias -->
+    <color name="gray_800">#1F2937</color> <!-- Gris oscuro para textos principales en tema claro -->
+    <color name="gray_900">#111827</color> <!-- Gris muy oscuro, casi negro, para fondos oscuros -->
+
+    <!-- Colores primarios y secundarios de tu marca -->
+    <color name="md_theme_primary">#95B1EE</color> <!-- Tu color primario base -->
+    <color name="md_theme_onPrimary">#FFFFFF</color> <!-- Color que contrasta bien sobre el primario (generalmente blanco) -->
+    <color name="md_theme_primaryContainer">#D0DDFB</color> <!-- Una variación más clara de tu primario, para contenedores -->
+    <color name="md_theme_onPrimaryContainer">#1B2E5D</color> <!-- Color que contrasta sobre primaryContainer -->
+
+    <color name="md_theme_secondary">#364C84</color> <!-- Tu color secundario base -->
+    <color name="md_theme_onSecondary">#FFFFFF</color> <!-- Color que contrasta bien sobre el secundario -->
+    <color name="md_theme_secondaryContainer">#C7D4EF</color> <!-- Una variación más clara de tu secundario -->
+    <color name="md_theme_onSecondaryContainer">#0F1F41</color> <!-- Color que contrasta sobre secondaryContainer -->
+
+    <color name="md_theme_tertiary">#E7F1A8</color> <!-- Tu color de acento, aquí lo llamamos terciario -->
+    <color name="md_theme_onTertiary">#1F2900</color> <!-- Color que contrasta bien sobre el terciario -->
+    <color name="md_theme_tertiaryContainer">#E7F1A8</color> <!-- Puedes usar el mismo para el contenedor si es un acento -->
+    <color name="md_theme_onTertiaryContainer">#1F2900</color>
+
+    <!-- Colores de superficie y fondo -->
+    <color name="md_theme_background">#FFFFFF</color> <!-- Color de fondo principal en tema claro -->
+    <color name="md_theme_onBackground">@color/gray_800</color> <!-- Color de texto sobre el fondo principal -->
+    <color name="md_theme_surface">#FFFFFF</color> <!-- Color de la superficie de componentes (cards, sheets) en tema claro -->
+    <color name="md_theme_onSurface">@color/gray_800</color> <!-- Color de texto sobre la superficie -->
+    <color name="md_theme_surfaceVariant">@color/gray_100</color> <!-- Una variación de la superficie, para elementos menos prominentes -->
+    <color name="md_theme_onSurfaceVariant">@color/gray_400</color> <!-- Color de texto sobre surfaceVariant -->
+
+    <!-- Colores de error -->
+    <color name="md_theme_error">#BA1A1A</color>
+    <color name="md_theme_onError">#FFFFFF</color>
+    <color name="md_theme_errorContainer">#FFDAD6</color>
+    <color name="md_theme_onErrorContainer">#410002</color>
+
+    <!-- Colores adicionales si son necesarios para tu marca -->
+    <color name="md_theme_outline">@color/gray_400</color> <!-- Para bordes y divisores -->
+    <color name="md_theme_inversePrimary">#B4C9FF</color> <!-- Un color primario inverso para el tema oscuro -->
+    <color name="md_theme_inverseSurface">@color/gray_900</color> <!-- Superficie inversa para el tema oscuro -->
+    <color name="md_theme_inverseOnSurface">@color/white</color> <!-- Texto sobre superficie inversa -->
+
 </resources>

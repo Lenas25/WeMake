@@ -1,9 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.WeMake" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
-        <item name="colorOnPrimary">@color/black</item>
+    <style name="Base.Theme.WeMake" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- Colores principales de Material Design para el tema oscuro -->
+        <!-- Estos colores deben ser más oscuros o ajustados para un fondo oscuro -->
+        <item name="colorPrimary">@color/md_theme_inversePrimary</item> <!-- Usa el inverso del primario -->
+        <item name="colorOnPrimary">@color/md_theme_primaryContainer</item> <!-- O un tono que contraste bien -->
+        <item name="colorPrimaryContainer">@color/md_theme_secondary</item>
+        <item name="colorOnPrimaryContainer">@color/white</item>
+
+        <item name="colorSecondary">@color/md_theme_secondaryContainer</item>
+        <item name="colorOnSecondary">@color/md_theme_onSecondaryContainer</item>
+        <item name="colorSecondaryContainer">@color/md_theme_secondary</item>
+        <item name="colorOnSecondaryContainer">@color/white</item>
+
+        <item name="colorTertiary">@color/md_theme_tertiaryContainer</item>
+        <item name="colorOnTertiary">@color/md_theme_onTertiaryContainer</item>
+        <item name="colorTertiaryContainer">@color/md_theme_tertiary</item>
+        <item name="colorOnTertiaryContainer">@color/md_theme_onTertiaryContainer</item>
+
+        <item name="colorError">@color/md_theme_error</item>
+        <item name="colorOnError">@color/md_theme_onError</item>
+        <item name="colorErrorContainer">@color/md_theme_errorContainer</item>
+        <item name="colorOnErrorContainer">@color/md_theme_onErrorContainer</item>
+
+        <item name="android:colorBackground">@color/gray_900</item> <!-- Fondo muy oscuro -->
+        <item name="colorOnBackground">@color/white</item> <!-- Texto blanco sobre fondo oscuro -->
+        <item name="colorSurface">@color/gray_800</item> <!-- Superficies oscuras -->
+        <item name="colorOnSurface">@color/white</item> <!-- Texto blanco sobre superficies oscuras -->
+        <item name="colorSurfaceVariant">@color/gray_900</item>
+        <item name="colorOnSurfaceVariant">@color/gray_400</item>
+        <item name="colorOutline">@color/gray_800</item>
+        <item name="colorOnSurfaceInverse">@color/md_theme_onSurface</item>
+        <item name="colorSurfaceInverse">@color/md_theme_surface</item>
+        <item name="colorPrimaryInverse">@color/md_theme_primary</item>
+
+        <!-- Otros atributos del tema si necesitas personalizar más -->
+        <item name="android:statusBarColor">@color/black</item>
+        <item name="android:navigationBarColor">@color/black</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="23">false</item>
     </style>
+
+    <style name="Theme.WeMake" parent="Base.Theme.WeMake" />
 </resources>
