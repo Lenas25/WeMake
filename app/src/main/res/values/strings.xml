@@ -13,6 +13,7 @@
     <string name="btn_already_have_account">Ya tengo una cuenta</string>
 
     <!-- Login and Register -->
+
     <string name="title_login">Ingresa a tu cuenta</string>
     <string name="login_subtitle">¡Bienvenido de nuevo a la app!</string>
     <string name="lbl_user">Ingresa tu correo</string>
@@ -27,13 +28,12 @@
     <string name="register_now">Registrate ahora</string>
 
 
-    <string name="title_signup">Registrar</string>
-    <string name="description_signup">Crear una cuenta para conocerte!</string>
+    <string name="title_signup">Nueva Cuenta</string>
+    <string name="description_signup">¡Ingresa tus datos para conocerte mejor!</string>
     <string name="lbl_name">Ingresa tu nombre completo</string>
-    <string name="txt_name">Alex Diaz</string>
     <string name="lbl_password_confirm">Confirma la contraseña</string>
-    <string name="btn_registrar">Ingresar!</string>
-    <string name="already_have_account">Ya tienes una cuenta?</string>
+    <string name="btn_registrar">Registrarse</string>
+    <string name="already_have_account">¿Ya tienes una cuenta?</string>
     <string name="lbl_login">Inicia Sesión</string>
     <string name="agree_terms">Acepto los <b>Términos y Condiciones</b> y <b>Privacidad</b></string>
 
