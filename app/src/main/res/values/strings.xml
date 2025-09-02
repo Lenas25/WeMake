@@ -4,6 +4,7 @@
     <string name="developer">Elena Suarez y Jorge Flores</string>
     <string name="develop">Desarrollado por</string>
     <string name="version">version 1.0.0</string>
+    <string name="copyright">© UTP - WeMake</string>
 
     <!-- Welcome -->
     <string name="title">Bienvenido a WeMake</string>
@@ -13,12 +14,17 @@
 
     <!-- Login and Register -->
     <string name="title_login">Ingresa a tu cuenta</string>
-    <string name="description_login">Bienvenido de nuevo a la app!</string>
+    <string name="login_subtitle">¡Bienvenido de nuevo a la app!</string>
     <string name="lbl_user">Ingresa tu correo</string>
     <string name="txt_user">example@wemake.pe</string>
     <string name="lbl_password">Ingresa tu contraseña</string>
-    <string name="btn_login">Ingresar!</string>
-    <string name="lbl_new_account">No tienes una cuenta? Registrate</string>
+    <string name="forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="btn_login">Iniciar sesión</string>
+    <string name="login_with">O inicia sesión con</string>
+    <string name="login_google">Continuar con Google</string>
+    <string name="login_facebook">Continuar con Facebook</string>
+    <string name="no_account">¿Aún no tienes una cuenta?</string>
+    <string name="register_now">Registrate ahora</string>
 
 
     <string name="title_signup">Registrar</string>
@@ -26,6 +32,7 @@
     <string name="lbl_name">Ingresa tu nombre completo</string>
     <string name="txt_name">Alex Diaz</string>
     <string name="lbl_password_confirm">Confirma la contraseña</string>
+    <string name="btn_registrar">Ingresar!</string>
     <string name="already_have_account">Ya tienes una cuenta?</string>
     <string name="lbl_login">Inicia Sesión</string>
     <string name="agree_terms">Acepto los <b>Términos y Condiciones</b> y <b>Privacidad</b></string>
