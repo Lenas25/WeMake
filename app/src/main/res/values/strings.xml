@@ -31,7 +31,6 @@
     <string name="title_signup">Nueva Cuenta</string>
     <string name="description_signup">¡Ingresa tus datos para conocerte mejor!</string>
     <string name="lbl_name">Ingresa tu nombre completo</string>
-    <string name="lbl_password_confirm">Confirma la contraseña</string>
     <string name="btn_registrar">Registrarse</string>
     <string name="already_have_account">¿Ya tienes una cuenta?</string>
     <string name="lbl_login">Inicia Sesión</string>
