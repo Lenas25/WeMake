@@ -9,6 +9,12 @@
     android:paddingHorizontal="32dp"
     tools:context=".LoginActivity">
 
+    <!--
+        Bloque de Identidad Visual (Logo y Nombre):
+        - Muestra el logo principal de la aplicación en la parte superior.
+        - Un LinearLayout combina dos TextViews para formar el nombre de la app,
+          permitiendo un estilo visual diferenciado para cada palabra.
+    -->
     <ImageView
         android:id="@+id/logo"
         android:layout_width="100dp"
@@ -19,19 +25,41 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/logo" />
 
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/app_name"
+    <LinearLayout
+        android:id="@+id/logo_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="@string/app_name"
-        android:textColor="?attr/colorPrimary"
-        android:textSize="20sp"
-        android:textStyle="bold"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/logo" />
+        app:layout_constraintTop_toBottomOf="@+id/logo">
 
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/we"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/we"
+            android:textColor="?attr/colorPrimary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/make"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/make"
+            android:textColor="?attr/colorSecondary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!--
+        Encabezado de la Pantalla:
+        - Un título principal grande y un subtítulo descriptivo que dan la bienvenida
+          al usuario y le indican el propósito de la pantalla.
+    -->
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/title_login"
         android:layout_width="wrap_content"
@@ -43,7 +71,7 @@
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/app_name" />
+        app:layout_constraintTop_toBottomOf="@+id/logo_name" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/login_subtitle"
@@ -57,12 +85,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/title_login" />
 
-    <!--Input Correo-->
+    <!--
+        Formulario de Inicio de Sesión:
+        - Dos campos de entrada para que el usuario ingrese su correo y contraseña.
+        - Usan TextInputLayout para una mejor experiencia de usuario, con pistas
+          flotantes y un ícono para mostrar/ocultar la contraseña.
+    -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/input_email"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="20dp"
+        app:boxCornerRadiusBottomEnd="10dp"
+        app:boxCornerRadiusBottomStart="10dp"
+        app:boxCornerRadiusTopEnd="10dp"
+        app:boxCornerRadiusTopStart="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/login_subtitle">
@@ -74,12 +112,16 @@
             android:inputType="textEmailAddress" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!--Input Contraseña-->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/input_password"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="5dp"
+        app:boxCornerRadiusBottomEnd="10dp"
+        app:boxCornerRadiusBottomStart="10dp"
+        app:boxCornerRadiusTopEnd="10dp"
+        app:boxCornerRadiusTopStart="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/input_email"
@@ -92,13 +134,19 @@
             android:inputType="textPassword" />
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!--
+        Acciones del Formulario:
+        - Un enlace de texto para la recuperación de contraseña.
+        - El botón principal para ejecutar la acción de inicio de sesión.
+    -->
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/forgot_password"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="10dp"
         android:text="@string/forgot_password"
         android:textColor="?attr/colorOnSurfaceVariant"
+        android:textStyle="bold"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="@+id/input_password"
         app:layout_constraintTop_toBottomOf="@+id/input_password" />
@@ -107,35 +155,71 @@
         android:id="@+id/btn_login"
         android:layout_width="0dp"
         android:layout_height="60dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="15dp"
         android:text="@string/btn_login"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/forgot_password" />
 
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/login_with"
-        android:layout_width="wrap_content"
+    <!--
+        Separador para Opciones Alternativas:
+        - Un texto en medio de dos líneas que divide visualmente el formulario
+          principal de las opciones de inicio de sesión social.
+        - Utiliza 'layout_weight' para que las líneas se expandan uniformemente.
+    -->
+    <LinearLayout
+        android:id="@+id/divider_icons"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="@string/login_with"
-        android:textColor="?attr/colorOnSurfaceVariant"
-        android:textSize="14sp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="15dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_login" />
+        app:layout_constraintTop_toBottomOf="@+id/btn_login">
 
+        <com.google.android.material.divider.MaterialDivider
+            android:id="@+id/divider_left"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/login_with_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/login_with"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:textAppearance="?attr/textAppearanceLabelMedium"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+
+        <com.google.android.material.divider.MaterialDivider
+            android:id="@+id/divider_right"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+    <!--
+        Opciones de Inicio de Sesión Social:
+        - Botones secundarios con estilo de borde para ofrecer métodos de
+          inicio de sesión alternativos como Google y Facebook.
+        - 'app:iconTint="@null"' permite que los logos usen sus colores originales.
+    -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_google"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:text="@string/login_google"
         android:textColor="?attr/colorOnSurfaceVariant"
         app:backgroundTint="?attr/colorSurface"
-        app:strokeWidth="2dp"
-        android:paddingVertical="10dp"
+        app:strokeWidth="1dp"
+        android:paddingVertical="15dp"
+        android:layout_marginTop="15dp"
         app:strokeColor="?attr/colorOnSurfaceVariant"
         app:icon="@drawable/ic_google"
         app:iconGravity="textStart"
@@ -143,19 +227,19 @@
         app:iconTint="@null"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/login_with" />
+        app:layout_constraintTop_toBottomOf="@+id/divider_icons" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_facebook"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="2dp"
         android:text="@string/login_facebook"
         android:textColor="?attr/colorOnSurfaceVariant"
         app:backgroundTint="?attr/colorSurface"
-        app:strokeWidth="2dp"
+        app:strokeWidth="1dp"
         app:strokeColor="?attr/colorOnSurfaceVariant"
-        android:paddingVertical="10dp"
+        android:paddingVertical="15dp"
         app:icon="@drawable/ic_facebook"
         app:iconGravity="textStart"
         app:iconSize="24dp"
@@ -164,6 +248,11 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btn_google" />
 
+    <!--
+        Navegación Secundaria (Ir a Registro):
+        - Un texto en la parte inferior que ofrece al usuario la opción de
+          navegar a la pantalla de registro si no tiene una cuenta.
+    -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

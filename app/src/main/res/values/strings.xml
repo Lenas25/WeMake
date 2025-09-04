@@ -14,6 +14,8 @@
 
     <!-- Login and Register -->
 
+    <string name="we">We</string>
+    <string name="make">Make</string>
     <string name="title_login">Ingresa a tu cuenta</string>
     <string name="login_subtitle">¡Bienvenido de nuevo a la app!</string>
     <string name="lbl_user">Ingresa tu correo</string>
@@ -21,7 +23,7 @@
     <string name="lbl_password">Ingresa tu contraseña</string>
     <string name="forgot_password">¿Olvidaste tu contraseña?</string>
     <string name="btn_login">Iniciar sesión</string>
-    <string name="login_with">O inicia sesión con</string>
+    <string name="login_with">O inicia con</string>
     <string name="login_google">Continuar con Google</string>
     <string name="login_facebook">Continuar con Facebook</string>
     <string name="no_account">¿Aún no tienes una cuenta?</string>
@@ -31,7 +33,6 @@
     <string name="title_signup">Nueva Cuenta</string>
     <string name="description_signup">¡Ingresa tus datos para conocerte mejor!</string>
     <string name="lbl_name">Ingresa tu nombre completo</string>
-    <string name="lbl_password_confirm">Confirma la contraseña</string>
     <string name="btn_registrar">Registrarse</string>
     <string name="already_have_account">¿Ya tienes una cuenta?</string>
     <string name="lbl_login">Inicia Sesión</string>

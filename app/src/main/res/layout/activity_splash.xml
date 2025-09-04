@@ -9,6 +9,12 @@
     android:background="@drawable/splash_gradient_background"
     tools:context=".SplashActivity">
 
+    <!--
+        Bloque Central de Contenido:
+        - Un LinearLayout vertical que agrupa el logo, el nombre de la app y la animación.
+        - Está centrado horizontalmente y posicionado cerca de la parte superior.
+        - Tiene un tamaño fijo, lo cual puede no ser ideal para todas las pantallas.
+    -->
     <LinearLayout
         android:layout_width="275dp"
         android:layout_height="464dp"
@@ -21,12 +27,20 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.1">
 
+        <!--
+            Logo de la Aplicación:
+            - Muestra la versión en blanco del logo.
+        -->
         <ImageView
             android:id="@+id/logo_blanco"
             android:layout_width="120dp"
             android:layout_height="120dp"
             android:src="@drawable/logo_blanco" />
 
+        <!--
+            Nombre de la Aplicación:
+            - Muestra el nombre de la app con texto blanco y en negrita.
+        -->
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/app_name"
             android:layout_width="wrap_content"
@@ -37,6 +51,10 @@
             android:textColor="@color/white"
             android:textStyle="bold" />
 
+        <!--
+            Animación de Carga:
+            - Muestra una animación Lottie que se reproduce en bucle.
+        -->
         <com.airbnb.lottie.LottieAnimationView
             android:id="@+id/lottie_animation_view"
             android:layout_width="275dp"
@@ -49,6 +67,11 @@
 
     </LinearLayout>
 
+    <!--
+        Información Inferior:
+        - Dos TextViews anclados en la parte inferior de la pantalla.
+        - Muestran la versión de la app y el aviso de copyright.
+    -->
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/copyright"
         android:layout_width="wrap_content"
