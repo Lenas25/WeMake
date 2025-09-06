@@ -38,6 +38,24 @@
     <string name="lbl_login">Inicia Sesión</string>
     <string name="agree_terms">Acepto los <b>Términos y Condiciones</b> y <b>Privacidad</b></string>
 
+    <!-- AppBar -->
+    <string name="item_home">Inicio</string>
+    <string name="item_tasks">Tareas</string>
+    <string name="item_stats">Datos</string>
+    <string name="item_profile">Perfil</string>
+    <string name="floating_add">Agregar</string>
+
+
     <!-- Home -->
+    <string name="title_home">Inicio</string>
+    <string name="greeting">Hola,</string>
+    <string name="ex_name">Jorge</string>
+    <string name="title_group">Elige donde</string>
+    <string name="title_group2">trabajar</string>
+    <string name="dot">.</string>
+    <string name="ex_dashboard">Crypto Board</string>
+    <string name="state_pending">Pendiente</string>
+    <string name="state_inprogress">En progreso</string>
+    <string name="state_done">Completado</string>
 
 </resources>

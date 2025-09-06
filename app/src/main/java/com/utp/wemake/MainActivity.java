@@ -1,31 +1,41 @@
-package com.utp.wemake;
+package com.utp.wemake; // Asegúrate de que este sea tu paquete
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.widget.TextView;
-
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import android.os.Bundle;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
+import com.google.android.material.bottomappbar.BottomAppBar;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class MainActivity extends AppCompatActivity {
-
-    TextView tvWelcomeMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        tvWelcomeMessage = findViewById(R.id.tv_welcome_message);
+        BottomAppBar bottomAppBar = findViewById(R.id.bottom_app_bar);
+        FloatingActionButton fab = findViewById(R.id.fab);
 
-        Intent intent = getIntent();
+        // 3. (Recomendado) Configurar la navegación para que los botones funcionen
+        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.nav_host_fragment);
+        NavController navController = navHostFragment.getNavController();
 
-        if (intent != null && intent.hasExtra(LoginActivity.USER_NAME)) {
-            String userName = intent.getStringExtra(LoginActivity.USER_NAME);
+        bottomAppBar.setOnMenuItemClickListener(item -> {
+            int itemId = item.getItemId();
+            // Lógica para navegar a diferentes pantallas
+            if (itemId == R.id.homeFragment) {
+                navController.navigate(R.id.homeFragment);
+                return true;
+            }
 
-            String welcomeText = "¡Bienvenido, " + userName + "!";
-            tvWelcomeMessage.setText(welcomeText);
-        }
+            return false;
+        });
+
+        // 4. (Opcional) Configurar la acción del botón flotante
+        fab.setOnClickListener(view -> {
+            // Código que se ejecuta al presionar el botón '+'
+        });
     }
 }

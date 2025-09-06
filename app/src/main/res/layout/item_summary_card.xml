@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <!--
+        Icono con fondo circular:
+        - Un FrameLayout actúa como el círculo de color.
+        - Un ImageView dentro muestra el icono real.
+    -->
+    <FrameLayout
+        android:id="@+id/icon_container"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/summary_icon_background"
+        android:backgroundTint="?attr/colorTertiaryContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/summary_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            app:tint="?attr/colorOnTertiaryContainer"
+            tools:src="@drawable/ic_tasks" /> <!-- Icono de ejemplo -->
+    </FrameLayout>
+
+    <!--
+        Número grande (valor del resumen):
+        - Anclado debajo del contenedor del icono.
+    -->
+    <TextView
+        android:id="@+id/summary_value"
+        style="@style/TextAppearance.Material3.HeadlineMedium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:textColor="?attr/colorOnSurface"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/icon_container"
+        tools:text="12" />
+
+    <!--
+        Etiqueta de texto (descripción del valor):
+        - Alineada a la línea base del número para una apariencia limpia.
+    -->
+    <TextView
+        android:id="@+id/summary_label"
+        style="@style/TextAppearance.Material3.BodyMedium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        app:layout_constraintBaseline_toBaselineOf="@id/summary_value"
+        app:layout_constraintStart_toEndOf="@id/summary_value"
+        tools:text="tareas" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

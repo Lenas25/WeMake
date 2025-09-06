@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/homeFragment"
+        android:icon="@drawable/ic_home"
+        android:title="@string/item_home" />
+
+    <item
+        android:id="@+id/searchFragment"
+        android:icon="@drawable/ic_tasks"
+        android:title="@string/item_tasks" />
+
+    <item
+        android:id="@+id/placeholder"
+        android:enabled="false"
+        android:title="" />
+
+    <item
+        android:id="@+id/statsFragment"
+        android:icon="@drawable/ic_stats"
+        android:title="@string/item_stats" />
+
+    <item
+        android:id="@+id/profileFragment"
+        android:icon="@drawable/ic_profile"
+        android:title="@string/item_profile"/>
+</menu>
