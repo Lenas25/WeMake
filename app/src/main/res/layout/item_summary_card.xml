@@ -16,7 +16,6 @@
         android:id="@+id/icon_container"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:background="@drawable/summary_icon_background"
         android:backgroundTint="?attr/colorTertiaryContainer"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">

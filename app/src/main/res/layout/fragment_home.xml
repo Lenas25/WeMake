@@ -172,7 +172,7 @@
             app:cardCornerRadius="16dp"
             app:layout_constraintEnd_toStartOf="@id/guideline_vertical"
             app:layout_constraintTop_toBottomOf="@id/dropdown_layout">
-            <!-- Contenido de la tarjeta de tareas -->
+            <include layout="@layout/item_summary_card" />
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
@@ -184,7 +184,8 @@
             app:layout_constraintBottom_toBottomOf="@id/card_tareas"
             app:layout_constraintStart_toEndOf="@id/guideline_vertical"
             app:layout_constraintTop_toTopOf="@id/card_tareas">
-            <!-- Contenido de la tarjeta de pendientes -->
+
+            <include layout="@layout/item_summary_card" />
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
@@ -196,7 +197,8 @@
             app:cardCornerRadius="16dp"
             app:layout_constraintEnd_toStartOf="@id/guideline_vertical"
             app:layout_constraintTop_toBottomOf="@id/card_tareas">
-            <!-- Contenido de la tarjeta de vencidos -->
+
+            <include layout="@layout/item_summary_card" />
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
@@ -208,7 +210,7 @@
             app:layout_constraintBottom_toBottomOf="@id/card_vencidos"
             app:layout_constraintStart_toEndOf="@id/guideline_vertical"
             app:layout_constraintTop_toTopOf="@id/card_vencidos">
-            <!-- Contenido de la tarjeta de puntos -->
+            <include layout="@layout/item_summary_card" />
         </com.google.android.material.card.MaterialCardView>
 
 
