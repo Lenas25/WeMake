@@ -23,7 +23,7 @@
             android:text="Título"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/icon_refresh"/>
+            app:layout_constraintEnd_toStartOf="@id/icon_change"/>
 
         <TextView
             android:id="@+id/task_description"
@@ -49,10 +49,10 @@
             app:layout_constraintTop_toBottomOf="@id/task_description" />
 
         <ImageView
-            android:id="@+id/icon_refresh"
+            android:id="@+id/icon_change"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@drawable/ic_refresh"
+            android:src="@drawable/ic_change"
             app:layout_constraintEnd_toStartOf="@id/icon_external"
             app:layout_constraintTop_toTopOf="parent"
             android:layout_marginEnd="8dp"/>

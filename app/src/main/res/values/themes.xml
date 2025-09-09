@@ -52,5 +52,12 @@
         <item name="gradientStartColor">@color/md_theme_primary</item>
         <item name="gradientEndColor">@color/md_theme_surfaceVariant</item>
         <item name="gradientCenterColor">@color/md_theme_primaryContainer</item>
+
+
+    </style>
+
+    <style name="ShapeAppearance.App.Circle" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
     </style>
 </resources>
