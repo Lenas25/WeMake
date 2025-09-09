@@ -172,20 +172,25 @@
             app:cardCornerRadius="16dp"
             app:layout_constraintEnd_toStartOf="@id/guideline_vertical"
             app:layout_constraintTop_toBottomOf="@id/dropdown_layout">
-            <include layout="@layout/item_summary_card" />
+
+            <!-- Contenido de la tarjeta de tareas -->
+            <include
+                layout="@layout/item_summary_card"/>
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_pendientes"
             android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             app:cardCornerRadius="16dp"
             app:layout_constraintBottom_toBottomOf="@id/card_tareas"
             app:layout_constraintStart_toEndOf="@id/guideline_vertical"
             app:layout_constraintTop_toTopOf="@id/card_tareas">
 
-            <include layout="@layout/item_summary_card" />
+            <!-- Contenido de la tarjeta de pendientes -->
+            <include
+                layout="@layout/item_summary_card"/>
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
@@ -198,19 +203,24 @@
             app:layout_constraintEnd_toStartOf="@id/guideline_vertical"
             app:layout_constraintTop_toBottomOf="@id/card_tareas">
 
-            <include layout="@layout/item_summary_card" />
+            <!-- Contenido de la tarjeta de vencidos -->
+            <include
+                layout="@layout/item_summary_card"/>
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_puntos"
             android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             app:cardCornerRadius="16dp"
             app:layout_constraintBottom_toBottomOf="@id/card_vencidos"
             app:layout_constraintStart_toEndOf="@id/guideline_vertical"
             app:layout_constraintTop_toTopOf="@id/card_vencidos">
-            <include layout="@layout/item_summary_card" />
+
+            <!-- Contenido de la tarjeta de puntos -->
+            <include
+                layout="@layout/item_summary_card"/>
         </com.google.android.material.card.MaterialCardView>
 
 
