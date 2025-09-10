@@ -16,16 +16,19 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
+        // Infla el layout correspondiente a la pantalla de splash
         setContentView(R.layout.activity_splash);
 
-        // Para que se ejecute automaticamente luego de 5 segundos
+        // Handler que permite ejecutar código después de 3 segundos (3000 ms)
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
+                // Lanza la actividad de bienvenida (WelcomeActivity)
                 startActivity(new Intent(SplashActivity.this, WelcomeActivity.class));
+                // Finaliza la SplashActivity para que no se pueda volver atrás
                 finish();
             }
-        }, 3000);
+        }, 3000); // Tiempo en milisegundos (3 segundos)
 
     }
 }

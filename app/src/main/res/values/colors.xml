@@ -2,7 +2,7 @@
 <resources>
     <color name="md_theme_primary">#445E91</color>
     <color name="md_theme_onPrimary">#FFFFFF</color>
-    <color name="md_theme_primaryContainer">#D8E2FF</color>
+    <color name="md_theme_primaryContainer">#95B1EE</color>
     <color name="md_theme_onPrimaryContainer">#2B4678</color>
     <color name="md_theme_secondary">#495D92</color>
     <color name="md_theme_onSecondary">#FFFFFF</color>
@@ -141,4 +141,5 @@
     <color name="md_theme_surfaceContainer_highContrast">#E2E2E9</color>
     <color name="md_theme_surfaceContainerHigh_highContrast">#D4D4DB</color>
     <color name="md_theme_surfaceContainerHighest_highContrast">#C6C6CD</color>
+    <color name="bottomAppBarColor">#95B1EE</color>
 </resources>

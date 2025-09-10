@@ -8,25 +8,29 @@
     android:padding="16dp">
 
     <!--
-        Icono con fondo circular:
-        - Un FrameLayout actúa como el círculo de color.
-        - Un ImageView dentro muestra el icono real.
+        Contenedor del icono:
+        - Ahora usa el fondo circular que creamos.
     -->
     <FrameLayout
         android:id="@+id/icon_container"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:backgroundTint="?attr/colorTertiaryContainer"
+        android:background="@drawable/circle_background"
+        android:backgroundTint="@color/md_theme_tertiaryFixed"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+        <!--
+            Icono:
+            - El color del icono es 'onTertiaryContainer' para asegurar el contraste.
+        -->
         <ImageView
             android:id="@+id/summary_icon"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_gravity="center"
-            app:tint="?attr/colorOnTertiaryContainer"
-            tools:src="@drawable/ic_tasks" /> <!-- Icono de ejemplo -->
+            app:tint="#000"
+            tools:src="@drawable/ic_tasks" />
     </FrameLayout>
 
     <!--
@@ -58,6 +62,6 @@
         android:textColor="?attr/colorOnSurfaceVariant"
         app:layout_constraintBaseline_toBaselineOf="@id/summary_value"
         app:layout_constraintStart_toEndOf="@id/summary_value"
-        tools:text="tareas" />
+        tools:text="@string/ex_summary_description" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

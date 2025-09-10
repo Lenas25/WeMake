@@ -141,4 +141,5 @@
     <color name="md_theme_surfaceContainer_highContrast">#2F3036</color>
     <color name="md_theme_surfaceContainerHigh_highContrast">#3A3B41</color>
     <color name="md_theme_surfaceContainerHighest_highContrast">#45474C</color>
+    <color name="bottomAppBarColor">#445E91</color>
 </resources>

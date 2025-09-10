@@ -1,79 +1,124 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Tarjeta de Material Design que contiene la información de una tarea -->
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="260dp"
-    android:layout_height="wrap_content"
+    android:layout_width="250dp"
+    android:layout_height="match_parent"
     android:layout_marginEnd="16dp"
-    app:cardElevation="2dp"
+    app:cardElevation="0dp"
     app:strokeWidth="1dp"
-    app:strokeColor="?attr/colorOutlineVariant"
+    app:strokeColor="?attr/colorOnSurface"
     app:cardCornerRadius="16dp">
 
+    <!-- Contenedor interno para organizar los elementos con restricciones -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:padding="16dp">
 
+        <!-- Título de la tarea -->
         <TextView
             android:id="@+id/task_title"
             style="@style/TextAppearance.Material3.TitleMedium"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Título"
+            android:text="@string/ex_task_title"
+            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/icon_change"/>
+            app:layout_constraintEnd_toStartOf="@id/button_change"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintBottom_toTopOf="@id/task_description" />
 
+        <!-- Icono de cambio/edición de la tarea
+            - style: Lo hace transparente y circular.
+            - app:icon: Reemplaza a android:src.
+            - contentDescription: Esencial para accesibilidad.
+        -->
+        <ImageButton
+            android:id="@+id/button_change"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:backgroundTint="@color/md_theme_surface"
+            android:src="@drawable/ic_change"
+            android:background="@drawable/circle_background"
+            android:scaleType="centerInside"
+            android:padding="0dp"
+            app:iconSize="24dp"
+            android:contentDescription="@string/btn_change"
+            app:layout_constraintEnd_toStartOf="@id/button_external"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="?attr/colorOnSurface" />
+
+        <!-- Icono de enlace externo asociado a la tarea -->
+        <ImageButton
+            android:id="@+id/button_external"
+            android:src="@drawable/ic_external_link"
+            android:background="@drawable/circle_background"
+            android:backgroundTint="@color/md_theme_surface"
+            android:scaleType="centerInside"
+            android:padding="0dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:iconSize="24dp"
+            android:contentDescription="@string/btn_open"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="?attr/colorOnSurface" />
+
+        <!--
+           CAMBIO CLAVE: Barrera
+           Esta línea invisible se coloca automáticamente debajo del elemento MÁS BAJO
+           de la primera fila (en este caso, los botones).
+       -->
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/header_barrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="bottom"
+            app:constraint_referenced_ids="task_title, button_change, button_external" />
+
+
+        <!-- Descripción breve de la tarea -->
         <TextView
             android:id="@+id/task_description"
             style="@style/TextAppearance.Material3.BodyMedium"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Description"
+            android:text="@string/ex_task_description"
             android:textColor="?attr/colorOnSurfaceVariant"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/task_title"
-            app:layout_constraintEnd_toEndOf="@id/task_title"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/header_barrier" />
 
+
+        <!-- Nombre del responsable de la tarea -->
         <TextView
-            android:id="@+id/task_revisor"
+            android:id="@+id/task_responsible"
             style="@style/TextAppearance.Material3.BodyMedium"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="Revisor:..."
-            android:textColor="?attr/colorOnSurfaceVariant"
+            android:layout_marginTop="10dp"
+            android:text="@string/ex_task_responsible"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/task_description" />
+            app:layout_constraintEnd_toStartOf="@id/task_due_date"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
-        <ImageView
-            android:id="@+id/icon_change"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_change"
-            app:layout_constraintEnd_toStartOf="@id/icon_external"
-            app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginEnd="8dp"/>
 
-        <ImageView
-            android:id="@+id/icon_external"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_external_link"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
-
+        <!-- Fecha de vencimiento de la tarea -->
         <TextView
             android:id="@+id/task_due_date"
             style="@style/TextAppearance.Material3.BodySmall"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Due Date"
+            android:text="@string/ex_task_duedate"
+            android:layout_marginTop="10dp"
             android:textColor="?attr/colorOnSurfaceVariant"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="@id/task_revisor" />
+            app:layout_constraintBottom_toBottomOf="parent" />
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

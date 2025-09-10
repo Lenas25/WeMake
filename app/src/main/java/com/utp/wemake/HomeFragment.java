@@ -15,6 +15,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.card.MaterialCardView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class HomeFragment extends Fragment {
 
     // No necesitas los parámetros de la plantilla, así que los hemos eliminado.
@@ -96,12 +99,30 @@ public class HomeFragment extends Fragment {
         RecyclerView recyclerViewPending = view.findViewById(R.id.recycler_pending);
         recyclerViewPending.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         // TODO: Crea y asigna un Adapter al recyclerViewPending con los datos de las tareas.
-        // recyclerViewPending.setAdapter(tuAdaptadorDeTareasPendientes);
+        recyclerViewPending.setAdapter(new TaskAdapter(getSampleTasks("Pendiente")));
 
         // Configuración para la lista de tareas en progreso
         RecyclerView recyclerViewInProgress = view.findViewById(R.id.recycler_in_progress);
         recyclerViewInProgress.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         // TODO: Crea y asigna un Adapter al recyclerViewInProgress con los datos de las tareas.
-        // recyclerViewInProgress.setAdapter(tuAdaptadorDeTareasEnProgreso);
+        recyclerViewInProgress.setAdapter(new TaskAdapter(getSampleTasks("En Progreso")));
+
+        // Configuración para la lista de tareas completadas
+        RecyclerView recyclerViewDone = view.findViewById(R.id.recycler_done);
+        recyclerViewDone.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        recyclerViewDone.setAdapter(new TaskAdapter(getSampleTasks("Completada")));
+    }
+
+    // Método que genera una lista de tareas de ejemplo según el estado recibido
+    private List<Task> getSampleTasks(String estado) {
+        // Crea una nueva lista vacía de tipo Task
+        List<Task> list = new ArrayList<>();
+
+        // Agrega tareas de ejemplo a la lista (valores fijos para pruebas)
+        list.add(new Task("Reunión semanal", "Definir pendientes", "Elena"));
+        list.add(new Task("Revisión de código", "Pull request módulo test", "Mario"));
+        list.add(new Task("Diseño UI", "Pantalla Estadisticas", "Carlos"));
+        // Retorna la lista completa de tareas
+        return list;
     }
 }
