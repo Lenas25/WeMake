@@ -113,11 +113,16 @@ public class HomeFragment extends Fragment {
         recyclerViewDone.setAdapter(new TaskAdapter(getSampleTasks("Completada")));
     }
 
+    // Método que genera una lista de tareas de ejemplo según el estado recibido
     private List<Task> getSampleTasks(String estado) {
+        // Crea una nueva lista vacía de tipo Task
         List<Task> list = new ArrayList<>();
+
+        // Agrega tareas de ejemplo a la lista (valores fijos para pruebas)
         list.add(new Task("Reunión semanal", "Definir pendientes", "Elena"));
         list.add(new Task("Revisión de código", "Pull request módulo test", "Mario"));
         list.add(new Task("Diseño UI", "Pantalla Estadisticas", "Carlos"));
+        // Retorna la lista completa de tareas
         return list;
     }
 }

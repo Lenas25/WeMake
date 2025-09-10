@@ -1,24 +1,30 @@
 package com.utp.wemake;
 
+// Clase modelo que representa una tarea
 public class Task {
-    private String titulo;
-    private String descripcion;
-    private String responsable;
+    // Atributos principales de la tarea
+    private String titulo; // Título de la tarea
+    private String descripcion; // Descripción breve de la tarea
+    private String responsable; // Persona responsable de la tarea
 
+    // Constructor que inicializa los atributos de la tarea
     public Task(String titulo, String descripcion, String responsable) {
         this.titulo = titulo;
         this.descripcion = descripcion;
         this.responsable = responsable;
     }
 
+    // Getter para obtener el título de la tarea
     public String getTitulo() {
         return titulo;
     }
 
+    // Getter para obtener la descripción de la tarea
     public String getDescripcion() {
         return descripcion;
     }
 
+    // Getter para obtener el responsable de la tarea
     public String getResponsable() {
         return responsable;
     }

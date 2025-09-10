@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Scroll principal que permite el desplazamiento vertical si el contenido sobrepasa la pantalla -->
 <androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -16,6 +17,7 @@
         android:layout_height="wrap_content"
         android:paddingTop="24dp">
 
+        <!-- Encabezado con avatar, saludo, nombre y botón de ajustes -->
         <LinearLayout
             android:id="@+id/head_container"
             android:layout_width="match_parent"
@@ -28,6 +30,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
+            <!-- Imagen de perfil del usuario -->
             <ImageView
                 android:id="@+id/avatar"
                 android:layout_width="48dp"
@@ -36,6 +39,7 @@
                 android:padding="8dp"
                 android:src="@drawable/ic_profile" />
 
+            <!-- Texto de saludo -->
             <TextView
                 android:id="@+id/greeting"
                 style="@style/TextAppearance.Material3.TitleMedium"
@@ -44,6 +48,7 @@
                 android:layout_marginStart="16dp"
                 android:text="@string/greeting" />
 
+            <!-- Nombre del usuario -->
             <TextView
                 android:id="@+id/name"
                 style="@style/TextAppearance.Material3.TitleMedium"
@@ -52,25 +57,26 @@
                 android:layout_marginStart="3dp"
                 android:text="@string/ex_name" />
 
+            <!-- Espaciador flexible que empuja al botón de ajustes hacia la derecha -->
             <View
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_weight="1" />
 
-            <com.google.android.material.button.MaterialButton
+            <!-- Botón de ajustes con ícono -->
+            <ImageButton
                 android:id="@+id/settings_button"
-                style="@style/Widget.Material3.Button.Icon"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 app:backgroundTint="?attr/colorSurface"
                 app:iconTint="?attr/colorOnSurface"
-                app:cornerRadius="100dp"
+                android:background="@drawable/circle_background"
                 app:strokeWidth="2dp"
                 app:strokeColor="?attr/colorOnSurface"
-                app:iconSize="28dp"
-                app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.LargeComponent"
-                app:icon="@drawable/ic_settings"
-            />
+                android:src="@drawable/ic_settings"
+                android:scaleType="centerInside"
+                android:padding="0dp"
+                app:tint="?attr/colorOnSurface"/>
 
         </LinearLayout>
 
@@ -122,7 +128,7 @@
                 android:textColor="?attr/colorPrimary"/> <!-- Mismo color que el anterior -->
         </LinearLayout>
 
-
+        <!-- Dropdown con menú desplegable -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/dropdown_layout"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
@@ -146,6 +152,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/title_work_container" >
 
+            <!-- Campo de texto desplegable -->
             <AutoCompleteTextView
                 android:id="@+id/dropdown_text"
                 android:layout_width="match_parent"
@@ -157,6 +164,7 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Guía vertical que divide la pantalla en dos columnas -->
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline_vertical"
             android:layout_width="wrap_content"
@@ -164,6 +172,7 @@
             android:orientation="vertical"
             app:layout_constraintGuide_percent="0.5" />
 
+        <!-- Tarjeta de resumen de tareas -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_tareas"
             android:layout_width="0dp"
@@ -179,6 +188,7 @@
                 layout="@layout/item_summary_card"/>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Tarjeta de pendientes -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_pendientes"
             android:layout_width="0dp"
@@ -194,6 +204,7 @@
                 layout="@layout/item_summary_card"/>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Tarjeta de vencidos -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_vencidos"
             android:layout_width="0dp"
@@ -209,6 +220,7 @@
                 layout="@layout/item_summary_card"/>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Tarjeta de puntos -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_puntos"
             android:layout_width="0dp"
@@ -243,6 +255,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/card_vencidos">
 
+            <!-- Sección de tareas pendientes -->
             <TextView
                 style="@style/TextAppearance.Material3.TitleLarge"
                 android:layout_width="wrap_content"
@@ -260,6 +273,7 @@
                 tools:itemCount="3"
                 tools:listitem="@layout/item_task_card" />
 
+            <!-- Sección de tareas en progreso -->
             <TextView
                 style="@style/TextAppearance.Material3.TitleLarge"
                 android:layout_width="wrap_content"
@@ -278,6 +292,7 @@
                 tools:itemCount="3"
                 tools:listitem="@layout/item_task_card" />
 
+            <!-- Sección de tareas completadas -->
             <TextView
                 style="@style/TextAppearance.Material3.TitleLarge"
                 android:layout_width="wrap_content"
