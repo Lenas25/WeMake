@@ -8,14 +8,13 @@
     android:layout_height="match_parent"
     android:fillViewport="true"
     android:clipToPadding="true"
-    android:paddingBottom="80dp"
+    android:paddingTop="32dp"
     android:background="?attr/colorPrimaryContainer"
     tools:context=".HomeFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="24dp">
+        android:layout_height="wrap_content">
 
         <!-- Encabezado con avatar, saludo, nombre y botón de ajustes -->
         <LinearLayout
@@ -35,8 +34,9 @@
                 android:id="@+id/avatar"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:background="@drawable/circle_background"
-                android:padding="8dp"
+                android:background="@drawable/circle_background_with_border"
+                app:tint="?attr/colorOnSurface"
+                android:padding="10dp"
                 android:src="@drawable/ic_profile" />
 
             <!-- Texto de saludo -->
@@ -66,18 +66,14 @@
             <!-- Botón de ajustes con ícono -->
             <ImageButton
                 android:id="@+id/settings_button"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                app:backgroundTint="?attr/colorSurface"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 app:iconTint="?attr/colorOnSurface"
-                android:background="@drawable/circle_background"
-                app:strokeWidth="2dp"
-                app:strokeColor="?attr/colorOnSurface"
+                android:background="@drawable/circle_background_with_border"
                 android:src="@drawable/ic_settings"
                 android:scaleType="centerInside"
                 android:padding="0dp"
                 app:tint="?attr/colorOnSurface"/>
-
         </LinearLayout>
 
 
@@ -131,23 +127,14 @@
         <!-- Dropdown con menú desplegable -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/dropdown_layout"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            style="@style/Widget.App.TextInputLayout.RoundedDropdown"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            tools:ignore="MissingConstraints"
-            app:boxStrokeColor="?attr/colorOnSurface"
-            app:boxCornerRadiusBottomEnd="10dp"
-            app:boxCornerRadiusBottomStart="10dp"
-            app:boxCornerRadiusTopEnd="10dp"
-            app:boxCornerRadiusTopStart="10dp"
-            app:boxStrokeWidth="2dp"
             app:boxBackgroundColor="?attr/colorSurface"
-            app:backgroundTint="?attr/colorSurface"
             app:iconTint="?attr/colorOnSurface"
-            app:cornerRadius="100dp"
-            app:strokeWidth="2dp"
-            app:strokeColor="?attr/colorOnSurface"
+            app:boxStrokeColor="?attr/colorOnSurface"
+            app:boxStrokeWidth="1dp"
             android:layout_marginHorizontal="24dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/title_work_container" >
@@ -158,8 +145,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="none"
-                android:textFontWeight="@integer/material_motion_duration_medium_2"
                 android:text="@string/ex_dashboard"
+                android:labelFor="@id/dropdown_layout"
                 tools:ignore="MissingConstraints" />
 
         </com.google.android.material.textfield.TextInputLayout>
@@ -177,9 +164,14 @@
             android:id="@+id/card_tareas"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
             android:layout_marginTop="24dp"
+            app:cardBackgroundColor="?attr/colorSurface"
+            app:strokeWidth="0dp"
             android:layout_marginEnd="8dp"
+            app:cardElevation="4dp"
             app:cardCornerRadius="16dp"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/guideline_vertical"
             app:layout_constraintTop_toBottomOf="@id/dropdown_layout">
 
@@ -195,6 +187,11 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             app:cardCornerRadius="16dp"
+            app:strokeWidth="0dp"
+            app:cardElevation="4dp"
+            android:layout_marginEnd="24dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:layout_constraintBottom_toBottomOf="@id/card_tareas"
             app:layout_constraintStart_toEndOf="@id/guideline_vertical"
             app:layout_constraintTop_toTopOf="@id/card_tareas">
@@ -210,8 +207,13 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            app:strokeWidth="0dp"
             android:layout_marginEnd="8dp"
             app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            android:layout_marginStart="24dp"
+            app:cardBackgroundColor="?attr/colorSurface"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/guideline_vertical"
             app:layout_constraintTop_toBottomOf="@id/card_tareas">
 
@@ -227,6 +229,11 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             app:cardCornerRadius="16dp"
+            app:strokeWidth="0dp"
+            app:cardElevation="4dp"
+            android:layout_marginEnd="24dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:layout_constraintBottom_toBottomOf="@id/card_vencidos"
             app:layout_constraintStart_toEndOf="@id/guideline_vertical"
             app:layout_constraintTop_toTopOf="@id/card_vencidos">
@@ -250,7 +257,9 @@
             android:layout_marginTop="24dp"
             android:background="@drawable/content_background"
             android:orientation="vertical"
-            android:padding="24dp"
+            android:paddingHorizontal="24dp"
+            android:paddingBottom="160dp"
+            android:paddingTop="24dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/card_vencidos">
@@ -266,10 +275,12 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_pending"
                 android:layout_width="match_parent"
-                android:layout_height="120dp"
+                android:layout_height="150dp"
                 android:layout_marginTop="16dp"
                 android:clipToPadding="false"
                 android:nestedScrollingEnabled="false"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                android:orientation="horizontal"
                 tools:itemCount="3"
                 tools:listitem="@layout/item_task_card" />
 
@@ -285,10 +296,12 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_in_progress"
                 android:layout_width="match_parent"
-                android:layout_height="120dp"
+                android:layout_height="150dp"
                 android:layout_marginTop="16dp"
                 android:clipToPadding="false"
                 android:nestedScrollingEnabled="false"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                android:orientation="horizontal"
                 tools:itemCount="3"
                 tools:listitem="@layout/item_task_card" />
 
@@ -304,10 +317,12 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_done"
                 android:layout_width="match_parent"
-                android:layout_height="120dp"
+                android:layout_height="150dp"
                 android:layout_marginTop="16dp"
                 android:clipToPadding="false"
                 android:nestedScrollingEnabled="false"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                android:orientation="horizontal"
                 tools:itemCount="3"
                 tools:listitem="@layout/item_task_card" />
 

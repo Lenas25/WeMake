@@ -52,12 +52,19 @@
         <item name="gradientStartColor">@color/md_theme_primary</item>
         <item name="gradientEndColor">@color/md_theme_surfaceVariant</item>
         <item name="gradientCenterColor">@color/md_theme_primaryContainer</item>
-
-
     </style>
 
     <style name="ShapeAppearance.App.Circle" parent="">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="ShapeAppearance.App.Rounded" parent="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">100dp</item>
+    </style>
+
+    <style name="Widget.App.TextInputLayout.RoundedDropdown" parent="Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+        <item name="shapeAppearance">@style/ShapeAppearance.App.Rounded</item>
     </style>
 </resources>

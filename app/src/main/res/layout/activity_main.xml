@@ -35,22 +35,23 @@
         android:id="@+id/bottom_app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:fabAnchorMode="cradle"
-        app:fabAlignmentMode="center"
-        app:fabCradleRoundedCornerRadius="20dp"
-        app:fabCradleMargin="20dp"
-        app:fabCradleVerticalOffset="10dp"
         android:layout_gravity="bottom"
-        app:backgroundTint="@color/bottomAppBarColor">
+        android:fitsSystemWindows="true"
+        app:backgroundTint="@color/bottomAppBarColor"
+        app:fabAlignmentMode="center"
+        app:fabAnchorMode="cradle"
+        app:fabCradleMargin="8dp"
+        app:fabCradleRoundedCornerRadius="20dp"
+        app:fabCradleVerticalOffset="10dp">
+
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottom_navigation"
-            android:layout_height="wrap_content"
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             app:labelVisibilityMode="selected"
-            android:elevation="0dp"
-            app:menu="@menu/bottom_nav_menu"
-            android:layout_gravity="bottom" />
+            app:menu="@menu/bottom_nav_menu" />
+
     </com.google.android.material.bottomappbar.BottomAppBar>
 
 

@@ -44,6 +44,7 @@
     <string name="item_stats">Datos</string>
     <string name="item_profile">Perfil</string>
     <string name="floating_add">Agregar</string>
+    <string name="settings">Configuraión</string>
 
 
     <!-- Home -->
@@ -57,5 +58,13 @@
     <string name="state_pending">Pendiente</string>
     <string name="state_inprogress">En progreso</string>
     <string name="state_done">Completado</string>
+    <string name="ex_summary_description">tareas</string>
+    <string name="ex_task_title">Titulo</string>
+    <string name="ex_task_description">Descripcion</string>
+    <string name="ex_task_responsible">Responsable</string>
+    <string name="ex_task_duedate">Fecha</string>
+    <string name="btn_change">Cambiar Estado</string>
+    <string name="btn_open">Abrir Tarea</string>
+
 
 </resources>
