@@ -30,7 +30,8 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         Task task = taskList.get(position);
         holder.title.setText(task.getTitulo());
         holder.description.setText(task.getDescripcion());
-        holder.revisor.setText("Revisor: " + task.getRevisor());
+        holder.responsible.setText("Responsable: " + task.getResponsable());
+        holder.dueDate.setText("10/09/2025");
     }
 
     @Override
@@ -38,14 +39,15 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         return taskList.size();
     }
 
-    static class TaskViewHolder extends RecyclerView.ViewHolder {
-        TextView title, description, revisor;
+    public static class TaskViewHolder extends RecyclerView.ViewHolder {
+        TextView title, description, responsible, dueDate;
 
-        TaskViewHolder(View itemView) {
+        public TaskViewHolder(@NonNull View itemView) {
             super(itemView);
             title = itemView.findViewById(R.id.task_title);
             description = itemView.findViewById(R.id.task_description);
-            revisor = itemView.findViewById(R.id.task_revisor);
+            responsible = itemView.findViewById(R.id.task_responsible);
+            dueDate = itemView.findViewById(R.id.task_due_date);
         }
     }
 }

@@ -3,15 +3,23 @@ package com.utp.wemake;
 public class Task {
     private String titulo;
     private String descripcion;
-    private String revisor;
+    private String responsable;
 
-    public Task(String titulo, String descripcion, String revisor) {
+    public Task(String titulo, String descripcion, String responsable) {
         this.titulo = titulo;
         this.descripcion = descripcion;
-        this.revisor = revisor;
+        this.responsable = responsable;
     }
 
-    public String getTitulo() {return titulo;}
-    public String getDescripcion() {return descripcion;}
-    public String getRevisor() {return revisor;}
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public String getResponsable() {
+        return responsable;
+    }
 }

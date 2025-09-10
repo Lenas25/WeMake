@@ -6,6 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
+    android:clipToPadding="true"
+    android:paddingBottom="80dp"
     android:background="?attr/colorPrimaryContainer"
     tools:context=".HomeFragment">
 
@@ -66,7 +68,6 @@
                 app:strokeWidth="2dp"
                 app:strokeColor="?attr/colorOnSurface"
                 app:iconSize="28dp"
-                app:iconPadding="0dp"
                 app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.LargeComponent"
                 app:icon="@drawable/ic_settings"
             />
@@ -233,12 +234,11 @@
         -->
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:background="@drawable/content_background"
             android:orientation="vertical"
             android:padding="24dp"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/card_vencidos">
@@ -253,11 +253,10 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_pending"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="120dp"
                 android:layout_marginTop="16dp"
                 android:clipToPadding="false"
-                android:orientation="horizontal"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                android:nestedScrollingEnabled="false"
                 tools:itemCount="3"
                 tools:listitem="@layout/item_task_card" />
 
@@ -272,11 +271,10 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_in_progress"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="120dp"
                 android:layout_marginTop="16dp"
                 android:clipToPadding="false"
-                android:orientation="horizontal"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                android:nestedScrollingEnabled="false"
                 tools:itemCount="3"
                 tools:listitem="@layout/item_task_card" />
 
@@ -291,11 +289,10 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_done"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="120dp"
                 android:layout_marginTop="16dp"
                 android:clipToPadding="false"
-                android:orientation="horizontal"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                android:nestedScrollingEnabled="false"
                 tools:itemCount="3"
                 tools:listitem="@layout/item_task_card" />
 
