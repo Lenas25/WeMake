@@ -12,9 +12,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.textview.MaterialTextView;
+import com.utp.wemake.auth.FirebaseAuthHelper;
 import com.utp.wemake.auth.GoogleSignInHelper;
 
-public class LoginActivity extends AppCompatActivity implements GoogleSignInHelper.GoogleSignInCallback {
+public class LoginActivity extends AppCompatActivity implements FirebaseAuthHelper.AuthCallback, GoogleSignInHelper.GoogleSignInCallback {
     // Constante para identificar al usuario en otras actividades
     public static final String USER_NAME = "Administrador";
     // Número máximo de intentos permitidos antes de bloquear el acceso
@@ -27,6 +28,8 @@ public class LoginActivity extends AppCompatActivity implements GoogleSignInHelp
     MaterialButton btnLogin, btnGoogle;
     MaterialTextView tvRegisterNow;
 
+    //Asistente de autenticación de Firebase
+    private FirebaseAuthHelper firebaseAuthHelper;
     //Asistende de inicio de sesión de Google
     private GoogleSignInHelper googleSignInHelper;
 
@@ -40,8 +43,14 @@ public class LoginActivity extends AppCompatActivity implements GoogleSignInHelp
         initViews();
         // Configura los listeners de botones y textos
         setupListeners();
+        // Inicializa Firebase Auth
+        initFirebaseAuth();
         // Inicializa el inicio de sesión de Google
         initGoogleSignIn();
+    }
+
+    private void initFirebaseAuth() {
+        firebaseAuthHelper = new FirebaseAuthHelper(this, this);
     }
 
     private void initGoogleSignIn() {
@@ -103,25 +112,27 @@ public class LoginActivity extends AppCompatActivity implements GoogleSignInHelp
         String password = tilPassword.getEditText().getText().toString().trim();
 
         // Validación con credenciales fijas para pruebas
-        if (email.equals("admi@utp.pe") && password.equals("admi1234")) {
-            showToast("¡Inicio de sesión exitoso!");
-            loginAttempts = 0; // Reinicia los intentos fallidos
-            navigateToMain("Administrador Jorge"); // Pasa el nombre del usuario a MainActivity
-        } else {
-            // Incrementa los intentos fallidos
-            loginAttempts++;
-
-            if (loginAttempts >= MAX_LOGIN_ATTEMPTS) {
-                // Si se superan los intentos, cierra la aplicación
-                showToast("Demasiados intentos fallidos. La aplicación se cerrará.");
-                finish();
-            } else {
-                // Si aún hay intentos disponibles, muestra un mensaje de error
-                int attemptsLeft = MAX_LOGIN_ATTEMPTS - loginAttempts;
-                String errorMessage = "Correo o contraseña incorrectos!";
-                showToast(errorMessage);
-            }
+        if (TextUtils.isEmpty(email)) {
+            tilEmail.setError("Ingresa tu correo electrónico");
+            return;
         }
+
+        if (TextUtils.isEmpty(password)) {
+            tilPassword.setError("Ingresa tu contraseña");
+            return;
+        }
+
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            tilEmail.setError("Ingresa un correo válido");
+            return;
+        }
+
+        // Limpiar errores
+        tilEmail.setError(null);
+        tilPassword.setError(null);
+
+        // Intentar inicio de sesión con Firebase
+        firebaseAuthHelper.signInUser(email, password);
     }
 
     // Método para navegar hacia la actividad principal (MainActivity)
@@ -147,6 +158,18 @@ public class LoginActivity extends AppCompatActivity implements GoogleSignInHelp
 
     @Override
     public void onSignInError(String errorMessage) {
+        showToast(errorMessage);
+    }
+
+    // Métodos de devolución de llamada de Firebase Auth
+    @Override
+    public void onSuccess(String userName, String userEmail) {
+        showToast("¡Inicio de sesión exitoso!");
+        navigateToMain(userName);
+    }
+
+    @Override
+    public void onError(String errorMessage) {
         showToast(errorMessage);
     }
 }

@@ -46,7 +46,7 @@ public class GoogleSignInHelper {
         this.firebaseAuth = FirebaseAuth.getInstance();
         this.firestore = FirebaseFirestore.getInstance();
 
-        // Configure Google Sign-In
+        // Configurar el inicio de sesión de Google
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(activity.getString(R.string.default_web_client_id))
                 .requestEmail()
@@ -71,7 +71,15 @@ public class GoogleSignInHelper {
             }
         } catch (ApiException e) {
             Log.w(TAG, "Google sign in failed", e);
-            callback.onSignInError("Error al iniciar sesión con Google: " + e.getMessage());
+            String errorMessage = "Error al iniciar sesión con Google: ";
+            if (e.getStatusCode() == 7){
+                errorMessage = "Error de conexión. Verifica tu conexión a internet.";
+            } else if (e.getStatusCode() == 10) {
+                errorMessage = "Error de configuración de la aplicación.";
+            } else {
+                errorMessage += e.getMessage();
+            }
+            callback.onSignInError(errorMessage);
         }
     }
 
@@ -84,13 +92,21 @@ public class GoogleSignInHelper {
                         if (task.isSuccessful()) {
                             FirebaseUser user = firebaseAuth.getCurrentUser();
                             if (user != null) {
-                                // Check if user exists in Firestore
+                                // Comprobar si la usuario existe en Firestore
                                 checkUserExists(user);
                             }
                         } else {
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
-                            callback.onSignInError("Error de autenticación: " +
-                                    (task.getException() != null ? task.getException().getMessage() : "Error desconocido"));
+                            String errorMessage = "Error de autenticación: ";
+                            if (task.getException() != null) {
+                                String error = task.getException().getMessage();
+                                if (error.contains("account-exists-with-different-credential")) {
+                                    errorMessage = "Ya existe una cuenta con este correo usando otro método de inicio de sesión.";
+                                } else {
+                                    errorMessage += error;
+                                }
+                            }
+                            callback.onSignInError(errorMessage);
                         }
                     }
                 });
@@ -104,19 +120,19 @@ public class GoogleSignInHelper {
                 if (task.isSuccessful()) {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
-                        // User exists, proceed with login
+                        // El usuario existe, procede con el inicio de sesión
                         String userName = document.getString("name");
                         if (userName == null || userName.isEmpty()) {
-                            userName = user.getDisplayName();
+                            userName = user.getDisplayName() != null ? user.getDisplayName() : "Usuario";
                         }
                         callback.onSignInSuccess(userName, user.getEmail());
                     } else {
-                        // User doesn't exist, create new user (registration)
+                        //El usuario no existe, crear nuevo usuario (registro)
                         createNewUser(user);
                     }
                 } else {
                     Log.w(TAG, "Error checking user existence", task.getException());
-                    // If we can't check, assume it's a new user
+                    // Si no podemos comprobarlo, asumiremos que es un nuevo usuario
                     createNewUser(user);
                 }
             }
@@ -124,7 +140,7 @@ public class GoogleSignInHelper {
     }
 
     private void createNewUser(FirebaseUser user) {
-        // Create user document in Firestore
+        // Crear documento de usuario en Firestore
         User newUser = new User(
                 user.getUid(),
                 user.getDisplayName() != null ? user.getDisplayName() : "Usuario",
