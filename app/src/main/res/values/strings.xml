@@ -66,5 +66,6 @@
     <string name="btn_change">Cambiar Estado</string>
     <string name="btn_open">Abrir Tarea</string>
 
+    <string name="default_web_client_id">480368312007-p5m8b0hi0k3e6a7ubqvjrqrd823fpvhg.apps.googleusercontent.com</string>
 
 </resources>

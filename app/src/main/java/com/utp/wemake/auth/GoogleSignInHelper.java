@@ -1,0 +1,160 @@
+package com.utp.wemake.auth;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.util.Log;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.utp.wemake.R;
+import com.utp.wemake.models.User;
+
+public class GoogleSignInHelper {
+    private static final String TAG = "GoogleSignInHelper";
+    public static final int RC_SIGN_IN = 9001;
+
+    private Activity activity;
+    private GoogleSignInClient googleSignInClient;
+    private FirebaseAuth firebaseAuth;
+    private FirebaseFirestore firestore;
+    private GoogleSignInCallback callback;
+
+    public interface GoogleSignInCallback {
+        void onSignInSuccess(String userName, String userEmail);
+        void onSignInError(String errorMessage);
+    }
+
+    public GoogleSignInHelper(Activity activity, GoogleSignInCallback callback) {
+        this.activity = activity;
+        this.callback = callback;
+        this.firebaseAuth = FirebaseAuth.getInstance();
+        this.firestore = FirebaseFirestore.getInstance();
+
+        // Configure Google Sign-In
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(activity.getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+
+        this.googleSignInClient = GoogleSignIn.getClient(activity, gso);
+    }
+
+    public void signIn() {
+        Intent signInIntent = googleSignInClient.getSignInIntent();
+        activity.startActivityForResult(signInIntent, RC_SIGN_IN);
+    }
+
+    public void handleSignInResult(Intent data) {
+        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+        try {
+            GoogleSignInAccount account = task.getResult(ApiException.class);
+            if (account != null) {
+                firebaseAuthWithGoogle(account.getIdToken());
+            } else {
+                callback.onSignInError("No se obtuvo la cuenta de Google.");
+            }
+        } catch (ApiException e) {
+            Log.w(TAG, "Google sign in failed", e);
+            callback.onSignInError("Error al iniciar sesión con Google: " + e.getMessage());
+        }
+    }
+
+    private void firebaseAuthWithGoogle(String idToken) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
+        firebaseAuth.signInWithCredential(credential)
+                .addOnCompleteListener(activity, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            FirebaseUser user = firebaseAuth.getCurrentUser();
+                            if (user != null) {
+                                // Check if user exists in Firestore
+                                checkUserExists(user);
+                            }
+                        } else {
+                            Log.w(TAG, "signInWithCredential:failure", task.getException());
+                            callback.onSignInError("Error de autenticación: " +
+                                    (task.getException() != null ? task.getException().getMessage() : "Error desconocido"));
+                        }
+                    }
+                });
+    }
+
+    private void checkUserExists(FirebaseUser user) {
+        DocumentReference userDoc = firestore.collection("users").document(user.getUid());
+        userDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        // User exists, proceed with login
+                        String userName = document.getString("name");
+                        if (userName == null || userName.isEmpty()) {
+                            userName = user.getDisplayName();
+                        }
+                        callback.onSignInSuccess(userName, user.getEmail());
+                    } else {
+                        // User doesn't exist, create new user (registration)
+                        createNewUser(user);
+                    }
+                } else {
+                    Log.w(TAG, "Error checking user existence", task.getException());
+                    // If we can't check, assume it's a new user
+                    createNewUser(user);
+                }
+            }
+        });
+    }
+
+    private void createNewUser(FirebaseUser user) {
+        // Create user document in Firestore
+        User newUser = new User(
+                user.getUid(),
+                user.getDisplayName() != null ? user.getDisplayName() : "Usuario",
+                user.getEmail(),
+                user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : ""
+        );
+
+        firestore.collection("users").document(user.getUid())
+                .set(newUser)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            callback.onSignInSuccess(newUser.getName(), newUser.getEmail());
+                        } else {
+                            Log.w(TAG, "Error creating user", task.getException());
+                            callback.onSignInError("Error al crear el usuario: " +
+                                    (task.getException() != null ? task.getException().getMessage() : "Error desconocido"));
+                        }
+                    }
+                });
+    }
+
+    public void signOut() {
+        firebaseAuth.signOut();
+        googleSignInClient.signOut().addOnCompleteListener(activity, new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                Log.d(TAG, "User signed out");
+            }
+        });
+    }
+}

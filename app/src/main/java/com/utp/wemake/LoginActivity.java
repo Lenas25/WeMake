@@ -12,8 +12,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.textview.MaterialTextView;
+import com.utp.wemake.auth.GoogleSignInHelper;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity implements GoogleSignInHelper.GoogleSignInCallback {
     // Constante para identificar al usuario en otras actividades
     public static final String USER_NAME = "Administrador";
     // Número máximo de intentos permitidos antes de bloquear el acceso
@@ -23,8 +24,11 @@ public class LoginActivity extends AppCompatActivity {
 
     // Elementos de la interfaz
     TextInputLayout tilEmail, tilPassword;
-    MaterialButton btnLogin;
+    MaterialButton btnLogin, btnGoogle;
     MaterialTextView tvRegisterNow;
+
+    //Asistende de inicio de sesión de Google
+    private GoogleSignInHelper googleSignInHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +40,12 @@ public class LoginActivity extends AppCompatActivity {
         initViews();
         // Configura los listeners de botones y textos
         setupListeners();
+        // Inicializa el inicio de sesión de Google
+        initGoogleSignIn();
+    }
+
+    private void initGoogleSignIn() {
+        googleSignInHelper = new GoogleSignInHelper(this, this);
     }
 
     // Método para vincular los elementos del layout con las variables
@@ -43,6 +53,7 @@ public class LoginActivity extends AppCompatActivity {
         tilEmail = findViewById(R.id.input_email);
         tilPassword = findViewById(R.id.input_password);
         btnLogin = findViewById(R.id.btn_login);
+        btnGoogle = findViewById(R.id.btn_google);
         tvRegisterNow = findViewById(R.id.register_now);
     }
 
@@ -56,6 +67,14 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        // Listener para el botón de inicio de sesión de Google
+        btnGoogle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                googleSignInHelper.signIn();
+            }
+        });
+
         // Listener para el texto "Regístrate ahora"
         tvRegisterNow.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -65,6 +84,16 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Gestionar el resultado del inicio de sesión de Google
+        if (requestCode == GoogleSignInHelper.RC_SIGN_IN) {
+            googleSignInHelper.handleSignInResult(data);
+        }
     }
 
     // Lógica principal de validación de login
@@ -107,5 +136,17 @@ public class LoginActivity extends AppCompatActivity {
     // Método auxiliar para mostrar mensajes cortos (Toast)
     private void showToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    // Métodos de devolución de llamada de inicio de sesión de Google
+    @Override
+    public void onSignInSuccess(String userName, String userEmail) {
+        showToast("¡Inicio de sesión con Google exitoso!");
+        navigateToMain(userName);
+    }
+
+    @Override
+    public void onSignInError(String errorMessage) {
+        showToast(errorMessage);
     }
 }

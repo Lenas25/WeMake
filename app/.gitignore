@@ -1,1 +1,3 @@
 /build
+# === Archivos de Firebase y Google ===
+app/google-services.json
