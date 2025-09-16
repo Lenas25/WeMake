@@ -40,8 +40,36 @@ public class HomeFragment extends Fragment {
         // A partir de aquí, el layout ya existe.
         // Este es el lugar perfecto para encontrar tus vistas y configurarles datos.
 
+        // Cofigurar el nombre del usuario
+        setupUserName(view);
         setupSummaryCards(view);
         setupRecyclerViews(view);
+    }
+
+    /**
+     * Configura el nombre del usuario en la interfaz
+     * para view la vista raíz del fragmento
+     */
+    private void setupUserName(View view) {
+        TextView nameTextView = view.findViewById(R.id.name);
+
+        // Obtener el nombre del usuario desde MainActivity
+        if (getActivity() instanceof MainActivity) {
+            MainActivity mainActivity = (MainActivity) getActivity();
+            String userName = mainActivity.getUserName();
+
+            if (userName != null && !userName.isEmpty()) {
+                // Si el nombre contiene espacios, tomar solo el primer nombre
+                String firstName = userName.split(" ")[0];
+                nameTextView.setText(firstName);
+            } else {
+                // Si no hay nombre, usar un valor por defecto
+                nameTextView.setText("Usuario");
+            }
+        } else {
+            // Fallback si no se puede obtener el nombre
+            nameTextView.setText("Usuario");
+        }
     }
 
     /**

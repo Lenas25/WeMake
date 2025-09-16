@@ -41,4 +41,9 @@ public class MainActivity extends AppCompatActivity {
             // Código que se ejecutará al presionar el botón flotante
         });
     }
+
+    // Método para obtener el nombre del usuario desde el Intent
+    public String getUserName() {
+        return getIntent().getStringExtra(LoginActivity.USER_NAME);
+    }
 }

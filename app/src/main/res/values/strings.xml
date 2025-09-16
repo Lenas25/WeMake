@@ -50,7 +50,7 @@
     <!-- Home -->
     <string name="title_home">Inicio</string>
     <string name="greeting">Hola,</string>
-    <string name="ex_name">Jorge</string>
+    <string name="ex_name">Usuario</string>
     <string name="title_group">Elige donde</string>
     <string name="title_group2">trabajar</string>
     <string name="dot">.</string>
