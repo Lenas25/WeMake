@@ -36,7 +36,7 @@ public class GoogleSignInHelper {
     private GoogleSignInCallback callback;
 
     public interface GoogleSignInCallback {
-        void onSignInSuccess(String userName, String userEmail);
+        void onSignInSuccess(String userName, String userEmail, boolean isRegistration);
         void onSignInError(String errorMessage);
     }
 
@@ -56,8 +56,15 @@ public class GoogleSignInHelper {
     }
 
     public void signIn() {
-        Intent signInIntent = googleSignInClient.getSignInIntent();
-        activity.startActivityForResult(signInIntent, RC_SIGN_IN);
+        // Forzar la selección de cuenta para evitar usar la cuenta en caché
+        googleSignInClient.signOut().addOnCompleteListener(activity, new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                // Después de cerrar sesión, iniciar el flujo de selección de cuenta
+                Intent signInIntent = googleSignInClient.getSignInIntent();
+                activity.startActivityForResult(signInIntent, RC_SIGN_IN);
+            }
+        });
     }
 
     public void handleSignInResult(Intent data) {
@@ -76,6 +83,8 @@ public class GoogleSignInHelper {
                 errorMessage = "Error de conexión. Verifica tu conexión a internet.";
             } else if (e.getStatusCode() == 10) {
                 errorMessage = "Error de configuración de la aplicación.";
+            } else if (e.getStatusCode() == 12501) {
+                errorMessage = "Inicio de sesión cancelado por el usuario.";
             } else {
                 errorMessage += e.getMessage();
             }
@@ -125,7 +134,7 @@ public class GoogleSignInHelper {
                         if (userName == null || userName.isEmpty()) {
                             userName = user.getDisplayName() != null ? user.getDisplayName() : "Usuario";
                         }
-                        callback.onSignInSuccess(userName, user.getEmail());
+                        callback.onSignInSuccess(userName, user.getEmail(), false);
                     } else {
                         //El usuario no existe, crear nuevo usuario (registro)
                         createNewUser(user);
@@ -154,7 +163,7 @@ public class GoogleSignInHelper {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
-                            callback.onSignInSuccess(newUser.getName(), newUser.getEmail());
+                            callback.onSignInSuccess(newUser.getName(), newUser.getEmail(), true);
                         } else {
                             Log.w(TAG, "Error creating user", task.getException());
                             callback.onSignInError("Error al crear el usuario: " +
@@ -170,6 +179,16 @@ public class GoogleSignInHelper {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 Log.d(TAG, "User signed out");
+            }
+        });
+    }
+
+    // Método para limpiar completamente la sesión de Google
+    public void clearGoogleSignIn() {
+        googleSignInClient.signOut().addOnCompleteListener(activity, new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                Log.d(TAG, "Google sign in cleared");
             }
         });
     }

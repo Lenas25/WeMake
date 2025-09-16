@@ -2,7 +2,6 @@ package com.utp.wemake.auth;
 
 import android.app.Activity;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -24,7 +23,7 @@ public class FirebaseAuthHelper {
     private AuthCallback callback;
 
     public interface AuthCallback {
-        void onSuccess(String userName, String userEmail);
+        void onSuccess(String userName, String userEmail, boolean isRegistration);
         void onError(String errorMessage);
     }
 
@@ -45,7 +44,7 @@ public class FirebaseAuthHelper {
                             FirebaseUser user = firebaseAuth.getCurrentUser();
                             if (user != null) {
                                 // Crear documento de usuario en Firestore
-                                createUserDocument(user, name);
+                                createUserDocument(user, name, true); // true indica que es registro
                             }
                         } else {
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());
@@ -78,7 +77,7 @@ public class FirebaseAuthHelper {
                             FirebaseUser user = firebaseAuth.getCurrentUser();
                             if (user != null) {
                                 // Obtener información del usuario desde Firestore
-                                getUserFromFirestore(user);
+                                getUserFromFirestore(user, false); // false indica que es login
                             }
                         } else {
                             Log.w(TAG, "signInWithEmail:failure", task.getException());
@@ -102,7 +101,7 @@ public class FirebaseAuthHelper {
     }
 
     // Método para crear documento de usuario en Firestore
-    private void createUserDocument(FirebaseUser firebaseUser, String name) {
+    private void createUserDocument(FirebaseUser firebaseUser, String name, boolean isRegistration) {
         User user = new User(
                 firebaseUser.getUid(),
                 name,
@@ -116,7 +115,7 @@ public class FirebaseAuthHelper {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
-                            callback.onSuccess(user.getName(), user.getEmail());
+                            callback.onSuccess(user.getName(), user.getEmail(), isRegistration);
                         } else {
                             Log.w(TAG, "Error creating user document", task.getException());
                             callback.onError("Error al crear el perfil de usuario");
@@ -126,7 +125,7 @@ public class FirebaseAuthHelper {
     }
 
     // Método para obtener información del usuario desde Firestore
-    private void getUserFromFirestore(FirebaseUser firebaseUser) {
+    private void getUserFromFirestore(FirebaseUser firebaseUser, boolean isRegistration) {
         DocumentReference userDoc = firestore.collection("users").document(firebaseUser.getUid());
         userDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -139,11 +138,11 @@ public class FirebaseAuthHelper {
                             userName = firebaseUser.getDisplayName() != null ?
                                     firebaseUser.getDisplayName() : "Usuario";
                         }
-                        callback.onSuccess(userName, firebaseUser.getEmail());
+                        callback.onSuccess(userName, firebaseUser.getEmail(), isRegistration);
                     } else {
                         // Si no existe el documento, crear uno
                         createUserDocument(firebaseUser, firebaseUser.getDisplayName() != null ?
-                                firebaseUser.getDisplayName() : "Usuario");
+                                firebaseUser.getDisplayName() : "Usuario", isRegistration);
                     }
                 } else {
                     Log.w(TAG, "Error getting user document", task.getException());

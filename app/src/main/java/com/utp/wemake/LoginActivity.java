@@ -15,7 +15,10 @@ import com.google.android.material.textview.MaterialTextView;
 import com.utp.wemake.auth.FirebaseAuthHelper;
 import com.utp.wemake.auth.GoogleSignInHelper;
 
-public class LoginActivity extends AppCompatActivity implements FirebaseAuthHelper.AuthCallback, GoogleSignInHelper.GoogleSignInCallback {
+public class LoginActivity extends AppCompatActivity implements 
+        GoogleSignInHelper.GoogleSignInCallback, 
+        FirebaseAuthHelper.AuthCallback {
+    
     // Constante para identificar al usuario en otras actividades
     public static final String USER_NAME = "Administrador";
     // Número máximo de intentos permitidos antes de bloquear el acceso
@@ -28,10 +31,10 @@ public class LoginActivity extends AppCompatActivity implements FirebaseAuthHelp
     MaterialButton btnLogin, btnGoogle;
     MaterialTextView tvRegisterNow;
 
-    //Asistente de autenticación de Firebase
-    private FirebaseAuthHelper firebaseAuthHelper;
     //Asistende de inicio de sesión de Google
     private GoogleSignInHelper googleSignInHelper;
+    // Asistente de autenticación de Firebase
+    private FirebaseAuthHelper firebaseAuthHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,18 +46,18 @@ public class LoginActivity extends AppCompatActivity implements FirebaseAuthHelp
         initViews();
         // Configura los listeners de botones y textos
         setupListeners();
-        // Inicializa Firebase Auth
-        initFirebaseAuth();
         // Inicializa el inicio de sesión de Google
         initGoogleSignIn();
-    }
-
-    private void initFirebaseAuth() {
-        firebaseAuthHelper = new FirebaseAuthHelper(this, this);
+        // Inicializa Firebase Auth
+        initFirebaseAuth();
     }
 
     private void initGoogleSignIn() {
         googleSignInHelper = new GoogleSignInHelper(this, this);
+    }
+
+    private void initFirebaseAuth() {
+        firebaseAuthHelper = new FirebaseAuthHelper(this, this);
     }
 
     // Método para vincular los elementos del layout con las variables
@@ -80,6 +83,7 @@ public class LoginActivity extends AppCompatActivity implements FirebaseAuthHelp
         btnGoogle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Para login, usar el método normal que permite reutilizar la cuenta
                 googleSignInHelper.signIn();
             }
         });
@@ -111,7 +115,7 @@ public class LoginActivity extends AppCompatActivity implements FirebaseAuthHelp
         String email = tilEmail.getEditText().getText().toString().trim();
         String password = tilPassword.getEditText().getText().toString().trim();
 
-        // Validación con credenciales fijas para pruebas
+        // Validaciones
         if (TextUtils.isEmpty(email)) {
             tilEmail.setError("Ingresa tu correo electrónico");
             return;
@@ -151,8 +155,12 @@ public class LoginActivity extends AppCompatActivity implements FirebaseAuthHelp
 
     // Métodos de devolución de llamada de inicio de sesión de Google
     @Override
-    public void onSignInSuccess(String userName, String userEmail) {
-        showToast("¡Inicio de sesión con Google exitoso!");
+    public void onSignInSuccess(String userName, String userEmail, boolean isRegistration) {
+        if (isRegistration) {
+            showToast("¡Registro con Google exitoso!");
+        } else {
+            showToast("¡Inicio de sesión con Google exitoso!");
+        }
         navigateToMain(userName);
     }
 
@@ -163,13 +171,29 @@ public class LoginActivity extends AppCompatActivity implements FirebaseAuthHelp
 
     // Métodos de devolución de llamada de Firebase Auth
     @Override
-    public void onSuccess(String userName, String userEmail) {
-        showToast("¡Inicio de sesión exitoso!");
+    public void onSuccess(String userName, String userEmail, boolean isRegistration) {
+        if (isRegistration) {
+            showToast("¡Registro de cuenta exitoso!");
+        } else {
+            showToast("¡Inicio de sesión exitoso!");
+        }
         navigateToMain(userName);
     }
 
     @Override
     public void onError(String errorMessage) {
-        showToast(errorMessage);
+        // Incrementa los intentos fallidos solo para errores de login (no de registro)
+        loginAttempts++;
+
+        if (loginAttempts >= MAX_LOGIN_ATTEMPTS) {
+            // Si se superan los intentos, cierra la aplicación
+            showToast("Demasiados intentos fallidos. La aplicación se cerrará.");
+            finishAffinity(); // Cierra todas las actividades de la aplicación
+        } else {
+            // Si aún hay intentos disponibles, muestra un mensaje de error
+            int attemptsLeft = MAX_LOGIN_ATTEMPTS - loginAttempts;
+            String finalMessage = errorMessage + " (Intentos restantes: " + attemptsLeft + ")";
+            showToast(finalMessage);
+        }
     }
 }

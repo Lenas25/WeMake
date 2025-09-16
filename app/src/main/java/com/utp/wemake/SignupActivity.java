@@ -154,6 +154,13 @@ public class SignupActivity extends AppCompatActivity implements FirebaseAuthHel
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
+    // Método para ir al login
+    private void navigateToLogin() {
+        Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
     // Método para navegar hacia la actividad principal
     private void navigateToMain(String userName) {
         Intent intent = new Intent(SignupActivity.this, MainActivity.class);
@@ -162,27 +169,36 @@ public class SignupActivity extends AppCompatActivity implements FirebaseAuthHel
         finish();
     }
 
-    // Métodos de devolución de llamada de Firebase Auth
-    @Override
-    public void onSuccess(String userName, String userEmail) {
-        showToast("¡Registro exitoso!");
-        navigateToMain(userName);
-    }
-
-    @Override
-    public void onError(String errorMessage) {
-        showToast(errorMessage);
-    }
-
     // Métodos de devolución de llamada de inicio de sesión de Google
     @Override
-    public void onSignInSuccess(String userName, String userEmail) {
-        showToast("¡Registro con Google exitoso!");
+    public void onSignInSuccess(String userName, String userEmail, boolean isRegistration) {
+        if (isRegistration) {
+            showToast("¡Registro con Google exitoso!");
+        } else {
+            showToast("¡Inicio de sesión con Google exitoso!");
+        }
         navigateToMain(userName);
     }
 
     @Override
     public void onSignInError(String errorMessage) {
+        showToast(errorMessage);
+    }
+
+    // Métodos de devolución de llamada de Firebase Auth
+    @Override
+    public void onSuccess(String userName, String userEmail, boolean isRegistration) {
+        if (isRegistration) {
+            showToast("¡Registro de cuenta exitoso!");
+            navigateToLogin();
+        } else {
+            showToast("¡Inicio de sesión exitoso!");
+            navigateToMain(userName);
+        }
+    }
+
+    @Override
+    public void onError(String errorMessage) {
         showToast(errorMessage);
     }
 }
