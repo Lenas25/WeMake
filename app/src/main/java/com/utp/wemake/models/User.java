@@ -7,7 +7,7 @@ public class User {
     private String photoUrl;
 
     public User() {
-        // Default constructor required for Firestore
+        // Constructor predeterminado requerido para Firestore
     }
 
     public User(String userid, String name, String email, String photoUrl) {
