@@ -189,7 +189,7 @@ public class SignupActivity extends AppCompatActivity implements FirebaseAuthHel
     @Override
     public void onSuccess(String userName, String userEmail, boolean isRegistration) {
         if (isRegistration) {
-            showToast("¡Registro de cuenta exitoso!");
+            showToast("¡Registro de cuenta exitoso! Inicia sesión con tus credenciales");
             navigateToLogin();
         } else {
             showToast("¡Inicio de sesión exitoso!");

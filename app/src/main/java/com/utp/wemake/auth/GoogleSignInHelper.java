@@ -78,15 +78,24 @@ public class GoogleSignInHelper {
             }
         } catch (ApiException e) {
             Log.w(TAG, "Google sign in failed", e);
-            String errorMessage = "Error al iniciar sesión con Google: ";
-            if (e.getStatusCode() == 7){
-                errorMessage = "Error de conexión. Verifica tu conexión a internet.";
-            } else if (e.getStatusCode() == 10) {
-                errorMessage = "Error de configuración de la aplicación.";
-            } else if (e.getStatusCode() == 12501) {
-                errorMessage = "Inicio de sesión cancelado por el usuario.";
-            } else {
-                errorMessage += e.getMessage();
+            String errorMessage;
+
+            switch (e.getStatusCode()) {
+                case 7: // ERROR DE RED
+                    errorMessage = "Error de conexión. Verifica tu conexión a internet.";
+                    break;
+                case 10: // ERROR DE DESARROLLADOR
+                    errorMessage = "Error de configuración en la aplicación. Contacta al administrador.";
+                    break;
+                case 12501: // INICIO DE SESIÓN CANCELADO
+                    errorMessage = "Inicio de sesión cancelado por el usuario.";
+                    break;
+                case 12500: // FALLÓ DE INICIO DE SESIÓN
+                    errorMessage = "No se pudo completar el inicio de sesión. Intenta nuevamente.";
+                    break;
+                default:
+                    errorMessage = "Ocurrió un error al iniciar sesión con Google. Intenta otra vez.";
+                    break;
             }
             callback.onSignInError(errorMessage);
         }
@@ -101,8 +110,18 @@ public class GoogleSignInHelper {
                         if (task.isSuccessful()) {
                             FirebaseUser user = firebaseAuth.getCurrentUser();
                             if (user != null) {
-                                // Comprobar si la usuario existe en Firestore
-                                checkUserExists(user);
+                                boolean isNewUser = task.getResult().getAdditionalUserInfo().isNewUser();
+
+                                String name = user.getDisplayName() != null ? user.getDisplayName() : "Usuario";
+                                String email = user.getEmail() != null ? user.getEmail() : "";
+
+                                if (isNewUser) {
+                                    // Guardar en Firestore sin bloquear el flujo
+                                    createNewUser(user);
+                                }
+
+                                // Llamamos al callback de inmediato
+                                callback.onSignInSuccess(name, email, isNewUser);
                             }
                         } else {
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
@@ -111,41 +130,16 @@ public class GoogleSignInHelper {
                                 String error = task.getException().getMessage();
                                 if (error.contains("account-exists-with-different-credential")) {
                                     errorMessage = "Ya existe una cuenta con este correo usando otro método de inicio de sesión.";
+                                } else if (error.contains("network error")) {
+                                    errorMessage = "Error de red. Revisa tu conexión a internet.";
                                 } else {
-                                    errorMessage += error;
+                                    errorMessage = "No se pudo autenticar con Google. Intenta nuevamente.";
                                 }
                             }
                             callback.onSignInError(errorMessage);
                         }
                     }
                 });
-    }
-
-    private void checkUserExists(FirebaseUser user) {
-        DocumentReference userDoc = firestore.collection("users").document(user.getUid());
-        userDoc.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
-                        // El usuario existe, procede con el inicio de sesión
-                        String userName = document.getString("name");
-                        if (userName == null || userName.isEmpty()) {
-                            userName = user.getDisplayName() != null ? user.getDisplayName() : "Usuario";
-                        }
-                        callback.onSignInSuccess(userName, user.getEmail(), false);
-                    } else {
-                        //El usuario no existe, crear nuevo usuario (registro)
-                        createNewUser(user);
-                    }
-                } else {
-                    Log.w(TAG, "Error checking user existence", task.getException());
-                    // Si no podemos comprobarlo, asumiremos que es un nuevo usuario
-                    createNewUser(user);
-                }
-            }
-        });
     }
 
     private void createNewUser(FirebaseUser user) {

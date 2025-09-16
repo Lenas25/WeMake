@@ -45,6 +45,8 @@ public class FirebaseAuthHelper {
                             if (user != null) {
                                 // Crear documento de usuario en Firestore
                                 createUserDocument(user, name, true); // true indica que es registro
+                                // Llama al callback
+                                callback.onSuccess(name, email, true);
                             }
                         } else {
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());
@@ -52,13 +54,13 @@ public class FirebaseAuthHelper {
                             if (task.getException() != null) {
                                 String error = task.getException().getMessage();
                                 if (error.contains("email address is already in use")) {
-                                    errorMessage = "Este correo ya está registrado";
+                                    errorMessage = "Este correo ya está registrado. ¡Inicia sesión!";
                                 } else if (error.contains("password should be at least 6 characters")) {
                                     errorMessage = "La contraseña debe tener al menos 6 caracteres";
                                 } else if (error.contains("invalid email")) {
                                     errorMessage = "Correo electrónico inválido";
                                 } else {
-                                    errorMessage += error;
+                                    errorMessage = "Ocurrió un error inesperado. Inténtalo de nuevo.";
                                 }
                             }
                             callback.onError(errorMessage);
