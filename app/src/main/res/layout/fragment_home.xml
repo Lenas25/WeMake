@@ -64,16 +64,12 @@
                 android:layout_weight="1" />
 
             <!-- Botón de ajustes con ícono -->
-            <ImageButton
+            <Button
                 android:id="@+id/settings_button"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                app:iconTint="?attr/colorOnSurface"
-                android:background="@drawable/circle_background_with_border"
-                android:src="@drawable/ic_settings"
-                android:scaleType="centerInside"
-                android:padding="0dp"
-                app:tint="?attr/colorOnSurface"/>
+                style="?attr/materialIconButtonFilledStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:icon="@drawable/ic_settings"/>
         </LinearLayout>
 
 
