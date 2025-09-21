@@ -66,6 +66,20 @@
     <string name="btn_change">Cambiar Estado</string>
     <string name="btn_open">Abrir Tarea</string>
 
+    <!-- Crear Nueva Tarea -->
+    <string name="new_task">Nueva Tarea</string>
+    <string name="btn_save">Guardar</string>
+    <string name="task_title">Título Tarea</string>
+    <string name="task_description">Detalle Tarea</string>
+    <string name="assign_member">Asignar Miembro</string>
+    <string name="task_date_time">Tiempo y Fecha</string>
+    <string name="ex_date">DD/MM/YYYY</string>
+    <string name="ex_time">HH:MM</string>
+    <string name="task_priority">Prioridad</string>
+    <string name="low_priority">Bajo</string>
+    <string name="medium_priority">Medio</string>
+    <string name="high_priority">Alto</string>
+
     <string name="default_web_client_id">480368312007-p5m8b0hi0k3e6a7ubqvjrqrd823fpvhg.apps.googleusercontent.com</string>
 
 </resources>
