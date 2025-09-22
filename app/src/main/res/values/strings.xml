@@ -90,6 +90,22 @@
     <string name="penalty">Penalidad</string>
     <string name="subtasks">Lista</string>
 
+    <!-- Board Configuration -->
+    <string name="board_settings">Configuración</string>
+    <string name="board_name_sample">Crypto Dashboard</string>
+    <string name="detail_board">Veremos más sobre criptomonedas</string>
+    <string name="members">Integrantes</string>
+    <string name="edit_board">Editar Tablero</string>
+    <string name="detail_edit_board">Cambia el nombre, descripción y color</string>
+    <string name="manage_users">Gestionar Usuarios</string>
+    <string name="detail_manage_users">Agregar integrantes y gestiona roles</string>
+    <string name="manage_coupons">Gestionar Cupones</string>
+    <string name="detail_manage_coupons">Crea cupones para canjear</string>
+    <string name="redeem_points">Canjear Puntos</string>
+    <string name="detail_redeem_points">Canjea tus puntos ganados</string>
+    <string name="approve_tasks">Aprobar Tareas</string>
+    <string name="detail_approve_tasks">Establecer fecha limite y puntajes</string>
+
     <string name="default_web_client_id">480368312007-p5m8b0hi0k3e6a7ubqvjrqrd823fpvhg.apps.googleusercontent.com</string>
 
 </resources>

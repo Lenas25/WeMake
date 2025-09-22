@@ -50,8 +50,7 @@
             android:layout_height="48dp"
             app:icon="@drawable/ic_edit"
             app:iconSize="24dp"
-            app:iconTint="?attr/colorPrimary"
-            android:backgroundTint="?attr/colorPrimaryContainer"/>
+            app:iconTint="?attr/colorPrimary"/>
 
         <!-- Botón eliminar -->
         <com.google.android.material.button.MaterialButton
@@ -61,15 +60,14 @@
             android:layout_height="48dp"
             app:icon="@drawable/ic_delete"
             app:iconSize="24dp"
-            app:iconTint="?attr/colorError"
-            android:backgroundTint="?attr/colorErrorContainer"/>
+            app:iconTint="?attr/colorError"/>
     </LinearLayout>
 
     <!-- Contenido principal -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="47dp"
+        android:layout_marginTop="?attr/actionBarSize"
         android:padding="16dp"
         android:paddingBottom="24dp"
         android:scrollbars="none"
