@@ -7,14 +7,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:clipToPadding="true"
-    android:paddingTop="32dp"
+    android:clipToPadding="false"
     android:background="?attr/colorPrimaryContainer"
     tools:context=".HomeFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:paddingTop="32dp">
 
         <!-- Encabezado con avatar, saludo, nombre y botón de ajustes -->
         <LinearLayout
@@ -68,12 +68,14 @@
                 android:id="@+id/settings_button"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
+                android:contentDescription="@string/settings"
                 app:iconTint="?attr/colorOnSurface"
                 android:background="@drawable/circle_background_with_border"
                 android:src="@drawable/ic_settings"
                 android:scaleType="centerInside"
                 android:padding="0dp"
                 app:tint="?attr/colorOnSurface"/>
+
         </LinearLayout>
 
 
@@ -258,7 +260,7 @@
             android:background="@drawable/content_background"
             android:orientation="vertical"
             android:paddingHorizontal="24dp"
-            android:paddingBottom="160dp"
+            android:paddingBottom="150dp"
             android:paddingTop="24dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
