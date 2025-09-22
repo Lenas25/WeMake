@@ -1,9 +1,15 @@
 package com.utp.wemake;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Button;
+import android.content.Context;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -40,6 +46,13 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         holder.description.setText(task.getDescripcion());
         holder.responsible.setText("Responsable: " + task.getResponsable());
         holder.dueDate.setText("10/09/2025");
+
+        // Click: abrir detalle de la tarea
+        holder.externalButton.setOnClickListener(v -> {
+            Context ctx = v.getContext();
+            Intent intent = new Intent(ctx, TaskDetailActivity.class);
+            ctx.startActivity(intent);
+        });
     }
 
     // Retorna el tamaño de la lista (cuántos elementos mostrar)
@@ -52,6 +65,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     public static class TaskViewHolder extends RecyclerView.ViewHolder {
         // Referencias a los elementos gráficos del layout de la tarjeta
         TextView title, description, responsible, dueDate;
+        Button externalButton;
 
         // Constructor que vincula los TextView con sus IDs en item_task_card.xml
         public TaskViewHolder(@NonNull View itemView) {
@@ -60,6 +74,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             description = itemView.findViewById(R.id.task_description);
             responsible = itemView.findViewById(R.id.task_responsible);
             dueDate = itemView.findViewById(R.id.task_due_date);
+            externalButton = itemView.findViewById(R.id.button_external);
         }
     }
 }

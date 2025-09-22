@@ -1,11 +1,13 @@
 package com.utp.wemake;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -40,8 +42,43 @@ public class HomeFragment extends Fragment {
         // A partir de aquí, el layout ya existe.
         // Este es el lugar perfecto para encontrar tus vistas y configurarles datos.
 
+        // Cofigurar el nombre del usuario
+        setupUserName(view);
         setupSummaryCards(view);
         setupRecyclerViews(view);
+
+        // Click: ir a configuración del tablero
+        Button settingsButton = view.findViewById(R.id.settings_button);
+        settingsButton.setOnClickListener(v -> {
+            Intent intent = new Intent(requireContext(), BoardSettingsActivity.class);
+            startActivity(intent);
+        });
+    }
+
+    /**
+     * Configura el nombre del usuario en la interfaz
+     * para view la vista raíz del fragmento
+     */
+    private void setupUserName(View view) {
+        TextView nameTextView = view.findViewById(R.id.name);
+
+        // Obtener el nombre del usuario desde MainActivity
+        if (getActivity() instanceof MainActivity) {
+            MainActivity mainActivity = (MainActivity) getActivity();
+            String userName = mainActivity.getUserName();
+
+            if (userName != null && !userName.isEmpty()) {
+                // Si el nombre contiene espacios, tomar solo el primer nombre
+                String firstName = userName.split(" ")[0];
+                nameTextView.setText(firstName);
+            } else {
+                // Si no hay nombre, usar un valor por defecto
+                nameTextView.setText("Usuario");
+            }
+        } else {
+            // Fallback si no se puede obtener el nombre
+            nameTextView.setText("Usuario");
+        }
     }
 
     /**

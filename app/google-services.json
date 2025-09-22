@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "480368312007",
+    "project_id": "wemake-c1a90",
+    "storage_bucket": "wemake-c1a90.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:480368312007:android:a59de58cf85c3a1c8948e2",
+        "android_client_info": {
+          "package_name": "com.utp.wemake"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "480368312007-ucfdh3bvhaloeuh1qo7uao389pgatoj8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.utp.wemake",
+            "certificate_hash": "29d2f5a379dbc2ad03bedd371388f2abd0872a5c"
+          }
+        },
+        {
+          "client_id": "480368312007-p5m8b0hi0k3e6a7ubqvjrqrd823fpvhg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzloOLxymepUtDyYA6FI5iEAAEAjWIpfs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "480368312007-p5m8b0hi0k3e6a7ubqvjrqrd823fpvhg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
