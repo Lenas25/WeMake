@@ -80,6 +80,16 @@
     <string name="medium_priority">Medio</string>
     <string name="high_priority">Alto</string>
 
+    <!-- Task Detail -->
+    <string name="task_detail">Detalle de tarea</string>
+    <string name="sample_task_title">Diseño gráfico</string>
+    <string name="assigned_to">Asignado a</string>
+    <string name="reviewed_by">Revisado por</string>
+    <string name="due_date">Límite de fecha</string>
+    <string name="reward">Recibes</string>
+    <string name="penalty">Penalidad</string>
+    <string name="subtasks">Lista</string>
+
     <string name="default_web_client_id">480368312007-p5m8b0hi0k3e6a7ubqvjrqrd823fpvhg.apps.googleusercontent.com</string>
 
 </resources>
