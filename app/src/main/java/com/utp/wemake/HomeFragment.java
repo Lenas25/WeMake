@@ -1,11 +1,13 @@
 package com.utp.wemake;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -44,6 +46,13 @@ public class HomeFragment extends Fragment {
         setupUserName(view);
         setupSummaryCards(view);
         setupRecyclerViews(view);
+
+        // Click: ir a configuración del tablero
+        Button settingsButton = view.findViewById(R.id.settings_button);
+        settingsButton.setOnClickListener(v -> {
+            Intent intent = new Intent(requireContext(), BoardSettingsActivity.class);
+            startActivity(intent);
+        });
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.utp.wemake;
 
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,5 +17,9 @@ public class BoardSettingsActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_board_settings);
 
+        View back = findViewById(R.id.btn_back);
+        if (back != null) {
+            back.setOnClickListener(v -> finish());
+        }
     }
 }
