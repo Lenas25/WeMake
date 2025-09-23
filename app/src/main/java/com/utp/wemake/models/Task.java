@@ -1,4 +1,4 @@
-package com.utp.wemake;
+package com.utp.wemake.models;
 
 // Clase modelo que representa una tarea
 public class Task {

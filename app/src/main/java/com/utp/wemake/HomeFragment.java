@@ -5,9 +5,9 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,14 +16,19 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.card.MaterialCardView;
+import com.utp.wemake.models.KanbanColumn; // CAMBIO: Importar el nuevo modelo
+import com.utp.wemake.models.Task;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class HomeFragment extends Fragment {
 
-    // No necesitas los parámetros de la plantilla, así que los hemos eliminado.
-    // Este es un constructor vacío requerido.
+    // CAMBIO: Declarar las nuevas variables para el tablero Kanban
+    private RecyclerView kanbanBoardRecycler;
+    private ColumnAdapter columnAdapter;
+    private List<KanbanColumn> columns = new ArrayList<>();
+
     public HomeFragment() {
         // Required empty public constructor
     }
@@ -31,7 +36,6 @@ public class HomeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Esta línea infla (crea) tu layout XML y lo convierte en una vista de Java.
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
@@ -39,16 +43,16 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // A partir de aquí, el layout ya existe.
-        // Este es el lugar perfecto para encontrar tus vistas y configurarles datos.
-
         // Cofigurar el nombre del usuario
         setupUserName(view);
+        // Configurar las tarjetas de resumen
         setupSummaryCards(view);
-        setupRecyclerViews(view);
+
+        // CAMBIO: Llamar al nuevo método en lugar de setupRecyclerViews
+        setupKanbanBoard(view);
 
         // Click: ir a configuración del tablero
-        Button settingsButton = view.findViewById(R.id.settings_button);
+        ImageButton settingsButton = view.findViewById(R.id.settings_button);
         settingsButton.setOnClickListener(v -> {
             Intent intent = new Intent(requireContext(), BoardSettingsActivity.class);
             startActivity(intent);
@@ -56,34 +60,28 @@ public class HomeFragment extends Fragment {
     }
 
     /**
-     * Configura el nombre del usuario en la interfaz
-     * para view la vista raíz del fragmento
+     * Configura el nombre del usuario en la interfaz.
+     * (Este método se mantiene igual)
      */
     private void setupUserName(View view) {
         TextView nameTextView = view.findViewById(R.id.name);
-
-        // Obtener el nombre del usuario desde MainActivity
         if (getActivity() instanceof MainActivity) {
             MainActivity mainActivity = (MainActivity) getActivity();
             String userName = mainActivity.getUserName();
-
             if (userName != null && !userName.isEmpty()) {
-                // Si el nombre contiene espacios, tomar solo el primer nombre
                 String firstName = userName.split(" ")[0];
                 nameTextView.setText(firstName);
             } else {
-                // Si no hay nombre, usar un valor por defecto
                 nameTextView.setText("Usuario");
             }
         } else {
-            // Fallback si no se puede obtener el nombre
             nameTextView.setText("Usuario");
         }
     }
 
     /**
-     * Encuentra cada tarjeta de resumen y le asigna los datos correspondientes.
-     * @param view La vista raíz del fragmento (pasada desde onViewCreated).
+     * Asigna los datos a las tarjetas de resumen.
+     * (Este método se mantiene igual)
      */
     private void setupSummaryCards(View view) {
         // --- Tarjeta de Tareas ---
@@ -91,8 +89,7 @@ public class HomeFragment extends Fragment {
         ImageView iconTareas = cardTareas.findViewById(R.id.summary_icon);
         TextView valueTareas = cardTareas.findViewById(R.id.summary_value);
         TextView labelTareas = cardTareas.findViewById(R.id.summary_label);
-
-        iconTareas.setImageResource(R.drawable.ic_tasks); // Asegúrate de tener este icono
+        iconTareas.setImageResource(R.drawable.ic_tasks);
         valueTareas.setText("12");
         labelTareas.setText("tareas");
 
@@ -101,8 +98,7 @@ public class HomeFragment extends Fragment {
         ImageView iconPendientes = cardPendientes.findViewById(R.id.summary_icon);
         TextView valuePendientes = cardPendientes.findViewById(R.id.summary_value);
         TextView labelPendientes = cardPendientes.findViewById(R.id.summary_label);
-
-        iconPendientes.setImageResource(R.drawable.ic_pending); // Crea este icono si no existe
+        iconPendientes.setImageResource(R.drawable.ic_pending);
         valuePendientes.setText("4");
         labelPendientes.setText("pendientes");
 
@@ -111,8 +107,7 @@ public class HomeFragment extends Fragment {
         ImageView iconVencidos = cardVencidos.findViewById(R.id.summary_icon);
         TextView valueVencidos = cardVencidos.findViewById(R.id.summary_value);
         TextView labelVencidos = cardVencidos.findViewById(R.id.summary_label);
-
-        iconVencidos.setImageResource(R.drawable.ic_expired); // Crea este icono si no existe
+        iconVencidos.setImageResource(R.drawable.ic_expired);
         valueVencidos.setText("5");
         labelVencidos.setText("vencidos");
 
@@ -121,45 +116,52 @@ public class HomeFragment extends Fragment {
         ImageView iconPuntos = cardPuntos.findViewById(R.id.summary_icon);
         TextView valuePuntos = cardPuntos.findViewById(R.id.summary_value);
         TextView labelPuntos = cardPuntos.findViewById(R.id.summary_label);
-
-        iconPuntos.setImageResource(R.drawable.ic_rocket); // Crea este icono si no existe
+        iconPuntos.setImageResource(R.drawable.ic_rocket);
         valuePuntos.setText("150");
         labelPuntos.setText("puntos");
     }
 
     /**
-     * Configura los RecyclerViews para las listas de tareas.
+     * CAMBIO: Este es el nuevo método que reemplaza a setupRecyclerViews.
+     * Configura el RecyclerView principal del tablero Kanban, prepara los datos
+     * y asigna el ColumnAdapter.
      * @param view La vista raíz del fragmento.
      */
-    private void setupRecyclerViews(View view) {
-        // Configuración para la lista de tareas pendientes
-        RecyclerView recyclerViewPending = view.findViewById(R.id.recycler_pending);
-        recyclerViewPending.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-        // TODO: Crea y asigna un Adapter al recyclerViewPending con los datos de las tareas.
-        recyclerViewPending.setAdapter(new TaskAdapter(getSampleTasks("Pendiente")));
+    private void setupKanbanBoard(View view) {
+        // 1. Encuentra el RecyclerView principal en tu layout (el horizontal)
+        //    Asegúrate de que el ID en tu XML sea "recycler_kanban_board"
+        kanbanBoardRecycler = view.findViewById(R.id.recycler_kanban_board);
+        kanbanBoardRecycler.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
 
-        // Configuración para la lista de tareas en progreso
-        RecyclerView recyclerViewInProgress = view.findViewById(R.id.recycler_in_progress);
-        recyclerViewInProgress.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-        // TODO: Crea y asigna un Adapter al recyclerViewInProgress con los datos de las tareas.
-        recyclerViewInProgress.setAdapter(new TaskAdapter(getSampleTasks("En Progreso")));
+        // 2. Prepara los datos para el tablero
+        //    Limpiamos la lista para evitar duplicados si este método se llama de nuevo
+        columns.clear();
 
-        // Configuración para la lista de tareas completadas
-        RecyclerView recyclerViewDone = view.findViewById(R.id.recycler_done);
-        recyclerViewDone.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-        recyclerViewDone.setAdapter(new TaskAdapter(getSampleTasks("Completada")));
+        // Usamos tu método existente para obtener las listas de tareas
+        List<Task> pendingTasks = getSampleTasks("Pendiente");
+        List<Task> inProgressTasks = getSampleTasks("En Progreso");
+        List<Task> doneTasks = getSampleTasks("Completado");
+
+        // Creamos los objetos KanbanColumn y los añadimos a nuestra lista principal
+        columns.add(new KanbanColumn("Pendiente", pendingTasks));
+        columns.add(new KanbanColumn("En Progreso", inProgressTasks));
+        columns.add(new KanbanColumn("Completado", doneTasks));
+
+        // 3. Crea una instancia del nuevo ColumnAdapter y asígnala al RecyclerView
+        columnAdapter = new ColumnAdapter(columns);
+        kanbanBoardRecycler.setAdapter(columnAdapter);
     }
 
-    // Método que genera una lista de tareas de ejemplo según el estado recibido
+    /**
+     * Método que genera una lista de tareas de ejemplo según el estado recibido.
+     * (Este método se mantiene igual)
+     */
     private List<Task> getSampleTasks(String estado) {
-        // Crea una nueva lista vacía de tipo Task
         List<Task> list = new ArrayList<>();
-
-        // Agrega tareas de ejemplo a la lista (valores fijos para pruebas)
         list.add(new Task("Reunión semanal", "Definir pendientes", "Elena"));
         list.add(new Task("Revisión de código", "Pull request módulo test", "Mario"));
         list.add(new Task("Diseño UI", "Pantalla Estadisticas", "Carlos"));
-        // Retorna la lista completa de tareas
+        // Aquí podrías añadir más tareas o lógica diferente según el 'estado' si quisieras
         return list;
     }
 }

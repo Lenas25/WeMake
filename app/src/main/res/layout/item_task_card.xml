@@ -3,9 +3,10 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="250dp"
-    android:layout_height="match_parent"
-    android:layout_marginEnd="16dp"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
     app:cardElevation="0dp"
     app:strokeWidth="1dp"
     app:strokeColor="?attr/colorOnSurface"
@@ -14,7 +15,7 @@
     <!-- Contenedor interno para organizar los elementos con restricciones -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:padding="16dp">
 
         <!-- Título de la tarea -->
@@ -85,31 +86,37 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/header_barrier" />
 
-
-        <!-- Nombre del responsable de la tarea -->
-        <TextView
-            android:id="@+id/task_responsible"
-            style="@style/TextAppearance.Material3.BodyMedium"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="@string/ex_task_responsible"
+            android:orientation="horizontal"
+            android:layout_marginTop="15dp"
+            android:gravity="center_vertical"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/task_due_date"
-            app:layout_constraintBottom_toBottomOf="parent"/>
-
-
-        <!-- Fecha de vencimiento de la tarea -->
-        <TextView
-            android:id="@+id/task_due_date"
-            style="@style/TextAppearance.Material3.BodySmall"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/ex_task_duedate"
-            android:layout_marginTop="10dp"
-            android:textColor="?attr/colorOnSurfaceVariant"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/task_description">
+
+            <TextView
+                android:id="@+id/task_responsible"
+                style="@style/TextAppearance.Material3.BodyMedium"
+                android:layout_height="wrap_content"
+                android:layout_width="0dp"
+                android:text="@string/ex_task_responsible"
+                android:layout_weight="1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="@+id/task_description"/>
+
+            <TextView
+                android:id="@+id/task_due_date"
+                style="@style/TextAppearance.Material3.BodySmall"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/ex_task_duedate"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+        </LinearLayout>
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -7,13 +7,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:clipToPadding="true"
+    android:id="@+id/main"
     android:paddingTop="32dp"
     android:background="?attr/colorPrimaryContainer"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     tools:context=".HomeFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
+        android:clipChildren="false"
         android:layout_height="wrap_content">
 
         <!-- Encabezado con avatar, saludo, nombre y botón de ajustes -->
@@ -245,88 +248,25 @@
 
 
         <!-- ===== BLOQUE DE CONTENIDO PRINCIPAL (BLANCO) ===== -->
-        <!--
-            LA MAGIA ESTÁ AQUÍ:
-            - android:layout_height="0dp" hace que la altura sea flexible.
-            - Anclado a la parte inferior de las tarjetas y a la parte inferior del padre,
-              se estira para llenar todo el espacio vertical disponible.
-        -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:background="@drawable/content_background"
-            android:orientation="vertical"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_kanban_board"
+            android:layout_width="match_parent"
             android:paddingHorizontal="24dp"
+            android:layout_marginTop="24dp"
             android:paddingBottom="160dp"
             android:paddingTop="24dp"
+            android:background="@drawable/content_background"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:itemCount="3"
+            tools:listitem="@layout/item_kanban"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/card_vencidos">
+            app:layout_constraintTop_toBottomOf="@id/card_vencidos"/>
 
-            <!-- Sección de tareas pendientes -->
-            <TextView
-                style="@style/TextAppearance.Material3.TitleLarge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/state_pending"
-                android:textStyle="bold" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_pending"
-                android:layout_width="match_parent"
-                android:layout_height="150dp"
-                android:layout_marginTop="16dp"
-                android:clipToPadding="false"
-                android:nestedScrollingEnabled="false"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                android:orientation="horizontal"
-                tools:itemCount="3"
-                tools:listitem="@layout/item_task_card" />
-
-            <!-- Sección de tareas en progreso -->
-            <TextView
-                style="@style/TextAppearance.Material3.TitleLarge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="@string/state_inprogress"
-                android:textStyle="bold" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_in_progress"
-                android:layout_width="match_parent"
-                android:layout_height="150dp"
-                android:layout_marginTop="16dp"
-                android:clipToPadding="false"
-                android:nestedScrollingEnabled="false"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                android:orientation="horizontal"
-                tools:itemCount="3"
-                tools:listitem="@layout/item_task_card" />
-
-            <!-- Sección de tareas completadas -->
-            <TextView
-                style="@style/TextAppearance.Material3.TitleLarge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="@string/state_done"
-                android:textStyle="bold" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_done"
-                android:layout_width="match_parent"
-                android:layout_height="150dp"
-                android:layout_marginTop="16dp"
-                android:clipToPadding="false"
-                android:nestedScrollingEnabled="false"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                android:orientation="horizontal"
-                tools:itemCount="3"
-                tools:listitem="@layout/item_task_card" />
-
-        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>
