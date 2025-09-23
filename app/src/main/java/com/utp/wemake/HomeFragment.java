@@ -22,7 +22,7 @@ import com.utp.wemake.models.Task;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HomeFragment extends Fragment {
+public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteractionListener {
 
     // CAMBIO: Declarar las nuevas variables para el tablero Kanban
     private RecyclerView kanbanBoardRecycler;
@@ -148,7 +148,7 @@ public class HomeFragment extends Fragment {
         columns.add(new KanbanColumn("Completado", doneTasks));
 
         // 3. Crea una instancia del nuevo ColumnAdapter y asígnala al RecyclerView
-        columnAdapter = new ColumnAdapter(columns);
+        columnAdapter = new ColumnAdapter(columns, this);
         kanbanBoardRecycler.setAdapter(columnAdapter);
     }
 
@@ -163,5 +163,17 @@ public class HomeFragment extends Fragment {
         list.add(new Task("Diseño UI", "Pantalla Estadisticas", "Carlos"));
         // Aquí podrías añadir más tareas o lógica diferente según el 'estado' si quisieras
         return list;
+    }
+
+    @Override
+    public void onChangeStatusClicked(Task task) {
+
+        // Creamos una nueva instancia de nuestro BottomSheet
+        ChangeStatusBottomSheet bottomSheet = ChangeStatusBottomSheet.newInstance(
+                task.getId(), task.getEstado()
+        );
+
+        // Mostramos el BottomSheet.
+        bottomSheet.show(getChildFragmentManager(), "ChangeStatusBottomSheetTag");
     }
 }

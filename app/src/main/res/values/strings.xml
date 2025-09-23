@@ -66,6 +66,7 @@
     <string name="btn_change">Cambiar Estado</string>
     <string name="btn_open">Abrir Tarea</string>
 
+
     <!-- Crear Nueva Tarea -->
     <string name="new_task">Nueva Tarea</string>
     <string name="btn_save">Guardar</string>

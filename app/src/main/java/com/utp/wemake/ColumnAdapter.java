@@ -21,8 +21,11 @@ public class ColumnAdapter extends RecyclerView.Adapter<ColumnAdapter.ColumnView
 
     private List<KanbanColumn> columnList;
 
-    public ColumnAdapter(List<KanbanColumn> columnList) {
+    private final TaskAdapter.OnTaskInteractionListener taskInteractionListener;
+
+    public ColumnAdapter(List<KanbanColumn> columnList, TaskAdapter.OnTaskInteractionListener listener) {
         this.columnList = columnList;
+        this.taskInteractionListener = listener;
     }
 
     @NonNull
@@ -59,7 +62,7 @@ public class ColumnAdapter extends RecyclerView.Adapter<ColumnAdapter.ColumnView
             columnTitle.setText(column.getTitle());
             tasksRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
             int columnIndex = getAdapterPosition();
-            TaskAdapter taskAdapter = new TaskAdapter(column.getTasks(), columnIndex);
+            TaskAdapter taskAdapter = new TaskAdapter(column.getTasks(), columnIndex, taskInteractionListener);
             tasksRecyclerView.setAdapter(taskAdapter);
 
             tasksRecyclerView.setOnDragListener((v, event) -> {

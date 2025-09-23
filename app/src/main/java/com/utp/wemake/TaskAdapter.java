@@ -22,17 +22,21 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
     private List<Task> taskList; // Lista de tareas que se mostrará en el RecyclerView
 
-    // CAMBIO: Se añade una variable para saber el índice de la columna a la que pertenece este adaptador.
     private int columnIndex;
 
-    // CAMBIO: El constructor ahora también recibe el índice de la columna.
-    public TaskAdapter(List<Task> taskList, int columnIndex) {
-        this.taskList = taskList;
-        this.columnIndex = columnIndex; // Guardamos el índice
+    private final OnTaskInteractionListener listener;
+
+
+    public interface OnTaskInteractionListener {
+        void onChangeStatusClicked(Task task);
     }
 
-    // --- Tus métodos existentes (getTaskAt, removeItem, etc.) pueden quedarse, no afectan al drag & drop ---
-    // --- No es necesario cambiar nada en ellos ---
+    public TaskAdapter(List<Task> taskList, int columnIndex, OnTaskInteractionListener listener) {
+        this.taskList = taskList;
+        this.columnIndex = columnIndex; // Guardamos el índice
+        this.listener = listener; // Guardamos la referencia.
+    }
+
 
     @NonNull
     @Override
@@ -56,6 +60,14 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             Context ctx = v.getContext();
             Intent intent = new Intent(ctx, TaskDetailActivity.class);
             ctx.startActivity(intent);
+        });
+
+        holder.changeButton.setOnClickListener(v -> {
+            // Verificamos que nuestro oyente exista por seguridad.
+            if (listener != null) {
+                // Llamamos al método de la interfaz, "emitiendo la señal" y enviando la tarea actual.
+                listener.onChangeStatusClicked(task);
+            }
         });
 
         // Listener de pulsación larga corregido
@@ -115,7 +127,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
     public static class TaskViewHolder extends RecyclerView.ViewHolder {
         TextView title, description, responsible, dueDate;
-        Button externalButton;
+        Button externalButton, changeButton;
 
         public TaskViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -124,6 +136,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             responsible = itemView.findViewById(R.id.task_responsible);
             dueDate = itemView.findViewById(R.id.task_due_date);
             externalButton = itemView.findViewById(R.id.button_external);
+            changeButton = itemView.findViewById(R.id.button_change);
         }
     }
 }
