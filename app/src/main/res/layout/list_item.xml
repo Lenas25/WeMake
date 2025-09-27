@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <!--
+        ConstraintLayout es la base. Lo hacemos clickable y focusable para que
+        toda la fila sea un único objetivo táctil.
+        'background="?attr/selectableItemBackground"' es la LÍNEA MÁGICA
+        que añade el efecto ripple de Material Design al tocar.
+    -->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/list_item_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="72dp"
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="12dp"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
+
+    <!--
+        Icono Principal (Leading Icon). Usamos un ImageView simple.
+        El fondo circular se lo damos con un drawable.
+    -->
+    <ImageView
+        android:id="@+id/list_item_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:scaleType="center"
+        android:src="@drawable/ic_profile"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:elevation="4dp"
+        app:tint="?attr/colorOnSurface"
+        tools:ignore="ContentDescription" />
+
+    <!--
+        Contenedor para el texto. Un LinearLayout vertical aquí es perfecto
+        para agrupar título y subtítulo.
+    -->
+    <LinearLayout
+        android:id="@+id/list_item_text_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintStart_toEndOf="@id/list_item_icon"
+        app:layout_constraintEnd_toStartOf="@id/list_item_chevron"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <TextView
+            android:id="@+id/list_item_title"
+            style="@style/TextAppearance.Material3.BodyLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorOnSurface"
+            tools:text="Editar Tablero" />
+
+        <TextView
+            android:id="@+id/list_item_subtitle"
+            style="@style/TextAppearance.Material3.LabelMedium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorOutline"
+            tools:text="Cambia el nombre, descripción y color" />
+
+    </LinearLayout>
+
+    <!--
+        Icono Final (Trailing Icon). Es un simple ImageView.
+    -->
+    <ImageView
+        android:id="@+id/list_item_chevron"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_arrow_right"
+        app:tint="?attr/colorOnSurfaceVariant"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:contentDescription="@null" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

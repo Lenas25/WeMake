@@ -13,7 +13,6 @@
     <string name="btn_already_have_account">Ya tengo una cuenta</string>
 
     <!-- Login and Register -->
-
     <string name="we">We</string>
     <string name="make">Make</string>
     <string name="title_login">Ingresa a tu cuenta</string>
@@ -50,7 +49,7 @@
     <!-- Home -->
     <string name="title_home">Inicio</string>
     <string name="greeting">Hola,</string>
-    <string name="ex_name">Jorge</string>
+    <string name="ex_name">Usuario</string>
     <string name="title_group">Elige donde</string>
     <string name="title_group2">trabajar</string>
     <string name="dot">.</string>
@@ -66,5 +65,65 @@
     <string name="btn_change">Cambiar Estado</string>
     <string name="btn_open">Abrir Tarea</string>
 
+
+    <!-- Crear Nueva Tarea -->
+    <string name="new_task_title">¡Nueva Responsabilidad!</string>
+    <string name="new_task_subtitle">Elige el modo que deseas crear una tarea, ambos son muy interesantes</string>
+    <string name="new_task_voice">Voz</string>
+    <string name="new_task_manual">Manual</string>
+
+    <string name="new_task">Nueva Tarea</string>
+    <string name="btn_save">Guardar</string>
+    <string name="task_title">Título Tarea</string>
+    <string name="task_description">Detalle Tarea</string>
+    <string name="assign_member">Asignar Miembro</string>
+    <string name="task_date_time">Tiempo y Fecha</string>
+    <string name="ex_date">DD/MM/YYYY</string>
+    <string name="ex_time">HH:MM</string>
+    <string name="task_priority">Prioridad</string>
+    <string name="low_priority">Bajo</string>
+    <string name="medium_priority">Medio</string>
+    <string name="high_priority">Alto</string>
+
+    <!-- Task Detail -->
+    <string name="task_detail">Detalle de tarea</string>
+    <string name="sample_task_title">Diseño gráfico</string>
+    <string name="assigned_to">Asignado a</string>
+    <string name="reviewed_by">Revisado por</string>
+    <string name="due_date">Límite de fecha</string>
+    <string name="reward">Recibes</string>
+    <string name="penalty">Penalidad</string>
+    <string name="subtasks">Lista</string>
+
+    <!-- Board Configuration -->
+    <string name="board_settings">Configuración</string>
+    <string name="board_name_sample">Crypto Dashboard</string>
+    <string name="detail_board">Veremos más sobre criptomonedas</string>
+    <string name="members">Integrantes</string>
+    <string name="edit_board">Editar Tablero</string>
+    <string name="detail_edit_board">Cambia el nombre, descripción y color</string>
+    <string name="manage_users">Gestionar Usuarios</string>
+    <string name="detail_manage_users">Agregar integrantes y gestiona roles</string>
+    <string name="manage_coupons">Gestionar Cupones</string>
+    <string name="detail_manage_coupons">Crea cupones para canjear</string>
+    <string name="redeem_points">Canjear Puntos</string>
+    <string name="detail_redeem_points">Canjea tus puntos ganados</string>
+    <string name="approve_tasks">Aprobar Tareas</string>
+    <string name="detail_approve_tasks">Establecer fecha limite y puntajes</string>
+
+    <string name="default_web_client_id">480368312007-p5m8b0hi0k3e6a7ubqvjrqrd823fpvhg.apps.googleusercontent.com</string>
+
+
+    <!-- Profile -->
+    <string name="option_edit_profile">Editar Perfil</string>
+    <string name="detail_edit_profile">Cambia tus datos personales</string>
+    <string name="option_notifications">Notificaciones</string>
+    <string name="detail_notifications">Elige la preferencia</string>
+    <string name="option_sign_out">Cierra Sesión</string>
+    <string name="logout_dialog_message">¿Estás seguro de que quieres cerrar tu sesión?</string>
+
+
+    <string name="dialog_cancel">Cancelar</string>
+    <string name="dialog_accept">Aceptar</string>
 
 </resources>

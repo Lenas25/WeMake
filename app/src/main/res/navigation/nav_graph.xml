@@ -10,5 +10,9 @@
         android:name="com.utp.wemake.HomeFragment"
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" />
-    <!-- Aquí agregarías otros fragments para search, stats, etc. -->
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.utp.wemake.ProfileFragment"
+        android:label="fragment_profile"
+        tools:layout="@layout/fragment_profile" />
 </navigation>

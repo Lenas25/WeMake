@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingVertical="16dp">
+
+    <!--
+        Aquí superponemos el botón de la cámara sobre el avatar.
+    -->
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <!--
+            ShapeableImageView es el componente de Material para imágenes con formas.
+            Con app:shapeAppearanceOverlay lo hacemos perfectamente circular.
+        -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/profile_avatar"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:padding="4dp"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.App.CircleImageView"
+            android:src="@drawable/ic_user_avatar"
+            app:strokeColor="@color/md_theme_onSurface"
+            android:scaleType="centerCrop"
+            app:strokeWidth="1dp" />
+
+        <!--
+            ImageButton para el icono de la cámara.
+            layout_gravity lo posiciona en la esquina superior derecha del FrameLayout.
+        -->
+        <ImageButton
+            android:id="@+id/button_edit_avatar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="top|end"
+            android:background="@drawable/circle_background_with_border"
+            android:contentDescription="Editar foto de perfil"
+            android:elevation="4dp"
+            android:src="@drawable/ic_camera"
+            app:tint="?attr/colorOnSecondaryContainer" />
+
+    </FrameLayout>
+
+    <!-- TextView para el nombre del usuario -->
+    <TextView
+        android:id="@+id/profile_name"
+        style="@style/TextAppearance.Material3.HeadlineSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:textStyle="bold"
+        android:text="Jorge Flores" />
+
+    <!-- TextView para el email del usuario -->
+    <TextView
+        android:id="@+id/profile_email"
+        style="@style/TextAppearance.Material3.BodyLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:text="jflores@gmail.com" />
+
+    <!--
+        Chip es el componente de Material perfecto para mostrar las "coins".
+        Tiene soporte nativo para icono y texto.
+    -->
+    <com.google.android.material.chip.Chip
+        android:id="@+id/profile_coins_chip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        app:iconStartPadding="10dp"
+        app:chipEndPadding="10dp"
+        app:chipIcon="@drawable/ic_coins"
+        app:chipBackgroundColor="@color/md_theme_tertiaryFixed"
+        app:chipIconTint="@color/md_theme_onTertiaryFixed"
+        android:textColor="@color/md_theme_onTertiaryFixed"
+        app:chipCornerRadius="20dp"
+        app:chipStrokeWidth="0dp"
+        app:chipIconSize="20dp"
+        android:textStyle="bold"
+        android:text="125 coins" />
+
+</LinearLayout>

@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <!-- Permiso de Internet para el inicio de sesión de Google -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -11,6 +14,26 @@
         android:roundIcon="@mipmap/ic_appicono"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity
+            android:name=".AddTaskBottomSheet"
+            android:exported="false" />
+        <activity
+            android:name=".EditProfileActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".BoardSettingsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".TaskDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".CreateTaskActivity"
+            android:exported="false" /> <!-- Configuración de inicio de sesión de Google -->
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
         <activity
             android:name=".SignupActivity"
             android:exported="false" />
