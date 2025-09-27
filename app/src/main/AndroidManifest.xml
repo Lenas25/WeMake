@@ -15,6 +15,13 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".AddTaskBottomSheet"
+            android:exported="false" />
+        <activity
+            android:name=".EditProfileActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme" />
+        <activity
             android:name=".BoardSettingsActivity"
             android:exported="false" />
         <activity
@@ -22,11 +29,11 @@
             android:exported="false" />
         <activity
             android:name=".CreateTaskActivity"
-            android:exported="false" />
-        <!-- Configuración de inicio de sesión de Google -->
+            android:exported="false" /> <!-- Configuración de inicio de sesión de Google -->
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
+
         <activity
             android:name=".SignupActivity"
             android:exported="false" />

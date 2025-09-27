@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- LinearLayout vertical principal que centra todo su contenido -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:padding="24dp">
+
+    <!--
+        Este es el "handle" o "asa" para arrastrar el BottomSheet.
+        Puedes mantenerlo si quieres esa funcionalidad.
+    -->
+    <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Icono principal en la parte superior -->
+    <ImageView
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_marginBottom="16dp"
+        android:src="@drawable/ic_list_plus"
+        app:tint="?attr/colorOnSurface"
+        tools:ignore="ContentDescription" />
+
+    <!-- Título principal -->
+    <TextView
+        style="@style/TextAppearance.Material3.HeadlineSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="@string/new_task_title"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface"/>
+
+    <!-- Subtítulo o descripción -->
+    <TextView
+        style="@style/TextAppearance.Material3.BodyMedium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:gravity="center"
+        android:text="@string/new_task_subtitle"
+        android:textColor="?attr/colorOnSurfaceVariant"/>
+
+    <!-- Contenedor horizontal para los dos botones -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- Botón "Voz"-->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_voice"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="16sp"
+            android:paddingVertical="10dp"
+            android:text="@string/new_task_voice"
+            app:cornerRadius="24dp"
+            android:backgroundTint="?attr/colorTertiaryContainer"
+            android:textColor="?attr/colorOnTertiaryContainer" />
+
+        <!-- Botón "Manual"-->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_manual"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_weight="1"
+            android:textSize="16sp"
+            android:paddingVertical="10dp"
+            android:text="@string/new_task_manual"
+            app:cornerRadius="24dp"
+            android:backgroundTint="?attr/colorPrimaryContainer"
+            android:textColor="?attr/colorOnPrimaryContainer" />
+
+    </LinearLayout>
+
+</LinearLayout>

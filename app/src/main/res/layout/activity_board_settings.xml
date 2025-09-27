@@ -5,41 +5,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
-    android:paddingTop="30dp"
+    android:id="@+id/main_container"
     tools:context=".BoardSettingsActivity">
 
-    <!-- Header con botón back y título -->
-    <LinearLayout
-        android:id="@+id/header_container"
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="16dp"
-        android:background="?attr/colorSurface"
-        android:elevation="4dp">
+        android:layout_height="wrap_content">
 
-        <ImageButton
-            android:id="@+id/btn_back"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_arrow_back"
-            app:tint="?attr/colorOnSurface"/>
-
-        <!-- Título -->
-        <TextView
-            android:id="@+id/title_configuration"
-            style="@style/TextAppearance.Material3.TitleLarge"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="@string/board_settings"
-            android:textStyle="bold"
-            android:textColor="?attr/colorOnSurface"
-            android:letterSpacing="0.01"/>
-    </LinearLayout>
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/top_app_bar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:titleCentered="true"
+            app:navigationIcon="@drawable/ic_arrow_back"
+            app:titleTextColor="?attr/colorOnSurface"
+            android:letterSpacing="0.01"
+            tools:title="@string/board_settings"
+            style="@style/Widget.Material3.Toolbar.Surface"
+            />
+    </com.google.android.material.appbar.AppBarLayout>
 
     <ScrollView
         android:layout_width="match_parent"
@@ -144,250 +128,37 @@
             <LinearLayout
                 android:id="@+id/options_container"
                 android:layout_width="match_parent"
+                android:layout_marginTop="20dp"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginTop="20dp">
-
-                <!-- Opción: Editar Tablero -->
-                <LinearLayout
+                android:orientation="vertical">
+                <!-- Tus <include> para las opciones se quedan aquí -->
+                <include
                     android:id="@+id/option_edit_board"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:padding="12dp">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_edit_board"
-                        app:tint="?attr/colorOnSurface"/>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="16dp">
-
-                        <TextView
-                            style="@style/TextAppearance.Material3.BodyLarge"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/edit_board"/>
-
-                        <TextView
-                            style="@style/TextAppearance.Material3.LabelMedium"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/detail_edit_board"
-                            android:textColor="?attr/colorOutline"/>
-                    </LinearLayout>
-
-                    <com.google.android.material.button.MaterialButton
-                        style="@style/Widget.Material3.Button.IconButton"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        app:icon="@drawable/ic_arrow_right"
-                        app:iconSize="24dp"
-                        app:iconTint="?attr/colorOnSurface"/>
-                </LinearLayout>
-
+                    layout="@layout/list_item" />
                 <com.google.android.material.divider.MaterialDivider
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
-
-                <!-- Opción: Gestionar Usuarios -->
-                <LinearLayout
+                <include
                     android:id="@+id/option_manage_users"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:padding="12dp">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_group_add"
-                        app:tint="?attr/colorOnSurface"/>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="16dp">
-
-                        <TextView
-                            style="@style/TextAppearance.Material3.BodyLarge"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/manage_users"/>
-
-                        <TextView
-                            style="@style/TextAppearance.Material3.LabelMedium"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/detail_manage_users"
-                            android:textColor="?attr/colorOutline"/>
-                    </LinearLayout>
-
-                    <com.google.android.material.button.MaterialButton
-                        style="@style/Widget.Material3.Button.IconButton"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        app:icon="@drawable/ic_arrow_right"
-                        app:iconSize="24dp"
-                        app:iconTint="?attr/colorOnSurface"/>
-                </LinearLayout>
-
+                    layout="@layout/list_item" />
                 <com.google.android.material.divider.MaterialDivider
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
-
-                <!-- Opción: Gestionar Cupones -->
-                <LinearLayout
+                <include
                     android:id="@+id/option_manage_coupons"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:padding="12dp">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_manage_coupons"
-                        app:tint="?attr/colorOnSurface"/>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="16dp">
-
-                        <TextView
-                            style="@style/TextAppearance.Material3.BodyLarge"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/manage_coupons"/>
-
-                        <TextView
-                            style="@style/TextAppearance.Material3.LabelMedium"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/detail_manage_coupons"
-                            android:textColor="?attr/colorOutline"/>
-                    </LinearLayout>
-
-                    <com.google.android.material.button.MaterialButton
-                        style="@style/Widget.Material3.Button.IconButton"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        app:icon="@drawable/ic_arrow_right"
-                        app:iconSize="24dp"
-                        app:iconTint="?attr/colorOnSurface"/>
-                </LinearLayout>
-
+                    layout="@layout/list_item" />
                 <com.google.android.material.divider.MaterialDivider
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
-
-                <!-- Opción: Canjear Puntos -->
-                <LinearLayout
+                <include
                     android:id="@+id/option_redeem_points"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:padding="12dp">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_redeem"
-                        app:tint="?attr/colorOnSurface"/>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="16dp">
-
-                        <TextView
-                            style="@style/TextAppearance.Material3.BodyLarge"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/redeem_points"/>
-
-                        <TextView
-                            style="@style/TextAppearance.Material3.LabelMedium"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/detail_redeem_points"
-                            android:textColor="?attr/colorOutline"/>
-                    </LinearLayout>
-
-                    <com.google.android.material.button.MaterialButton
-                        style="@style/Widget.Material3.Button.IconButton"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        app:icon="@drawable/ic_arrow_right"
-                        app:iconSize="24dp"
-                        app:iconTint="?attr/colorOnSurface"/>
-                </LinearLayout>
-
+                    layout="@layout/list_item" />
                 <com.google.android.material.divider.MaterialDivider
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
-
-                <!-- Opción: Aprobar Tareas -->
-                <LinearLayout
+                <include
                     android:id="@+id/option_approve_tasks"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:padding="12dp">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_approve_tasks"
-                        app:tint="?attr/colorOnSurface" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="16dp">
-
-                        <TextView
-                            style="@style/TextAppearance.Material3.BodyLarge"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/approve_tasks"/>
-
-                        <TextView
-                            style="@style/TextAppearance.Material3.LabelMedium"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/detail_approve_tasks"
-                            android:textColor="?attr/colorOutline"/>
-                    </LinearLayout>
-
-                    <com.google.android.material.button.MaterialButton
-                        style="@style/Widget.Material3.Button.IconButton"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        app:icon="@drawable/ic_arrow_right"
-                        app:iconSize="24dp"
-                        app:iconTint="?attr/colorOnSurface"/>
-                </LinearLayout>
+                    layout="@layout/list_item" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

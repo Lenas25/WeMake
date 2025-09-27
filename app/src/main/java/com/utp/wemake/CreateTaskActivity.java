@@ -3,12 +3,18 @@ package com.utp.wemake;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
-import android.view.View;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.chip.Chip;
@@ -17,22 +23,22 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 public class CreateTaskActivity extends AppCompatActivity {
 
-    // Elementos de la interfaz
-    private MaterialButton btnBack, btnSave;
+    // --- Variables de la Interfaz (Views) ---
     private TextInputEditText inputTitle, inputDescription;
     private ChipGroup chipGroupMembers;
     private Chip chipTime, chipDate;
     private MaterialButtonToggleGroup togglePriority;
-    
-    // Variables para fecha y hora
-    private Calendar selectedDate;
-    private Calendar selectedTime;
-    private SimpleDateFormat dateFormat;
-    private SimpleDateFormat timeFormat;
+
+    // --- Variables para la Lógica ---
+    private final Calendar selectedDateTime = Calendar.getInstance();
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+    private final SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,23 +46,53 @@ public class CreateTaskActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_create_task);
 
-        // Inicializar formateadores de fecha y hora
-        dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
-        
-        // Inicializar calendarios
-        selectedDate = Calendar.getInstance();
-        selectedTime = Calendar.getInstance();
-
-        // Inicializar elementos de la interfaz
-        initViews();
-        // Configurar listeners
+        // El método onCreate ahora es un resumen claro de lo que se configura.
+        initializeViews();
+        setupToolbar();
+        setupInitialData();
         setupListeners();
     }
 
-    private void initViews() {
-        btnBack = findViewById(R.id.btn_back);
-        btnSave = findViewById(R.id.btn_save_task);
+    /**
+     * Infla el menú de opciones en la Toolbar.
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.create_task_menu, menu);
+        return true;
+    }
+
+    /**
+     * Maneja los clics en los ítems del menú de la Toolbar (ej. "Guardar").
+     */
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.action_save_task) {
+            saveTask(); // Llama a tu lógica de guardado
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void setupToolbar() {
+        MaterialToolbar toolbar = findViewById(R.id.top_app_bar);
+        toolbar.setTitle(R.string.new_task);
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
+
+        // Maneja los insets para el modo EdgeToEdge
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_container), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
+    }
+
+    /**
+     * Vincula las variables de la clase con las vistas del layout XML.
+     */
+    private void initializeViews() {
+        // No se necesita btnBack aquí si es un MaterialToolbar, se maneja de otra forma.
+        // btnSave se inicializará en setupListeners.
         inputTitle = findViewById(R.id.input_task_title);
         inputDescription = findViewById(R.id.input_task_description);
         chipGroupMembers = findViewById(R.id.chipGroupMembers);
@@ -65,132 +101,122 @@ public class CreateTaskActivity extends AppCompatActivity {
         togglePriority = findViewById(R.id.toggle_priority);
     }
 
-    private void setupListeners() {
-        // Botón de regreso
-        btnBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
-
-        // Botón de guardar
-        btnSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveTask();
-            }
-        });
-
-        // Chips de tiempo y fecha
-        chipTime.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showTimePicker();
-            }
-        });
-
-        chipDate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showDatePicker();
-            }
-        });
-    }
-
-    private void saveTask() {
-        String title = inputTitle.getText().toString().trim();
-        String description = inputDescription.getText().toString().trim();
-
-        // Validaciones básicas
-        if (title.isEmpty()) {
-            inputTitle.setError("El título es requerido");
-            return;
-        }
-
-        if (description.isEmpty()) {
-            inputDescription.setError("La descripción es requerida");
-            return;
-        }
-
-        // Obtener prioridad seleccionada
-        int selectedPriorityId = togglePriority.getCheckedButtonId();
-        String priority = "Bajo"; // Por defecto
-
-        if (selectedPriorityId == R.id.btn_priority_medium) {
-            priority = "Medio";
-        } else if (selectedPriorityId == R.id.btn_priority_high) {
-            priority = "Alto";
-        }
-
-        // Obtener miembros seleccionados
-        StringBuilder selectedMembers = new StringBuilder();
-        for (int i = 0; i < chipGroupMembers.getChildCount(); i++) {
-            Chip chip = (Chip) chipGroupMembers.getChildAt(i);
-            if (chip.isChecked()) {
-                if (selectedMembers.length() > 0) {
-                    selectedMembers.append(", ");
-                }
-                selectedMembers.append(chip.getText());
-            }
-        }
-
-        // Obtener fecha y hora seleccionadas
-        String selectedDateStr = dateFormat.format(selectedDate.getTime());
-        String selectedTimeStr = timeFormat.format(selectedTime.getTime());
-        
-        // TODO: Guardar la tarea en la base de datos
-        String taskInfo = String.format("Tarea: %s\nFecha: %s\nHora: %s\nPrioridad: %s", 
-            title, selectedDateStr, selectedTimeStr, priority);
-        
-        Toast.makeText(this, taskInfo, Toast.LENGTH_LONG).show();
-
-        // Cerrar la actividad
-        finish();
-    }
-    
     /**
-     * Muestra el DatePickerDialog para seleccionar una fecha
+     * Establece los valores iniciales en las vistas (ej. fecha y hora actual).
+     */
+    private void setupInitialData() {
+        chipDate.setText(dateFormat.format(selectedDateTime.getTime()));
+        chipTime.setText(timeFormat.format(selectedDateTime.getTime()));
+    }
+
+    /**
+     * Configura todos los listeners para las interacciones del usuario.
+     */
+    private void setupListeners() {
+        chipTime.setOnClickListener(v -> showTimePicker());
+        chipDate.setOnClickListener(v -> showDatePicker());
+    }
+
+    // =====================================================================================
+    // --- LÓGICA DE SELECCIÓN DE FECHA Y HORA ---
+    // =====================================================================================
+
+    /**
+     * Muestra el DatePickerDialog para seleccionar una fecha.
      */
     private void showDatePicker() {
         DatePickerDialog datePickerDialog = new DatePickerDialog(
-            this,
-            (view, year, month, dayOfMonth) -> {
-                selectedDate.set(Calendar.YEAR, year);
-                selectedDate.set(Calendar.MONTH, month);
-                selectedDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                
-                // Actualizar el texto del chip con la fecha seleccionada
-                chipDate.setText(dateFormat.format(selectedDate.getTime()));
-            },
-            selectedDate.get(Calendar.YEAR),
-            selectedDate.get(Calendar.MONTH),
-            selectedDate.get(Calendar.DAY_OF_MONTH)
+                this,
+                (view, year, month, dayOfMonth) -> {
+                    selectedDateTime.set(Calendar.YEAR, year);
+                    selectedDateTime.set(Calendar.MONTH, month);
+                    selectedDateTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                    updateDateChip();
+                },
+                selectedDateTime.get(Calendar.YEAR),
+                selectedDateTime.get(Calendar.MONTH),
+                selectedDateTime.get(Calendar.DAY_OF_MONTH)
         );
-        
-        // Establecer fecha mínima como hoy
         datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
         datePickerDialog.show();
     }
-    
+
     /**
-     * Muestra el TimePickerDialog para seleccionar una hora
+     * Muestra el TimePickerDialog para seleccionar una hora.
      */
     private void showTimePicker() {
-        TimePickerDialog timePickerDialog = new TimePickerDialog(
-            this,
-            (view, hourOfDay, minute) -> {
-                selectedTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                selectedTime.set(Calendar.MINUTE, minute);
-                
-                // Actualizar el texto del chip con la hora seleccionada
-                chipTime.setText(timeFormat.format(selectedTime.getTime()));
-            },
-            selectedTime.get(Calendar.HOUR_OF_DAY),
-            selectedTime.get(Calendar.MINUTE),
-            true // Formato de 24 horas
+        new TimePickerDialog(
+                this,
+                (view, hourOfDay, minute) -> {
+                    selectedDateTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                    selectedDateTime.set(Calendar.MINUTE, minute);
+                    updateTimeChip();
+                },
+                selectedDateTime.get(Calendar.HOUR_OF_DAY),
+                selectedDateTime.get(Calendar.MINUTE),
+                true // 24-hour format
+        ).show();
+    }
+
+    private void updateDateChip() {
+        chipDate.setText(dateFormat.format(selectedDateTime.getTime()));
+    }
+
+    private void updateTimeChip() {
+        chipTime.setText(timeFormat.format(selectedDateTime.getTime()));
+    }
+
+    // =====================================================================================
+    // --- LÓGICA PARA GUARDAR LA TAREA ---
+    // =====================================================================================
+
+    /**
+     * Valida los campos y guarda la información de la tarea.
+     */
+    private void saveTask() {
+        String title = inputTitle.getText().toString().trim();
+        if (!isTitleValid(title)) return;
+
+        String description = inputDescription.getText().toString().trim();
+        // Puedes añadir validación para la descripción si es necesario.
+
+        String priority = getSelectedPriority();
+        List<String> selectedMembers = getSelectedMembers();
+        String selectedDateStr = dateFormat.format(selectedDateTime.getTime());
+        String selectedTimeStr = timeFormat.format(selectedDateTime.getTime());
+
+        // TODO: Crear un objeto Task con estos datos y guardarlo en la base de datos o ViewModel.
+        String taskInfo = String.format(
+                "Tarea: %s\nFecha: %s\nHora: %s\nPrioridad: %s\nMiembros: %s",
+                title, selectedDateStr, selectedTimeStr, priority, selectedMembers
         );
-        
-        timePickerDialog.show();
+
+        Toast.makeText(this, taskInfo, Toast.LENGTH_LONG).show();
+        finish(); // Cierra la actividad después de guardar.
+    }
+
+    private boolean isTitleValid(String title) {
+        if (title.isEmpty()) {
+            inputTitle.setError("El título es requerido");
+            return false;
+        }
+        return true;
+    }
+
+    private String getSelectedPriority() {
+        int selectedId = togglePriority.getCheckedButtonId();
+        if (selectedId == R.id.btn_priority_medium) {
+            return "Medio";
+        } else if (selectedId == R.id.btn_priority_high) {
+            return "Alto";
+        }
+        return "Bajo"; // Valor por defecto
+    }
+
+    private List<String> getSelectedMembers() {
+        // Usando Java 8 Streams para un código más moderno y conciso
+        return chipGroupMembers.getCheckedChipIds().stream()
+                .map(id -> ((Chip) chipGroupMembers.findViewById(id)).getText().toString())
+                .collect(Collectors.toList());
     }
 }

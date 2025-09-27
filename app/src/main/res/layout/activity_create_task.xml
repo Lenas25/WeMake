@@ -1,61 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:clipToPadding="true"
-    android:paddingTop="30dp"
     android:background="?attr/colorSurface"
+    android:id="@+id/main_container"
     tools:context=".CreateTaskActivity">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <!-- AppBarLayout contiene la Toolbar -->
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="24dp">
+        android:layout_height="wrap_content">
 
-        <!-- Header con botón back, título y botón guardar -->
-        <LinearLayout
-            android:id="@+id/header_container"
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/top_app_bar"
+            style="@style/Widget.Material3.Toolbar.Surface"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:navigationIcon="@drawable/ic_arrow_back"
+            app:titleCentered="true"
+            app:menu="@menu/create_task_menu"
+            app:title="@string/new_task" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!--
+        NestedScrollView para el contenido desplazable.
+        El 'layout_behavior' es la magia que lo posiciona debajo de la AppBar.
+    -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="true"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:fillViewport="true">
+
+        <!--
+            Tu ConstraintLayout con todos los campos se queda igual,
+            pero hemos eliminado el header manual.
+        -->
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingBottom="24dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_back"
-                style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                app:icon="@drawable/ic_arrow_back"
-                app:iconSize="24dp" />
-
-            <!-- Título -->
-            <TextView
-                android:id="@+id/title_new_task"
-                style="@style/TextAppearance.Material3.HeadlineSmall"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="@string/new_task"
-                android:textStyle="bold"
-                android:textColor="?attr/colorOnSurface"/>
-
-            <!-- Botón Guardar -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_save_task"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/btn_save"
-                android:textStyle="bold"/>
-        </LinearLayout>
+            android:paddingHorizontal="24dp">
 
         <!-- Campo: Título -->
         <com.google.android.material.textfield.TextInputLayout
@@ -69,7 +57,7 @@
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusBottomEnd="12dp"
-            app:layout_constraintTop_toBottomOf="@id/header_container"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
@@ -273,3 +261,4 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
