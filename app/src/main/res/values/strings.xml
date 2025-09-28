@@ -122,6 +122,14 @@
     <string name="option_sign_out">Cierra Sesión</string>
     <string name="logout_dialog_message">¿Estás seguro de que quieres cerrar tu sesión?</string>
 
+    <!-- Editar Perfil -->
+    <string name="title_edit_profile">Editar Perfil</string>
+    <string name="hint_first_name">Nombre</string>
+    <string name="hint_last_name">Apellido</string>
+    <string name="hint_public_name">Nombre Público</string>
+    <string name="hint_birth_date">Fecha de Nacimiento</string>
+    <string name="hint_email">Correo</string>
+    <string name="hint_phone">Teléfono</string>
 
     <string name="dialog_cancel">Cancelar</string>
     <string name="dialog_accept">Aceptar</string>
