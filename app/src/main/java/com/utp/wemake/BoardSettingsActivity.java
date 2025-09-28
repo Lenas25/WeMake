@@ -1,5 +1,6 @@
 package com.utp.wemake;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -32,7 +33,7 @@ public class BoardSettingsActivity extends AppCompatActivity {
      */
     private void setupToolbar() {
         MaterialToolbar toolbar = findViewById(R.id.top_app_bar);
-        toolbar.setTitle(R.string.board_settings);
+        toolbar.setTitle(R.string.settings);
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
         // Maneja los insets para el modo EdgeToEdge
@@ -88,8 +89,9 @@ public class BoardSettingsActivity extends AppCompatActivity {
      */
     private void setupListeners() {
         findViewById(R.id.option_edit_board).setOnClickListener(v -> {
-            // Lógica para ir a la pantalla de editar tablero
-            Toast.makeText(this, "Abriendo Editar Tablero...", Toast.LENGTH_SHORT).show();
+            // Navegar a la pantalla de editar tablero
+            Intent intent = new Intent(this, EditBoardActivity.class);
+            startActivity(intent);
         });
 
         findViewById(R.id.option_manage_users).setOnClickListener(v -> {

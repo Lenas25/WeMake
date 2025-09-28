@@ -96,7 +96,6 @@
     <string name="subtasks">Lista</string>
 
     <!-- Board Configuration -->
-    <string name="board_settings">Configuración</string>
     <string name="board_name_sample">Crypto Dashboard</string>
     <string name="detail_board">Veremos más sobre criptomonedas</string>
     <string name="members">Integrantes</string>
@@ -122,7 +121,7 @@
     <string name="option_sign_out">Cierra Sesión</string>
     <string name="logout_dialog_message">¿Estás seguro de que quieres cerrar tu sesión?</string>
 
-    <!-- Editar Perfil -->
+    <!-- Edit Profile -->
     <string name="title_edit_profile">Editar Perfil</string>
     <string name="hint_first_name">Nombre</string>
     <string name="hint_last_name">Apellido</string>
@@ -133,5 +132,12 @@
 
     <string name="dialog_cancel">Cancelar</string>
     <string name="dialog_accept">Aceptar</string>
+
+    <!-- Edit Board -->
+    <string name="title_edit_board">Editar Tablero</string>
+    <string name="hint_board_name">Nombre Tablero</string>
+    <string name="hint_board_desc">Descripción</string>
+    <string name="background_color">Color de Fondo</string>
+    <string name="btn_delete_board">Eliminar Tablero</string>
 
 </resources>
