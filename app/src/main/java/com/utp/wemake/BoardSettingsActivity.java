@@ -95,7 +95,9 @@ public class BoardSettingsActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.option_manage_users).setOnClickListener(v -> {
-            Toast.makeText(this, "Abriendo Gestionar Usuarios...", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, AddMembersActivity.class);
+            intent.putExtra("boardId", "current_board_id"); // Pasar el ID del tablero actual
+            startActivity(intent);
         });
     }
 
