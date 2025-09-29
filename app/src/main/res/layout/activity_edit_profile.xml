@@ -68,6 +68,7 @@
                         app:boxCornerRadiusBottomStart="12dp"
                         app:boxCornerRadiusBottomEnd="12dp">
                         <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_name"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="textPersonName|textCapWords" />
@@ -101,6 +102,7 @@
                         app:boxCornerRadiusBottomStart="12dp"
                         app:boxCornerRadiusBottomEnd="12dp">
                         <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_lastname"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="textPersonName|textCapWords" />
@@ -125,6 +127,7 @@
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusBottomEnd="12dp">
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_public_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textPersonName" />
@@ -142,15 +145,21 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                app:endIconMode="custom"
+                app:endIconDrawable="@drawable/ic_calendar"
                 app:boxCornerRadiusTopStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusBottomEnd="12dp">
+
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_birth_date"
+                    android:hint="DD/MM/AAAA"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:focusable="false"
-                    android:hint="DD/MM/AAAA"
+                    android:cursorVisible="false"
+                    android:inputType="none"
                     android:clickable="true" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -173,6 +182,7 @@
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusBottomEnd="12dp">
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_email"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textEmailAddress" />
@@ -195,6 +205,7 @@
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusBottomEnd="12dp">
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_phone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="phone" />

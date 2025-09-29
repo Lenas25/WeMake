@@ -96,7 +96,6 @@
     <string name="subtasks">Lista</string>
 
     <!-- Board Configuration -->
-    <string name="board_settings">Configuración</string>
     <string name="board_name_sample">Crypto Dashboard</string>
     <string name="detail_board">Veremos más sobre criptomonedas</string>
     <string name="members">Integrantes</string>
@@ -122,6 +121,14 @@
     <string name="option_sign_out">Cierra Sesión</string>
     <string name="logout_dialog_message">¿Estás seguro de que quieres cerrar tu sesión?</string>
 
+    <!-- Edit Profile -->
+    <string name="title_edit_profile">Editar Perfil</string>
+    <string name="hint_first_name">Nombre</string>
+    <string name="hint_last_name">Apellido</string>
+    <string name="hint_public_name">Nombre Público</string>
+    <string name="hint_birth_date">Fecha de Nacimiento</string>
+    <string name="hint_email">Correo</string>
+    <string name="hint_phone">Teléfono</string>
 
     <!-- Edit Profile -->
     <string name="edit_profile_title">Editar Perfil</string>
@@ -136,4 +143,35 @@
     <string name="dialog_cancel">Cancelar</string>
     <string name="dialog_accept">Aceptar</string>
 
+    <!-- Edit Board -->
+    <string name="title_edit_board">Editar Tablero</string>
+    <string name="hint_board_name">Nombre Tablero</string>
+    <string name="hint_board_desc">Descripción</string>
+    <string name="background_color">Color de Fondo</string>
+    <string name="btn_delete_board">Eliminar Tablero</string>
+
+    <!-- Add Members -->
+    <string name="title_add_members">Agregar Miembros</string>
+    <string name="hint_search_member">Nombre, correo</string>
+    <string name="lbl_members">Miembros</string>
+    <string name="role_admin">Admin</string>
+    <string name="role_user">Usuario</string>
+    <string name="action_add">Añadir</string>
+    <string name="no_members">No hay miembros agregados</string>
+    <string name="search_members">Busca y agrega miembros al tablero</string>
+    <string name="user_added">Agregado</string>
+
+    <!-- Change Role -->
+    <string name="title_change_role">Cambiar Rol</string>
+    <string name="lbl_admin">Administrador</string>
+    <string name="lbl_admin_description">Pueden eliminar integrantes, editar tareas, cambiar y eliminar el tablero.</string>
+    <string name="label_user">Usuario</string>
+    <string name="lbl_user_description">Miembros normales pueden ver y editar tareas.</string>
+    <string name="remove_member">Eliminar Miembro</string>
+
+    <!-- Voice Creation -->
+    <string name="title_voice_creation">Creación por voz</string>
+    <string name="lbl_listening">Escuchando...</string>
+    <string name="action_stop">Detener</string>
+    <string name="action_cancel">Cancelar</string>
 </resources>

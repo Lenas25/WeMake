@@ -20,7 +20,7 @@
             app:navigationIcon="@drawable/ic_arrow_back"
             app:titleTextColor="?attr/colorOnSurface"
             android:letterSpacing="0.01"
-            tools:title="@string/board_settings"
+            tools:title="@string/settings"
             style="@style/Widget.Material3.Toolbar.Surface"
             />
     </com.google.android.material.appbar.AppBarLayout>
