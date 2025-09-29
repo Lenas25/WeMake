@@ -20,7 +20,7 @@
             android:layout_height="?attr/actionBarSize"
             app:navigationIcon="@drawable/ic_arrow_back"
             app:titleCentered="true"
-            app:menu="@menu/create_task_menu"
+            app:menu="@menu/save_menu"
             app:title="@string/new_task" />
 
     </com.google.android.material.appbar.AppBarLayout>

@@ -87,5 +87,4 @@
     <style name="Widget.App.Switch.Tertiary" parent="Widget.Material3.CompoundButton.MaterialSwitch">
         <item name="materialThemeOverlay">@style/ThemeOverlay.App.Switch.Tertiary</item>
     </style>
-
 </resources>
