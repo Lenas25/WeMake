@@ -66,7 +66,7 @@
     <string name="btn_open">Abrir Tarea</string>
 
 
-    <!-- Crear Nueva Tarea -->
+    <!-- Create Task -->
     <string name="new_task_title">¡Nueva Responsabilidad!</string>
     <string name="new_task_subtitle">Elige el modo que deseas crear una tarea, ambos son muy interesantes</string>
     <string name="new_task_voice">Voz</string>
@@ -84,6 +84,10 @@
     <string name="low_priority">Bajo</string>
     <string name="medium_priority">Medio</string>
     <string name="high_priority">Alto</string>
+    <string name="subtasks">Subtareas</string>
+    <string name="hint_subtask_new">Nueva Subtarea</string>
+    <string name="hint_subtask_delete">Eliminar subtarea</string>
+    <string name="btn_add_subtask">Agregar Subtarea</string>
 
     <!-- Task Detail -->
     <string name="task_detail">Detalle de tarea</string>
@@ -93,7 +97,6 @@
     <string name="due_date">Límite de fecha</string>
     <string name="reward">Recibes</string>
     <string name="penalty">Penalidad</string>
-    <string name="subtasks">Lista</string>
 
     <!-- Board Configuration -->
     <string name="board_name_sample">Crypto Dashboard</string>
@@ -132,16 +135,11 @@
 
     <!-- Edit Profile -->
     <string name="edit_profile_title">Editar Perfil</string>
-    <string name="form_label_name">Nombre</string>
-    <string name="form_label_lastname">Apellido</string>
+    <string name="form_label_fullname">Nombre Completo</string>
     <string name="form_label_public_name">Nombre Público</string>
     <string name="form_label_birthdate">Fecha de Nacimiento</string>
     <string name="form_label_email">Correo</string>
     <string name="form_label_phone">Teléfono</string>
-
-
-    <string name="dialog_cancel">Cancelar</string>
-    <string name="dialog_accept">Aceptar</string>
 
     <!-- Edit Board -->
     <string name="title_edit_board">Editar Tablero</string>
@@ -157,6 +155,7 @@
     <string name="role_admin">Admin</string>
     <string name="role_user">Usuario</string>
     <string name="action_add">Añadir</string>
+    <string name="btn_add_members">Guardar Miembros</string>
     <string name="no_members">No hay miembros agregados</string>
     <string name="search_members">Busca y agrega miembros al tablero</string>
     <string name="user_added">Agregado</string>
@@ -174,4 +173,9 @@
     <string name="lbl_listening">Escuchando...</string>
     <string name="action_stop">Detener</string>
     <string name="action_cancel">Cancelar</string>
+
+
+
+    <string name="dialog_cancel">Cancelar</string>
+    <string name="dialog_accept">Aceptar</string>
 </resources>

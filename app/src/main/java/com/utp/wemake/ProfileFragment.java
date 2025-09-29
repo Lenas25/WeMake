@@ -5,22 +5,52 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.switchmaterial.SwitchMaterial;
+import com.utp.wemake.utils.NotificationPrefs;
+import com.utp.wemake.viewmodels.ProfileViewModel;
 
 public class ProfileFragment extends Fragment {
 
+    private NotificationPrefs notificationPrefs;
+    private ProfileViewModel viewModel;
+    private ShapeableImageView profileAvatar;
+    private ProgressBar progressBar;
+    private TextView profileName, profileEmail;
+
+    private final ActivityResultLauncher<String> selectImageLauncher =
+            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+                if (uri != null) {
+                    viewModel.updateUserProfilePicture(uri);
+                }
+            });
+
+
     public ProfileFragment() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // Inicializamos el helper aquí.
+        notificationPrefs = new NotificationPrefs(requireContext());
     }
 
     @Override
@@ -32,11 +62,50 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        viewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
+        profileAvatar = view.findViewById(R.id.profile_avatar);
+        profileName = view.findViewById(R.id.profile_name);
+        profileEmail = view.findViewById(R.id.profile_email);
+        progressBar = view.findViewById(R.id.progress_bar);
+
         // El método onViewCreated ahora es un resumen claro de lo que se configura.
+
+        setupObservers();
         setupToolbar(view);
         setupOptions(view);
         setupListeners(view);
     }
+
+    private void setupObservers() {
+        // Observa los datos del usuario
+        viewModel.getUserData().observe(getViewLifecycleOwner(), user -> {
+            if (user != null) {
+                profileName.setText(user.getName());
+                profileEmail.setText(user.getEmail());
+
+                // Carga la imagen de perfil con una librería como Glide o Coil
+                Glide.with(this)
+                        .load(user.getPhotoUrl())
+                        .placeholder(R.drawable.ic_default_avatar)
+                        .circleCrop()
+                        .into(profileAvatar);
+            }
+        });
+
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            if (isLoading != null) {
+                progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+            }
+        });
+
+        // Observa los mensajes de error
+        viewModel.getErrorMessage().observe(getViewLifecycleOwner(), error -> {
+            if (error != null) {
+                Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
 
     /**
      * Configura la barra de navegación superior (Toolbar).
@@ -93,6 +162,13 @@ public class ProfileFragment extends Fragment {
         View notificationsView = view.findViewById(R.id.option_notifications);
         View signoutView = view.findViewById(R.id.option_sign_out);
 
+        // Listener para el botón de editar avatar
+        ImageButton editAvatarButton = view.findViewById(R.id.button_edit_avatar);
+        editAvatarButton.setOnClickListener(v -> {
+            // Lanza el selector de imágenes
+            selectImageLauncher.launch("image/*");
+        });
+
         // Listener para "Editar Perfil"
         editProfileView.setOnClickListener(v -> {
             Intent intent = new Intent(getContext(), EditProfileActivity.class);
@@ -101,9 +177,15 @@ public class ProfileFragment extends Fragment {
 
         // Listener para el Switch de "Notificaciones"
         MaterialSwitch notificationSwitch = notificationsView.findViewById(R.id.list_item_switch);
-        notificationSwitch.setChecked(false); // Valor inicial de ejemplo
+        boolean isEnabled = notificationPrefs.areNotificationsEnabled();
+        notificationSwitch.setChecked(isEnabled);
+
+        // GUARDAR el nuevo valor cada vez que el usuario cambie el Switch.
         notificationSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            Toast.makeText(getContext(), "Notificaciones " + (isChecked ? "Activadas" : "Desactivadas"), Toast.LENGTH_SHORT).show();
+                    notificationPrefs.setNotificationsEnabled(isChecked); // Guardamos la nueva preferencia
+
+                    // Mostramos un mensaje de confirmación al usuario.
+                    Toast.makeText(getContext(), "Notificaciones " + (isChecked ? "Activadas" : "Desactivadas"), Toast.LENGTH_SHORT).show();
         });
 
         // Listener para "Cerrar Sesión"

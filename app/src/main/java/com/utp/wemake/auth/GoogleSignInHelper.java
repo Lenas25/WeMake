@@ -143,13 +143,20 @@ public class GoogleSignInHelper {
     }
 
     private void createNewUser(FirebaseUser user) {
+        String publicName = "";
+        if (user.getDisplayName() != null && !user.getDisplayName().trim().isEmpty()) {
+            // Divide el nombre por los espacios y toma la primera palabra
+            publicName = user.getDisplayName().trim().split("\\s+")[0];
+        }
         // Crear documento de usuario en Firestore
         User newUser = new User(
                 user.getUid(),
                 user.getDisplayName() != null ? user.getDisplayName() : "Usuario",
+                publicName,
                 user.getEmail(),
-                user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : ""
-        );
+                user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "",
+                user.getPhoneNumber() != null ? user.getPhoneNumber().toString() : "" ,
+                null);
 
         firestore.collection("users").document(user.getUid())
                 .set(newUser)

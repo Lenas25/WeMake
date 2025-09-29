@@ -103,25 +103,31 @@ public class FirebaseAuthHelper {
     }
 
     // Método para crear documento de usuario en Firestore
-    private void createUserDocument(FirebaseUser firebaseUser, String name, boolean isRegistration) {
+    private void createUserDocument(FirebaseUser firebaseUser, String fullName, boolean isRegistration) {
+        String publicName = "";
+        if (fullName != null && !fullName.trim().isEmpty()) {
+            // Divide el nombre por los espacios y toma la primera palabra
+            publicName = fullName.trim().split("\\s+")[0];
+        }
+
         User user = new User(
                 firebaseUser.getUid(),
-                name,
+                fullName,
+                publicName,
                 firebaseUser.getEmail(),
-                firebaseUser.getPhotoUrl() != null ? firebaseUser.getPhotoUrl().toString() : ""
-        );
+                firebaseUser.getPhotoUrl() != null ? firebaseUser.getPhotoUrl().toString() : null,
+                null,
+                null );
 
         firestore.collection("users").document(firebaseUser.getUid())
                 .set(user)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            callback.onSuccess(user.getName(), user.getEmail(), isRegistration);
-                        } else {
-                            Log.w(TAG, "Error creating user document", task.getException());
-                            callback.onError("Error al crear el perfil de usuario");
-                        }
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        // Llama al callback de éxito solo después de que el documento se haya creado
+                        callback.onSuccess(user.getName(), user.getEmail(), isRegistration);
+                    } else {
+                        Log.w(TAG, "Error creating user document", task.getException());
+                        callback.onError("Error al crear el perfil de usuario");
                     }
                 });
     }

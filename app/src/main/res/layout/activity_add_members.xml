@@ -55,7 +55,6 @@
                     app:boxCornerRadiusTopEnd="12dp"
                     app:boxCornerRadiusBottomStart="12dp"
                     app:boxCornerRadiusBottomEnd="12dp"
-                    app:boxStrokeColor="?attr/colorOutline"
                     app:boxStrokeWidth="1dp"
                     app:boxStrokeWidthFocused="2dp"
                     app:startIconDrawable="@drawable/ic_search"
@@ -103,12 +102,6 @@
                         android:textColor="?attr/colorOnPrimaryContainer"
                         app:chipBackgroundColor="?attr/colorPrimaryContainer"/>
                 </LinearLayout>
-
-                <com.google.android.material.divider.MaterialDivider
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:dividerInsetStart="0dp"
-                    app:dividerInsetEnd="0dp"/>
 
                 <!-- RecyclerView para miembros -->
                 <androidx.recyclerview.widget.RecyclerView
@@ -160,7 +153,7 @@
                 android:id="@+id/btnSaveMembers"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:text="Guardar Miembros"
+                android:text="@string/btn_add_members"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:letterSpacing="0.01"

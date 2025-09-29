@@ -66,4 +66,21 @@
 
     </ScrollView>
 
+    <!--
+        BARRA DE PROGRESO
+        - La centramos en la pantalla con las restricciones.
+        - Le damos un ID "progressBar".
+        - La hacemos invisible por defecto (android:visibility="gone").
+    -->
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:visibility="visible"
+        android:layout_gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
 </FrameLayout>

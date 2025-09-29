@@ -1,5 +1,6 @@
 package com.utp.wemake;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -7,17 +8,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.imageview.ShapeableImageView;
 import com.utp.wemake.models.KanbanColumn;
 import com.utp.wemake.models.Task;
+import com.utp.wemake.viewmodels.ProfileViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +34,9 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
     private RecyclerView kanbanBoardRecycler;
     private ColumnAdapter columnAdapter;
     private List<KanbanColumn> columns = new ArrayList<>();
+    private ProfileViewModel viewModel;
+    private ShapeableImageView profileAvatar;
+    private TextView profileName;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -37,9 +47,14 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
+    @SuppressLint("WrongViewCast")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        viewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
+        profileAvatar = view.findViewById(R.id.avatar);
+        profileName = view.findViewById(R.id.name);
 
         // El onViewCreated ahora es un resumen claro de lo que se configura.
         setupViews(view);
@@ -50,7 +65,7 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
      * Configura las vistas principales y carga los datos.
      */
     private void setupViews(View view) {
-        setupUserName(view);
+        setupObservers();
         setupSummaryCards(view);
         setupKanbanBoard(view);
     }
@@ -66,22 +81,39 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
         });
     }
 
-    /**
-     * Configura el nombre del usuario en la interfaz.
-     */
-    private void setupUserName(View view) {
-        TextView nameTextView = view.findViewById(R.id.name);
+    private void setupObservers() {
+        // Observa los datos del usuario
+        viewModel.getUserData().observe(getViewLifecycleOwner(), user -> {
+            if (user != null) {
+                String firstName = user.getName().split(" ")[0];
+                profileName.setText(firstName);
+
+                // Carga la imagen de perfil con una librería como Glide o Coil
+                Glide.with(this)
+                        .load(user.getPhotoUrl())
+                        .placeholder(R.drawable.ic_default_avatar)
+                        .circleCrop()
+                        .into(profileAvatar);
+            }
+        });
+        // Observa los mensajes de error
+        viewModel.getErrorMessage().observe(getViewLifecycleOwner(), error -> {
+            if (error != null) {
+                Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+            }
+        });
+
         if (getActivity() instanceof MainActivity) {
             MainActivity mainActivity = (MainActivity) getActivity();
             String userName = mainActivity.getUserName();
             if (userName != null && !userName.isEmpty()) {
                 String firstName = userName.split(" ")[0];
-                nameTextView.setText(firstName);
+                profileName.setText(firstName);
             } else {
-                nameTextView.setText("Usuario");
+                profileName.setText("Usuario");
             }
         } else {
-            nameTextView.setText("Usuario");
+            profileName.setText("Usuario");
         }
     }
 

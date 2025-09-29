@@ -2,26 +2,15 @@ package com.utp.wemake;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
-
-import com.google.android.material.appbar.MaterialToolbar;
-import com.google.android.material.snackbar.Snackbar;
-
-import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
-import com.utp.wemake.databinding.ActivityEditProfileBinding;
+import com.utp.wemake.models.User;
+import com.utp.wemake.viewmodels.EditProfileViewModel;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -29,116 +18,128 @@ import java.util.Locale;
 
 public class EditProfileActivity extends AppCompatActivity {
 
-    private AppBarConfiguration appBarConfiguration;
-    private ActivityEditProfileBinding binding;
-    private TextInputEditText etFirstName, etLastName, etPublicName, etBirthDate, etEmail, etPhone;
-    private TextInputLayout tilBirthDate;
+    private TextInputEditText etFullName, etPublicName, etBirthDate, etEmail, etPhone;
     private Calendar selectedDate;
-    private SimpleDateFormat dateFormat;
-    private MaterialToolbar toolbar;
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+
+    // ViewModel para manejar la lógica de datos
+    private EditProfileViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_edit_profile);
 
-        // Configurar toolbar personalizado
-        setupToolbar();
+        // Inicializa el ViewModel
+        viewModel = new ViewModelProvider(this).get(EditProfileViewModel.class);
 
-        // Inicializar vistas
         initializeViews();
-
-        // Configurar formato de fecha
-        dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        selectedDate = Calendar.getInstance();
-
-        // Configurar listeners
+        setupToolbar();
         setupListeners();
-
-        // Cargar datos del usuario si existen
-        loadUserData();
+        setupObservers();
     }
 
+    // --- MÉTODOS DE CONFIGURACIÓN ---
     private void setupToolbar() {
-        toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        // Configurar el botón de navegación
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(R.string.title_edit_profile);
-        }
-
-        // Listener para el botón de navegación
-        toolbar.setNavigationOnClickListener(v -> {
-            onBackPressed();
+        MaterialToolbar toolbar = findViewById(R.id.top_app_bar);
+        // El menú se infla automáticamente por app:menu en el XML
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
+        toolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_save) {
+                saveChanges();
+                return true;
+            }
+            return false;
         });
     }
 
     private void initializeViews() {
-        etFirstName = findViewById(R.id.et_first_name);
-        etLastName = findViewById(R.id.et_last_name);
+        etFullName = findViewById(R.id.et_fullname);
         etPublicName = findViewById(R.id.et_public_name);
         etBirthDate = findViewById(R.id.et_birth_date);
         etEmail = findViewById(R.id.et_email);
         etPhone = findViewById(R.id.et_phone);
-        tilBirthDate = findViewById(R.id.til_birth_date);
     }
 
     private void setupListeners() {
-        // Listener para el campo de fecha
         etBirthDate.setOnClickListener(v -> showDatePicker());
-        // Listener para el ícono de calendario
-        tilBirthDate.setEndIconOnClickListener(v -> showDatePicker());
     }
 
-    private void showDatePicker() {
-        final Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
+    /**
+     * Observa los cambios en el ViewModel (datos del usuario, resultado del guardado).
+     */
+    private void setupObservers() {
+        // Observador para cargar los datos iniciales del usuario
+        viewModel.getUserData().observe(this, user -> {
+            if (user != null) {
+                etFullName.setText(user.getName());
+                etPublicName.setText(user.getPublicName());
+                etEmail.setText(user.getEmail());
+                etPhone.setText(user.getPhone());
 
-        DatePickerDialog datePickerDialog = new DatePickerDialog(
-                this,
-                (view, year1, month1, dayOfMonth) -> {
-                    selectedDate.set(year1, month1, dayOfMonth);
-                    String formattedDate = dateFormat.format(selectedDate.getTime());
-                    etBirthDate.setText(formattedDate);
-                },
-                year, month, day
-        );
+                if (user.getBirthDate() != null && !user.getBirthDate().isEmpty()) {
+                    etBirthDate.setText(user.getBirthDate());
+                }
+            }
+        });
 
-        // Establecer fecha máxima (hoy)
-        datePickerDialog.getDatePicker().setMaxDate(System.currentTimeMillis());
-
-        // Establecer fecha mínima (100 años atrás)
-        Calendar minDate = Calendar.getInstance();
-        minDate.add(Calendar.YEAR, -100);
-        datePickerDialog.getDatePicker().setMinDate(minDate.getTimeInMillis());
-
-        datePickerDialog.show();
+        // Observador para el resultado de la operación de guardado
+        viewModel.getSaveSuccess().observe(this, success -> {
+            if (success) {
+                Toast.makeText(this, "Perfil actualizado", Toast.LENGTH_SHORT).show();
+                finish(); // Cierra la pantalla y vuelve al ProfileFragment
+            } else {
+                Toast.makeText(this, "Error al actualizar", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    private void loadUserData() {
-        // Aquí se cargarán los datos del usuario desde SharedPreferences, Base de datos.
-        // etFirstName.setText(user.getFirstName());
-        // etLastName.setText(user.getLastName());
-    }
+    // --- LÓGICA DE LA PANTALLA ---
 
-    private boolean validateFields() {
-        boolean isValid = true;
-
-        // Validar nombre
-        if (etFirstName.getText().toString().trim().isEmpty()) {
-            etFirstName.setError("El nombre es requerido");
-            isValid = false;
+    /**
+     * Recoge los datos, los valida y llama al ViewModel para guardarlos.
+     */
+    private void saveChanges() {
+        if (!validateFields()) {
+            Toast.makeText(this, "Por favor, corrige los errores", Toast.LENGTH_SHORT).show();
+            return;
         }
 
-        // Validar apellido
-        if (etLastName.getText().toString().trim().isEmpty()) {
-            etLastName.setError("El apellido es requerido");
+        // 1. Obtiene la copia actual del usuario desde el ViewModel.
+        //    Esto es importante para no perder datos que no están en el formulario (como photoUrl, coins, etc.)
+        User currentUser = viewModel.getUserData().getValue();
+        if (currentUser == null) {
+            // Manejar el caso improbable de que los datos aún no se hayan cargado.
+            Toast.makeText(this, "Datos del usuario no disponibles. Inténtalo de nuevo.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // 2. Actualiza solo los campos que se modificaron en el formulario.
+        currentUser.setName(etFullName.getText().toString().trim());
+        currentUser.setPublicName(etPublicName.getText().toString().trim());
+        currentUser.setEmail(etEmail.getText().toString().trim());
+        currentUser.setPhone(etPhone.getText().toString().trim());
+        currentUser.setBirthDate(etBirthDate.getText().toString().trim());
+
+        // 3. Llama al ViewModel para que guarde el objeto User completamente actualizado.
+        viewModel.saveProfile(currentUser);
+    }
+    private boolean validateFields() {
+        boolean isValid = true;
+        // Validar nombre completo
+        if (etFullName.getText().toString().trim().isEmpty()) {
+            etFullName.setError("El nombre es requerido");
             isValid = false;
+        } else {
+            etFullName.setError(null); // Limpiar error
+        }
+
+        // Validar nombre público
+        if (etPublicName.getText().toString().trim().isEmpty()) {
+            etPublicName.setError("El nombre público es requerido");
+            isValid = false;
+        } else {
+            etPublicName.setError(null); // Limpiar error
         }
 
         // Validar email
@@ -149,55 +150,37 @@ public class EditProfileActivity extends AppCompatActivity {
         } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             etEmail.setError("Email inválido");
             isValid = false;
+        } else {
+            etEmail.setError(null); // Limpiar error
+        }
+
+        String phone = etPhone.getText().toString().trim();
+        if (phone.isEmpty()) {
+            etPhone.setError("El teléfono es requerido");
+            isValid = false;
+        } else if (!android.util.Patterns.PHONE.matcher(phone).matches()) {
+            etPhone.setError("Número de teléfono inválido");
+            isValid = false;
+        } else {
+            etPhone.setError(null); // Limpiar error
         }
 
         return isValid;
     }
 
-    private void saveProfile() {
-        if (validateFields()) {
-            // Aquí se implementará la lógica para guardar los datos
+    private void showDatePicker() {
+        Calendar calendar = (selectedDate != null) ? selectedDate : Calendar.getInstance();
 
-            String firstName = etFirstName.getText().toString().trim();
-            String lastName = etLastName.getText().toString().trim();
-            String publicName = etPublicName.getText().toString().trim();
-            String birthDate = etBirthDate.getText().toString().trim();
-            String email = etEmail.getText().toString().trim();
-            String phone = etPhone.getText().toString().trim();
-
-            // Simular guardado
-            Toast.makeText(this, "Perfil guardado exitosamente", Toast.LENGTH_SHORT).show();
-
-            // Cerrar la actividad
-            finish();
-        } else {
-            Snackbar.make(findViewById(android.R.id.content),
-                    "Por favor, completa todos los campos requeridos",
-                    Snackbar.LENGTH_LONG).show();
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.edit_profile_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_save_profile) {
-            saveProfile();
-            return true;
-        } else if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onBackPressed() {
-        // Opcional para mostrar diálogo de confirmación si hay cambios sin guardar
-        super.onBackPressed();
+        new DatePickerDialog(
+                this,
+                (view, year, month, dayOfMonth) -> {
+                    selectedDate = Calendar.getInstance();
+                    selectedDate.set(year, month, dayOfMonth);
+                    etBirthDate.setText(dateFormat.format(selectedDate.getTime()));
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+        ).show();
     }
 }

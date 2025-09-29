@@ -11,8 +11,7 @@
 
     <com.google.android.material.bottomsheet.BottomSheetDragHandleView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"/>
+        android:layout_height="wrap_content"/>
 
     <!-- Título -->
     <TextView
@@ -22,7 +21,7 @@
         android:text="@string/title_change_role"
         android:textColor="?attr/colorOnSurface"
         android:textStyle="bold"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="20dp"/>
 
     <!-- Info del miembro -->
     <com.google.android.material.card.MaterialCardView
@@ -43,11 +42,12 @@
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/imgMemberAvatar"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
                 android:src="@drawable/ic_user_avatar"
                 app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
                 app:strokeWidth="2dp"
+                android:padding="2dp"
                 app:strokeColor="?attr/colorOutlineVariant"/>
 
             <LinearLayout
@@ -209,29 +209,30 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_marginTop="20dp"
-        android:gravity="end">
+        android:gravity="center_vertical">
 
         <!-- Botón Eliminar Miembro -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnDeleteMember"
             style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:text="@string/remove_member"
-            android:textAlignment="textStart"
             android:textColor="?attr/colorError"
             android:textSize="12sp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
         <!-- Botón Guardar -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSaveRole"
             style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:text="@string/btn_save"
-            android:textAlignment="textEnd"
             android:textSize="12sp"/>
     </LinearLayout>
 </LinearLayout>

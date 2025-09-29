@@ -251,6 +251,40 @@
                     android:text="@string/high_priority" />
             </com.google.android.material.button.MaterialButtonToggleGroup>
 
+            <TextView
+                android:id="@+id/checklist_label"
+                style="@style/TextAppearance.Material3.TitleMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="@string/subtasks"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface"
+                app:layout_constraintTop_toBottomOf="@id/toggle_priority"
+                app:layout_constraintStart_toStartOf="parent"/>
+
+            <!-- Contenedor dinámico para las filas de la checklist -->
+            <LinearLayout
+                android:id="@+id/checklist_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="8dp"
+                app:layout_constraintTop_toBottomOf="@id/checklist_label"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <!-- Botón para añadir nuevas subtareas -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_add_checklist_item"
+                style="@style/Widget.Material3.Button.TextButton.Icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_add_subtask"
+                app:icon="@drawable/ic_add"
+                app:layout_constraintTop_toBottomOf="@id/checklist_container"
+                app:layout_constraintStart_toStartOf="parent"/>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

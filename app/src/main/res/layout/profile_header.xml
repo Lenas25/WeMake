@@ -22,11 +22,11 @@
             android:id="@+id/profile_avatar"
             android:layout_width="120dp"
             android:layout_height="120dp"
-            android:padding="4dp"
             app:shapeAppearanceOverlay="@style/ShapeAppearance.App.CircleImageView"
-            android:src="@drawable/ic_user_avatar"
+            tools:src="@drawable/ic_user_avatar"
             app:strokeColor="@color/md_theme_onSurface"
             android:scaleType="centerCrop"
+            app:contentPadding="5dp"
             app:strokeWidth="1dp" />
 
         <!--
@@ -54,7 +54,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:textStyle="bold"
-        android:text="Jorge Flores" />
+        tools:text="Jorge Flores" />
 
     <!-- TextView para el email del usuario -->
     <TextView
@@ -64,7 +64,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:textColor="?attr/colorOnSurfaceVariant"
-        android:text="jflores@gmail.com" />
+        tools:text="jflores@gmail.com" />
 
     <!--
         Chip es el componente de Material perfecto para mostrar las "coins".
