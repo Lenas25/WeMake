@@ -7,38 +7,40 @@ import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.utp.wemake.repository.MemberRepository;
+import com.utp.wemake.repository.UserRepository; // CAMBIO: Importar el repositorio correcto
 
 public class UserSyncService extends Service {
     private static final String TAG = "UserSyncService";
-    private MemberRepository memberRepository;
+
+    // CAMBIO: Usar UserRepository
+    private UserRepository userRepository;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        memberRepository = new MemberRepository();
+        userRepository = new UserRepository();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         syncCurrentUser();
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
 
     private void syncCurrentUser() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
-            memberRepository.createOrUpdateUser(currentUser, new MemberRepository.MemberCallback() {
-                @Override
-                public void onSuccess(com.utp.wemake.models.Member member) {
-                    Log.d(TAG, "Usuario sincronizado: " + member.getName());
-                }
 
-                @Override
-                public void onError(Exception e) {
-                    Log.e(TAG, "Error sincronizando usuario: " + e.getMessage());
+            userRepository.createOrUpdateUser(currentUser).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Log.d(TAG, "Usuario sincronizado con éxito: " + currentUser.getEmail());
+                } else {
+                    Log.e(TAG, "Error sincronizando usuario: ", task.getException());
                 }
+                stopSelf();
             });
+        } else {
+            stopSelf();
         }
     }
 

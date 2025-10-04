@@ -37,14 +37,23 @@
     <string name="lbl_login">Inicia Sesión</string>
     <string name="agree_terms">Acepto los <b>Términos y Condiciones</b> y <b>Privacidad</b></string>
 
+    <!-- Setup User -->
+    <string name="setup_description">El primer paso es crear un espacio de trabajo o unirte a uno existente.</string>
+    <string name="btn_new_board">Crear un nuevo tablero</string>
+    <string name="btn_join_board">Unirse con un código de invitación</string>
+
+    <!-- Setup Create Board -->
+    <string name="setup_new_board">Dale un nombre a tu tablero</string>
+    <string name="hint_title_board">Ej. Proyecto Final, Tareas del Hogar...</string>
+    <string name="btn_create">Crear y continuar</string>
+
     <!-- AppBar -->
     <string name="item_home">Inicio</string>
     <string name="item_tasks">Tareas</string>
     <string name="item_stats">Datos</string>
     <string name="item_profile">Perfil</string>
     <string name="floating_add">Agregar</string>
-    <string name="settings">Configuraión</string>
-
+    <string name="settings">Configuración</string>
 
     <!-- Home -->
     <string name="title_home">Inicio</string>
@@ -64,7 +73,6 @@
     <string name="ex_task_duedate">Fecha</string>
     <string name="btn_change">Cambiar Estado</string>
     <string name="btn_open">Abrir Tarea</string>
-
 
     <!-- Create Task -->
     <string name="new_task_title">¡Nueva Responsabilidad!</string>
@@ -119,6 +127,10 @@
     <!-- Profile -->
     <string name="option_edit_profile">Editar Perfil</string>
     <string name="detail_edit_profile">Cambia tus datos personales</string>
+    <string name="option_new_board">Agregar Tablero</string>
+    <string name="detail_new_board">Crea un nuevo tablero colaborativo</string>
+    <string name="option_join_board">Unete a Tablero</string>
+    <string name="detail_join_board">Ingresa el código para unirte</string>
     <string name="option_notifications">Notificaciones</string>
     <string name="detail_notifications">Elige la preferencia</string>
     <string name="option_sign_out">Cierra Sesión</string>
@@ -133,7 +145,6 @@
     <string name="hint_email">Correo</string>
     <string name="hint_phone">Teléfono</string>
 
-    <!-- Edit Profile -->
     <string name="edit_profile_title">Editar Perfil</string>
     <string name="form_label_fullname">Nombre Completo</string>
     <string name="form_label_public_name">Nombre Público</string>
@@ -173,7 +184,6 @@
     <string name="lbl_listening">Escuchando...</string>
     <string name="action_stop">Detener</string>
     <string name="action_cancel">Cancelar</string>
-
 
 
     <string name="dialog_cancel">Cancelar</string>

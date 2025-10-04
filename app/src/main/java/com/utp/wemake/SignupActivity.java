@@ -154,13 +154,6 @@ public class SignupActivity extends AppCompatActivity implements FirebaseAuthHel
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
-    // Método para ir al login
-    private void navigateToLogin() {
-        Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
-        startActivity(intent);
-        finish();
-    }
-
     // Método para navegar hacia la actividad principal
     private void navigateToMain(String userName) {
         Intent intent = new Intent(SignupActivity.this, MainActivity.class);
@@ -174,10 +167,16 @@ public class SignupActivity extends AppCompatActivity implements FirebaseAuthHel
     public void onSignInSuccess(String userName, String userEmail, boolean isRegistration) {
         if (isRegistration) {
             showToast("¡Registro con Google exitoso!");
+
+            Intent intent = new Intent(SignupActivity.this, SetupActivity.class);
+            intent.putExtra(SetupActivity.EXTRA_USER_NAME, userName); // Pasa el nombre
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+
         } else {
             showToast("¡Inicio de sesión con Google exitoso!");
+            navigateToMain(userName);
         }
-        navigateToMain(userName);
     }
 
     @Override
@@ -190,7 +189,10 @@ public class SignupActivity extends AppCompatActivity implements FirebaseAuthHel
     public void onSuccess(String userName, String userEmail, boolean isRegistration) {
         if (isRegistration) {
             showToast("¡Registro de cuenta exitoso! Inicia sesión con tus credenciales");
-            navigateToLogin();
+            Intent intent = new Intent(SignupActivity.this, SetupActivity.class);
+            intent.putExtra(SetupActivity.EXTRA_USER_NAME, userName);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
         } else {
             showToast("¡Inicio de sesión exitoso!");
             navigateToMain(userName);

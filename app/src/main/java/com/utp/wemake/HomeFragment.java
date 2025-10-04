@@ -3,9 +3,12 @@ package com.utp.wemake;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -22,24 +25,35 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.imageview.ShapeableImageView;
+import com.utp.wemake.models.Board;
 import com.utp.wemake.models.KanbanColumn;
 import com.utp.wemake.models.Task;
+import com.utp.wemake.viewmodels.HomeViewModel;
+import com.utp.wemake.viewmodels.MainViewModel;
 import com.utp.wemake.viewmodels.ProfileViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteractionListener {
 
     private RecyclerView kanbanBoardRecycler;
     private ColumnAdapter columnAdapter;
     private List<KanbanColumn> columns = new ArrayList<>();
-    private ProfileViewModel viewModel;
     private ShapeableImageView profileAvatar;
     private TextView profileName;
+    private MainViewModel mainViewModel;
+    private AutoCompleteTextView dropdownText;
 
     public HomeFragment() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
     }
 
     @Override
@@ -47,27 +61,25 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
-    @SuppressLint("WrongViewCast")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        viewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
-        profileAvatar = view.findViewById(R.id.avatar);
-        profileName = view.findViewById(R.id.name);
-
-        // El onViewCreated ahora es un resumen claro de lo que se configura.
-        setupViews(view);
+        initializeViews(view);
         setupListeners(view);
+        setupObservers();
     }
 
     /**
-     * Configura las vistas principales y carga los datos.
+     * Vincula las variables de la clase con las vistas del layout.
      */
-    private void setupViews(View view) {
-        setupObservers();
-        setupSummaryCards(view);
+    private void initializeViews(View view) {
+        profileAvatar = view.findViewById(R.id.avatar);
+        profileName = view.findViewById(R.id.name);
+        dropdownText = view.findViewById(R.id.dropdown_text);
+
         setupKanbanBoard(view);
+        setupSummaryCards(view);
     }
 
     /**
@@ -76,19 +88,26 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
     private void setupListeners(View view) {
         ImageButton settingsButton = view.findViewById(R.id.settings_button);
         settingsButton.setOnClickListener(v -> {
-            Intent intent = new Intent(requireContext(), BoardSettingsActivity.class);
-            startActivity(intent);
+            // Pasamos el ID del tablero seleccionado a la pantalla de configuración
+            Board currentBoard = mainViewModel.getSelectedBoard().getValue();
+            if (currentBoard != null) {
+                Intent intent = new Intent(requireContext(), BoardSettingsActivity.class);
+                intent.putExtra("boardId", currentBoard.getId());
+                startActivity(intent);
+            } else {
+                Toast.makeText(getContext(), "Por favor, selecciona un tablero primero.", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
-    private void setupObservers() {
-        // Observa los datos del usuario
-        viewModel.getUserData().observe(getViewLifecycleOwner(), user -> {
-            if (user != null) {
-                String firstName = user.getName().split(" ")[0];
-                profileName.setText(firstName);
 
-                // Carga la imagen de perfil con una librería como Glide o Coil
+    private void setupObservers() {
+        // Observador para los datos del USUARIO (nombre y foto)
+        mainViewModel.getCurrentUserData().observe(getViewLifecycleOwner(), user -> {
+            if (user != null) {
+                if (user.getName() != null) {
+                    profileName.setText(user.getName().split(" ")[0]);
+                }
                 Glide.with(this)
                         .load(user.getPhotoUrl())
                         .placeholder(R.drawable.ic_default_avatar)
@@ -96,26 +115,41 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
                         .into(profileAvatar);
             }
         });
-        // Observa los mensajes de error
-        viewModel.getErrorMessage().observe(getViewLifecycleOwner(), error -> {
-            if (error != null) {
-                Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+
+        // Observador para la LISTA DE TABLEROS (puebla el dropdown)
+        mainViewModel.getUserBoards().observe(getViewLifecycleOwner(), boards -> {
+            if (boards != null && !boards.isEmpty()) {
+                // Creamos una lista de solo los nombres de los tableros
+                List<String> boardNames = boards.stream().map(Board::getName).collect(Collectors.toList());
+
+                // Creamos un adaptador para el dropdown
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, boardNames);
+                dropdownText.setAdapter(adapter);
+
+                // Configuramos el listener para cuando el usuario hace clic en un ítem
+                dropdownText.setOnItemClickListener((parent, view, position, id) -> {
+                    Board selected = boards.get(position);
+                    // Notificamos al ViewModel que el usuario ha seleccionado un nuevo tablero
+                    mainViewModel.selectBoard(selected);
+                });
             }
         });
 
-        if (getActivity() instanceof MainActivity) {
-            MainActivity mainActivity = (MainActivity) getActivity();
-            String userName = mainActivity.getUserName();
-            if (userName != null && !userName.isEmpty()) {
-                String firstName = userName.split(" ")[0];
-                profileName.setText(firstName);
-            } else {
-                profileName.setText("Usuario");
+        // Observador para el TABLERO SELECCIONADO (reacciona al cambio)
+        mainViewModel.getSelectedBoard().observe(getViewLifecycleOwner(), selectedBoard -> {
+            if (selectedBoard != null) {
+                // 1. Actualiza el texto del dropdown para que muestre el tablero activo
+                dropdownText.setText(selectedBoard.getName(), false); // 'false' para no disparar el listener de nuevo
+
+                // 2. MUESTRA EN CONSOLA EL CAMBIO
+                Log.d("HomeFragment", "Tablero cambiado a: " + selectedBoard.getName() + " (ID: " + selectedBoard.getId() + ")");
+
+                // (Próximo paso) Aquí es donde llamarías a tu HomeViewModel para cargar los datos de este tablero
+                // homeViewModel.loadDataForBoard(selectedBoard.getId());
             }
-        } else {
-            profileName.setText("Usuario");
-        }
+        });
     }
+
 
     /**
      * Asigna los datos a las tarjetas de resumen.

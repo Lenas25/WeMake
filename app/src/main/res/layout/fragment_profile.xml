@@ -53,6 +53,18 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
                 <include
+                    android:id="@+id/option_new_board"
+                    layout="@layout/list_item" />
+                <com.google.android.material.divider.MaterialDivider
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+                <include
+                    android:id="@+id/option_join_board"
+                    layout="@layout/list_item" />
+                <com.google.android.material.divider.MaterialDivider
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+                <include
                     android:id="@+id/option_notifications"
                     layout="@layout/list_item_switch" />
                 <com.google.android.material.divider.MaterialDivider

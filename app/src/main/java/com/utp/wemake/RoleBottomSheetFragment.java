@@ -6,37 +6,42 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RadioButton;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
-import com.google.android.material.imageview.ShapeableImageView;
 import com.utp.wemake.constants.Roles;
-import com.utp.wemake.models.Member;
-import com.utp.wemake.repository.MemberRepository;
+import com.utp.wemake.models.User;
 
 public class RoleBottomSheetFragment extends BottomSheetDialogFragment {
 
-    private Member member;
-    private OnRoleChangeListener listener;
-    private MemberRepository memberRepository;
+    // Argumentos que recibiremos
+    private String userId;
+    private String userName;
+    private String userEmail;
+    private String currentRole;
 
+    // Listener para notificar a la Activity/Fragment que lo llamó
+    private OnRoleChangeListener listener;
+
+    // La interfaz de comunicación
     public interface OnRoleChangeListener {
-        void onRoleChanged(Member member, String newRole);
-        void onMemberDeleted(Member member);
+        void onRoleChanged(String userId, String newRole);
+        void onMemberDeleted(String userId);
     }
 
-    public static RoleBottomSheetFragment newInstance(Member member) {
+    /**
+     * Método de fábrica para crear el BottomSheet y pasarle los datos necesarios.
+     */
+    public static RoleBottomSheetFragment newInstance(User user, String boardId, String currentRole) {
         RoleBottomSheetFragment fragment = new RoleBottomSheetFragment();
         Bundle args = new Bundle();
-        args.putString("memberId", member.getId());
-        args.putString("memberName", member.getName());
-        args.putString("memberEmail", member.getEmail());
-        args.putString("memberRole", member.getRole());
-        args.putString("boardId", member.getBoardId());
+        args.putString("userId", user.getUserid());
+        args.putString("userName", user.getName());
+        args.putString("userEmail", user.getEmail());
+        args.putString("boardId", boardId); // El boardId se usará en el futuro si se necesita
+        args.putString("currentRole", currentRole);
         fragment.setArguments(args);
         return fragment;
     }
@@ -44,16 +49,12 @@ public class RoleBottomSheetFragment extends BottomSheetDialogFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        memberRepository = new MemberRepository();
-        
+
         if (getArguments() != null) {
-            String id = getArguments().getString("memberId");
-            String name = getArguments().getString("memberName");
-            String email = getArguments().getString("memberEmail");
-            String role = getArguments().getString("memberRole");
-            String boardId = getArguments().getString("boardId");
-            member = new Member(id, name, email, "", role);
-            member.setBoardId(boardId);
+            userId = getArguments().getString("userId");
+            userName = getArguments().getString("userName");
+            userEmail = getArguments().getString("userEmail");
+            currentRole = getArguments().getString("currentRole");
         }
     }
 
@@ -66,7 +67,6 @@ public class RoleBottomSheetFragment extends BottomSheetDialogFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         setupViews(view);
         setupListeners(view);
     }
@@ -77,11 +77,10 @@ public class RoleBottomSheetFragment extends BottomSheetDialogFragment {
         RadioButton rbAdmin = view.findViewById(R.id.rbAdmin);
         RadioButton rbUser = view.findViewById(R.id.rbUser);
 
-        tvMemberName.setText(member.getName());
-        tvMemberEmail.setText(member.getEmail());
+        tvMemberName.setText(userName);
+        tvMemberEmail.setText(userEmail);
 
-        // Seleccionar el rol actual
-        if (member.isAdmin()) {
+        if (Roles.ADMIN.equals(currentRole)) {
             rbAdmin.setChecked(true);
         } else {
             rbUser.setChecked(true);
@@ -99,68 +98,28 @@ public class RoleBottomSheetFragment extends BottomSheetDialogFragment {
         cardAdmin.setOnClickListener(v -> rbAdmin.setChecked(true));
         cardUser.setOnClickListener(v -> rbUser.setChecked(true));
 
+
         btnSaveRole.setOnClickListener(v -> {
             String newRole = rbAdmin.isChecked() ? Roles.ADMIN : Roles.USER;
-            
-            // Actualizar el rol localmente primero
-            member.setRole(newRole);
-            
-            // Si tiene boardId, actualizar en Firebase
-            if (member.getBoardId() != null && !member.getBoardId().isEmpty()) {
-                memberRepository.updateMemberRole(member.getBoardId(), member.getId(), newRole, 
-                    new MemberRepository.MemberCallback() {
-                        @Override
-                        public void onSuccess(Member updatedMember) {
-                            if (listener != null) {
-                                listener.onRoleChanged(updatedMember, newRole);
-                            }
-                            dismiss();
-                        }
-
-                        @Override
-                        public void onError(Exception e) {
-                            // Manejar error
-                            dismiss();
-                        }
-                    });
-            } else {
-                // Si no tiene boardId, solo notificar el cambio local
-                if (listener != null) {
-                    listener.onRoleChanged(member, newRole);
-                }
-                dismiss();
+            if (listener != null) {
+                // Notifica a la Activity que el rol debe cambiar
+                listener.onRoleChanged(userId, newRole);
             }
+            dismiss(); // Cierra el BottomSheet
         });
 
         btnDeleteMember.setOnClickListener(v -> {
-            // Si tiene boardId, eliminar de Firebase
-            if (member.getBoardId() != null && !member.getBoardId().isEmpty()) {
-                memberRepository.removeMemberFromBoard(member.getBoardId(), member.getId(), 
-                    new MemberRepository.VoidCallback() {
-                        @Override
-                        public void onSuccess() {
-                            if (listener != null) {
-                                listener.onMemberDeleted(member);
-                            }
-                            dismiss();
-                        }
-
-                        @Override
-                        public void onError(Exception e) {
-                            // Manejar error
-                            dismiss();
-                        }
-                    });
-            } else {
-                // Si no tiene boardId, solo notificar la eliminación local
-                if (listener != null) {
-                    listener.onMemberDeleted(member);
-                }
-                dismiss();
+            if (listener != null) {
+                // Notifica a la Activity que el miembro debe ser eliminado
+                listener.onMemberDeleted(userId);
             }
+            dismiss(); // Cierra el BottomSheet
         });
     }
 
+    /**
+     * Permite que la Activity/Fragment que lo llama se registre como "oyente".
+     */
     public void setOnRoleChangeListener(OnRoleChangeListener listener) {
         this.listener = listener;
     }

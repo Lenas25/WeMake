@@ -5,82 +5,91 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
-
+import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.imageview.ShapeableImageView;
-import com.utp.wemake.constants.Roles;
 import com.utp.wemake.models.Member;
-
+import com.utp.wemake.models.User;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MembersAdapter extends RecyclerView.Adapter<MembersAdapter.MemberViewHolder> {
 
-    private List<Member> members;
-    private OnMemberClickListener listener;
+    // --- CLASE WRAPPER INTERNA ---
+    public static class MemberViewData {
+        public final User user;
+        public final Member memberDetails;
+        public final boolean isMember;
 
-    public interface OnMemberClickListener {
-        void onMemberClick(Member member);
-        void onMemberAdded(Member member);
-        void onMemberRemoved(Member member);
+        public MemberViewData(User user, Member memberDetails, boolean isMember) {
+            this.user = user;
+            this.memberDetails = memberDetails;
+            this.isMember = isMember;
+        }
+
+        public String getName() { return user.getName(); }
+        public String getEmail() { return user.getEmail(); }
+        public String getAvatarUrl() { return user.getPhotoUrl(); }
+        public boolean isAdmin() { return memberDetails != null && "admin".equalsIgnoreCase(memberDetails.getRole()); }
     }
 
-    public MembersAdapter(List<Member> members, OnMemberClickListener listener) {
-        this.members = members;
+    private List<MemberViewData> displayList = new ArrayList<>();
+    private final OnMemberInteractionListener listener;
+
+    // La interfaz con los métodos correctos
+    public interface OnMemberInteractionListener {
+        void onAddMember(User user);
+        void onRemoveMember(User user);
+        void onMemberRoleClick(User user, String currentRole);
+    }
+
+    public MembersAdapter(OnMemberInteractionListener listener) {
         this.listener = listener;
+    }
+
+    public void setData(List<User> users, Map<String, Member> memberDetailsMap) {
+        displayList.clear();
+        if (users == null || memberDetailsMap == null) {
+            notifyDataSetChanged();
+            return;
+        }
+        for (User user : users) {
+            boolean isMember = memberDetailsMap.containsKey(user.getUserid());
+            Member details = isMember ? memberDetailsMap.get(user.getUserid()) : null;
+            displayList.add(new MemberViewData(user, details, isMember));
+        }
+        notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public MemberViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.list_item_members, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_members, parent, false);
         return new MemberViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull MemberViewHolder holder, int position) {
-        Member member = members.get(position);
-        holder.bind(member, listener);
+        MemberViewData data = displayList.get(position);
+        holder.bind(data, listener);
     }
 
     @Override
     public int getItemCount() {
-        return members.size();
-    }
-
-    public List<Member> getSelectedMembers() {
-        List<Member> selected = new ArrayList<>();
-        for (Member member : members) {
-            if (member.isAdded()) {
-                selected.add(member);
-            }
-        }
-        return selected;
-    }
-
-    public int getSelectedMembersCount() {
-        int count = 0;
-        for (Member member : members) {
-            if (member.isAdded()) {
-                count++;
-            }
-        }
-        return count;
+        return displayList.size();
     }
 
     static class MemberViewHolder extends RecyclerView.ViewHolder {
-        private ShapeableImageView imgAvatar;
-        private TextView tvName;
-        private TextView tvEmail;
-        private TextView tvAddedStatus;
-        private Chip chipRole;
-        private MaterialButton btnRemoveMember;
+        private final ShapeableImageView imgAvatar;
+        private final TextView tvName, tvEmail, tvAddedStatus;
+        private final Chip chipRole;
+        private final MaterialButton btnRemoveMember;
 
         public MemberViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -92,52 +101,55 @@ public class MembersAdapter extends RecyclerView.Adapter<MembersAdapter.MemberVi
             btnRemoveMember = itemView.findViewById(R.id.btnRemoveMember);
         }
 
-        public void bind(Member member, OnMemberClickListener listener) {
-            tvName.setText(member.getName());
-            tvEmail.setText(member.getEmail());
-            chipRole.setText(member.isAdmin() ? "Admin" : "Usuario");
-            
-            // Configurar colores del chip según el rol
-            Context context = itemView.getContext();
-            if (member.isAdmin()) {
-                chipRole.setChipBackgroundColorResource(R.color.md_theme_primaryContainer);
-                chipRole.setTextColor(ContextCompat.getColor(context, R.color.md_theme_onPrimaryContainer));
-            } else {
-                chipRole.setChipBackgroundColorResource(R.color.md_theme_secondaryContainer);
-                chipRole.setTextColor(ContextCompat.getColor(context, R.color.md_theme_onSecondaryContainer));
-            }
+        // CORRECCIÓN: El parámetro ahora es OnMemberInteractionListener
+        public void bind(final MemberViewData data, final OnMemberInteractionListener listener) {
+            tvName.setText(data.getName());
+            tvEmail.setText(data.getEmail());
 
-            // Mostrar/ocultar elementos según el estado
-            if (member.isAdded()) {
+            Glide.with(itemView.getContext()).load(data.getAvatarUrl())
+                    .placeholder(R.drawable.ic_default_avatar).circleCrop().into(imgAvatar);
+
+            if (data.isMember) {
                 tvAddedStatus.setVisibility(View.VISIBLE);
                 btnRemoveMember.setVisibility(View.VISIBLE);
+                chipRole.setVisibility(View.VISIBLE);
                 itemView.setAlpha(0.7f);
+
+                chipRole.setText(data.isAdmin() ? "Admin" : "Usuario");
+                Context context = itemView.getContext();
+                if (data.isAdmin()) {
+                    chipRole.setChipBackgroundColorResource(R.color.md_theme_primaryContainer);
+                    chipRole.setTextColor(ContextCompat.getColor(context, R.color.md_theme_onPrimaryContainer));
+                } else {
+                    chipRole.setChipBackgroundColorResource(R.color.md_theme_secondaryContainer);
+                    chipRole.setTextColor(ContextCompat.getColor(context, R.color.md_theme_onSecondaryContainer));
+                }
+
             } else {
                 tvAddedStatus.setVisibility(View.GONE);
                 btnRemoveMember.setVisibility(View.GONE);
+                chipRole.setVisibility(View.GONE);
                 itemView.setAlpha(1.0f);
             }
 
-            // Listeners
             itemView.setOnClickListener(v -> {
-                if (!member.isAdded()) {
-                    // Si no está agregado, agregarlo
-                    listener.onMemberAdded(member);
+                if (!data.isMember) {
+                    listener.onAddMember(data.user);
                 } else {
-                    // Si ya está agregado, mostrar opciones de rol
-                    listener.onMemberClick(member);
+                    String currentRole = (data.memberDetails != null) ? data.memberDetails.getRole() : "member";
+                    listener.onMemberRoleClick(data.user, currentRole);
                 }
             });
 
             chipRole.setOnClickListener(v -> {
-                if (member.isAdded()) {
-                    // Solo permitir cambiar rol si ya está agregado
-                    listener.onMemberClick(member);
+                if (data.isMember) {
+                    String currentRole = (data.memberDetails != null) ? data.memberDetails.getRole() : "member";
+                    listener.onMemberRoleClick(data.user, currentRole);
                 }
             });
 
             btnRemoveMember.setOnClickListener(v -> {
-                listener.onMemberRemoved(member);
+                listener.onRemoveMember(data.user);
             });
         }
     }

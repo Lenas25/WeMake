@@ -9,29 +9,103 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.utp.wemake.viewmodels.BoardViewModel;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class EditBoardActivity extends AppCompatActivity {
+    public static final String EXTRA_BOARD_ID = "board_id";
 
-    private TextInputEditText etBoardName;
-    private TextInputEditText etBoardDescription;
-    private MaterialButton btnSave;
-    private MaterialButton btnDelete;
+    private TextInputEditText etBoardName, etBoardDescription;
+    private MaterialButton btnSave, btnDelete;
     private View selectedColorView;
+    private Map<Integer, String> colorMap = new HashMap<>();
+
+    private BoardViewModel viewModel;
+    private String currentBoardId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_edit_board);
 
-        setupToolBar();
-        setupViews();
+        currentBoardId = getIntent().getStringExtra(EXTRA_BOARD_ID);
+        viewModel = new ViewModelProvider(this).get(BoardViewModel.class);
+
+        initializeViews();
+        setupToolbar();
         setupListeners();
+        setupObservers();
+
+        // Determina el modo (Crear o Editar)
+        if (currentBoardId != null) {
+            // Modo Editar: carga los datos del tablero
+            viewModel.loadBoard(currentBoardId);
+        } else {
+            // Modo Crear: ajusta la UI
+            configureUiForCreateMode();
+        }
     }
+
+    private void configureUiForCreateMode() {
+        MaterialToolbar toolbar = findViewById(R.id.top_app_bar);
+        toolbar.setTitle("Crear Nuevo Tablero");
+        btnDelete.setVisibility(View.GONE);
+        // Selecciona el primer color por defecto
+        updateColorSelection(findViewById(R.id.color_option_1));
+    }
+
+    private void setupToolbar() {
+        MaterialToolbar toolbar = findViewById(R.id.top_app_bar);
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
+    }
+
+    private void initializeViews() {
+        setupViews();
+
+        // Mapea los IDs de las vistas de color a sus valores hexadecimales
+        colorMap.put(R.id.color_option_1, "#E6EE9C");
+        colorMap.put(R.id.color_option_2, "#FFCDD2");
+        colorMap.put(R.id.color_option_3, "#C8E6C9");
+        colorMap.put(R.id.color_option_4, "#BBDEFB");
+    }
+
+    private void setupObservers() {
+        // Observador para cuando se cargan los datos de un tablero existente
+        viewModel.getBoardData().observe(this, board -> {
+            if (board != null) {
+                etBoardName.setText(board.getName());
+                etBoardDescription.setText(board.getDescription());
+
+                // Encuentra la vista de color que coincide y la selecciona
+                for (Map.Entry<Integer, String> entry : colorMap.entrySet()) {
+                    if (entry.getValue().equalsIgnoreCase(board.getColor())) {
+                        updateColorSelection(findViewById(entry.getKey()));
+                        break;
+                    }
+                }
+            }
+        });
+
+        // Observador para el resultado de las operaciones (crear, editar, eliminar)
+        viewModel.getOperationSuccess().observe(this, success -> {
+            if (success) {
+                Toast.makeText(this, "Operación exitosa", Toast.LENGTH_SHORT).show();
+                finish(); // Cierra la actividad
+            }
+        });
+
+        viewModel.getError().observe(this, error -> {
+            if (error != null) Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
+        });
+    }
+
 
     /**
      * Configuración de la barra de navegación superior (Toolbar) y el modo EdgeToEdge.
@@ -108,6 +182,7 @@ public class EditBoardActivity extends AppCompatActivity {
     private void saveBoardChanges() {
         String boardName = etBoardName.getText().toString().trim();
         String boardDescription = etBoardDescription.getText().toString().trim();
+        String selectedColor = colorMap.get(selectedColorView.getId());
 
         if (boardName.isEmpty()) {
             etBoardName.setError("El nombre del tablero es requerido");
@@ -121,12 +196,16 @@ public class EditBoardActivity extends AppCompatActivity {
             return;
         }
 
+        viewModel.saveBoard(currentBoardId, boardName, boardDescription, selectedColor);
+
         // Aquí implementarías la lógica para guardar los cambios
         Toast.makeText(this, "Cambios guardados exitosamente", Toast.LENGTH_SHORT).show();
         
         // Regresar a la pantalla anterior
         onBackPressed();
     }
+
+
 
     /**
      * Muestra un diálogo de confirmación para eliminar el tablero.
@@ -136,7 +215,7 @@ public class EditBoardActivity extends AppCompatActivity {
                 .setTitle("Eliminar Tablero")
                 .setMessage("¿Estás seguro de que quieres eliminar este tablero? Esta acción no se puede deshacer.")
                 .setPositiveButton("Eliminar", (dialog, which) -> {
-                    // Aquí implementarías la lógica para eliminar el tablero
+                    viewModel.deleteBoard(currentBoardId);
                     Toast.makeText(this, "Tablero eliminado", Toast.LENGTH_SHORT).show();
                     onBackPressed();
                 })
