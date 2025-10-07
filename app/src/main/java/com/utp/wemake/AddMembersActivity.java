@@ -1,137 +1,147 @@
 package com.utp.wemake;
 
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.utp.wemake.MembersAdapter;
+import com.utp.wemake.databinding.ActivityAddMembersBinding;
+import com.utp.wemake.models.Member;
 import com.utp.wemake.models.User;
+import com.utp.wemake.utils.BoardSelectionPrefs;
 import com.utp.wemake.viewmodels.AddMembersViewModel;
+import java.util.ArrayList;
+import java.util.Map;
 
-public class AddMembersActivity extends AppCompatActivity implements MembersAdapter.OnMemberInteractionListener {
-
+public class AddMembersActivity extends AppCompatActivity
+        implements MembersAdapter.OnMemberClickListener, RoleBottomSheetFragment.OnRoleChangeListener {
     private TextInputEditText etSearch;
     private RecyclerView rvMembers;
     private TextView tvMemberCount;
     private View layoutEmptyState;
-    private MembersAdapter membersAdapter;
+    private MaterialButton btnSaveMembers;
+
     private AddMembersViewModel viewModel;
-    private String currentBoardId;
+    private MembersAdapter adapter;
+    private String boardId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_add_members);
 
-        currentBoardId = getIntent().getStringExtra("boardId");
-        if (currentBoardId == null) {
-            Toast.makeText(this, "Error: ID del tablero no encontrado", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
+        BoardSelectionPrefs prefs = new BoardSelectionPrefs(getApplicationContext());
+        boardId = prefs.getSelectedBoardId();
 
         viewModel = new ViewModelProvider(this).get(AddMembersViewModel.class);
-        viewModel.init(currentBoardId);
 
-        initializeViews();
         setupToolbar();
+        setupViews();
         setupRecyclerView();
-        setupSearchListener();
-        setupObservers();
-    }
+        observeViewModel();
 
-    private void initializeViews() {
-        etSearch = findViewById(R.id.etSearch);
-        rvMembers = findViewById(R.id.rvMembers);
-        tvMemberCount = findViewById(R.id.tvMemberCount);
-        layoutEmptyState = findViewById(R.id.layoutEmptyState);
-        findViewById(R.id.btnSaveMembers).setOnClickListener(v -> viewModel.saveAndClose());
+        if (boardId != null && !boardId.isEmpty()) {
+            viewModel.loadMembers(boardId);
+        } else {
+            Toast.makeText(this, "ID de tablero no válido", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void setupToolbar() {
         MaterialToolbar toolbar = findViewById(R.id.top_app_bar);
         toolbar.setTitle(R.string.title_add_members);
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_container), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
+    }
+
+    private void setupViews() {
+        etSearch = findViewById(R.id.etSearch);
+        rvMembers = findViewById(R.id.rvMembers);
+        tvMemberCount = findViewById(R.id.tvMemberCount);
+        layoutEmptyState = findViewById(R.id.layoutEmptyState);
+        btnSaveMembers = findViewById(R.id.btnSaveMembers);
+
     }
 
     private void setupRecyclerView() {
-        membersAdapter = new MembersAdapter(this); // Solo necesita el listener
+        adapter = new MembersAdapter(new ArrayList<>(), this);
         rvMembers.setLayoutManager(new LinearLayoutManager(this));
-        rvMembers.setAdapter(membersAdapter);
+        rvMembers.setAdapter(adapter);
     }
 
-    private void setupSearchListener() {
-        etSearch.addTextChangedListener(new TextWatcher() {
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Añade un pequeño retraso para no buscar en cada tecla
-                // handler.removeCallbacks(searchRunnable);
-                // handler.postDelayed(() -> viewModel.searchUsers(s.toString()), 300);
-                viewModel.searchUsers(s.toString());
+    private void observeViewModel() {
+        viewModel.members.observe(this, members -> {
+            if (members != null && !members.isEmpty()) {
+                adapter.updateMembers(members);
+                layoutEmptyState.setVisibility(View.GONE);
+                rvMembers.setVisibility(View.VISIBLE);
+            } else {
+                layoutEmptyState.setVisibility(View.VISIBLE);
+                rvMembers.setVisibility(View.GONE);
             }
-            public void afterTextChanged(Editable s) {}
+            tvMemberCount.setText(String.valueOf(members != null ? members.size() : 0));
         });
-    }
 
-    private void setupObservers() {
-        // ¡UN ÚNICO OBSERVADOR PARA LA LISTA!
-        viewModel.getDisplayList().observe(this, displayList -> {
-            // El adaptador ahora espera un objeto MemberViewData,
-            // pero tu método setData espera User y Map. Debemos ajustar el adaptador.
-            // Por ahora, asumimos que el adaptador recibe la lista combinada.
-            // membersAdapter.submitList(displayList); // Si usas ListAdapter
-
-            // Si el método setData no existe en tu adaptador actual:
-            // Por favor, usa la versión del adaptador que te di en la respuesta anterior,
-            // que sí tiene el método setData(List<User>, Map<String, Member>).
-
-            updateEmptyState(displayList == null || displayList.isEmpty());
-            if (displayList != null) {
-                tvMemberCount.setText(displayList.stream().filter(d -> d.isMember).count() + " miembros");
+        viewModel.updateSuccess.observe(this, isSuccess -> {
+            if (isSuccess) {
+                Toast.makeText(this, "Operación completada con éxito", Toast.LENGTH_SHORT).show();
             }
         });
 
-        viewModel.getIsLoading().observe(this, isLoading -> { /* Muestra/oculta ProgressBar */ });
-        viewModel.getError().observe(this, error -> { if (error != null) Toast.makeText(this, error, Toast.LENGTH_SHORT).show(); });
-        viewModel.shouldCloseScreen().observe(this, close -> { if (close) finish(); });
-    }
-
-    private void updateEmptyState(boolean isEmpty) {
-        layoutEmptyState.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
-        rvMembers.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
-    }
-
-    @Override
-    public void onAddMember(User user) { viewModel.addMember(user); }
-
-    @Override
-    public void onRemoveMember(User user) { viewModel.removeMember(user); }
-
-    @Override
-    public void onMemberRoleClick(User user, String currentRole) {
-        RoleBottomSheetFragment bottomSheet = RoleBottomSheetFragment.newInstance(user, currentBoardId, currentRole);
-
-        bottomSheet.setOnRoleChangeListener(new RoleBottomSheetFragment.OnRoleChangeListener() {
-            @Override
-            public void onRoleChanged(String userId, String newRole) {
-                viewModel.updateMemberRole(userId, newRole);
-                Toast.makeText(AddMembersActivity.this, "Rol actualizado", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onMemberDeleted(String userId) {
-                viewModel.removeMemberById(userId);
-                Toast.makeText(AddMembersActivity.this, "Miembro eliminado", Toast.LENGTH_SHORT).show();
+        viewModel.errorMessage.observe(this, error -> {
+            if (error != null && !error.isEmpty()) {
+                Toast.makeText(this, error, Toast.LENGTH_LONG).show();
             }
         });
 
-        bottomSheet.show(getSupportFragmentManager(), "RoleBottomSheet");
+    }
+
+    @Override
+    public void onMemberClick(Map<String, Object> memberData) {
+        User user = (User) memberData.get("user");
+        Member member = (Member) memberData.get("member");
+
+        if (user == null || member == null) {
+            Toast.makeText(this, "Error: Datos de miembro incompletos.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        RoleBottomSheetFragment bottomSheet = RoleBottomSheetFragment.newInstance(user.getUserid(), user.getName(), user.getEmail(), user.getPhotoUrl(), member.getRole());
+        bottomSheet.setOnRoleChangeListener(this);
+        bottomSheet.show(getSupportFragmentManager(), "RoleBottomSheetFragment");
+    }
+
+    @Override
+    public void onRoleChanged(String userId, String newRole) {
+        viewModel.updateMemberRole(boardId, userId, newRole);
+    }
+
+    @Override
+    public void onMemberDeleted(String userId) {
+        viewModel.deleteMember(boardId, userId);
+    }
+
+    @Override
+    public void onMemberAdded(String userId) {
+        viewModel.addMemberToBoard(boardId, userId);
     }
 }

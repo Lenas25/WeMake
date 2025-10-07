@@ -3,4 +3,6 @@
     <attr name="gradientStartColor" format="color" />
     <attr name="gradientCenterColor" format="color" />
     <attr name="gradientEndColor" format="color" />
+    <attr name="colorPrimary" format="color" />
+    <attr name="colorOutlineVariant" format="color" />
 </resources>

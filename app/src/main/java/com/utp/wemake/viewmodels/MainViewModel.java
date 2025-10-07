@@ -1,6 +1,8 @@
 package com.utp.wemake.viewmodels;
 
 import android.app.Application;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
@@ -8,8 +10,10 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.utp.wemake.models.Board;
+import com.utp.wemake.models.Member;
 import com.utp.wemake.models.User;
 import com.utp.wemake.repository.BoardRepository;
+import com.utp.wemake.repository.MemberRepository;
 import com.utp.wemake.utils.BoardSelectionPrefs;
 import com.utp.wemake.repository.UserRepository;
 
@@ -19,6 +23,7 @@ public class MainViewModel extends AndroidViewModel {
 
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
+    private final MemberRepository memberRepository;
     private final BoardSelectionPrefs boardSelectionRepo;
     private final FirebaseAuth auth = FirebaseAuth.getInstance();
 
@@ -34,6 +39,7 @@ public class MainViewModel extends AndroidViewModel {
         super(application);
         userRepository = new UserRepository();
         boardRepository = new BoardRepository();
+        memberRepository = new MemberRepository();
         boardSelectionRepo = new BoardSelectionPrefs(application);
         loadInitialData();
     }
@@ -125,16 +131,7 @@ public class MainViewModel extends AndroidViewModel {
                 // Tablero encontrado
                 String boardId = findTask.getResult().getDocuments().get(0).getId();
 
-                // 2. Añade al usuario actual como miembro
-                boardRepository.addMemberToBoard(boardId, currentUserId).addOnCompleteListener(joinTask -> {
-                    if (joinTask.isSuccessful()) {
-                        // Éxito: Notifica a la UI y recarga la lista de tableros
-                        joinBoardSuccess.setValue(true);
-                        loadUserBoards(); // Para que el dropdown se actualice
-                    } else {
-                        joinBoardSuccess.setValue(false); // Notifica el fallo
-                    }
-                });
+
             } else if (findTask.isSuccessful()) {
                 // Búsqueda exitosa, pero no se encontró el código
                 joinBoardSuccess.setValue(false);

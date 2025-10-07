@@ -119,4 +119,6 @@ public class UserRepository {
         if (uid == null) return Tasks.forException(new Exception("No user logged in"));
         return db.collection("users").document(uid).get();
     }
+
+
 }

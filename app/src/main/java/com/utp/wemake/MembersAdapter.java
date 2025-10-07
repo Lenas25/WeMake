@@ -1,97 +1,79 @@
-package com.utp.wemake;
+package com.utp.wemake; // Asegúrate de que el paquete sea el correcto
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.utp.wemake.models.Member;
-import com.utp.wemake.models.User;
-import java.util.ArrayList;
-import java.util.HashMap;
+import com.utp.wemake.models.User; // <-- Asegúrate de importar tu modelo User
+
 import java.util.List;
 import java.util.Map;
 
 public class MembersAdapter extends RecyclerView.Adapter<MembersAdapter.MemberViewHolder> {
 
-    // --- CLASE WRAPPER INTERNA ---
-    public static class MemberViewData {
-        public final User user;
-        public final Member memberDetails;
-        public final boolean isMember;
+    private List<Map<String, Object>> membersDataList;
+    private OnMemberClickListener listener;
 
-        public MemberViewData(User user, Member memberDetails, boolean isMember) {
-            this.user = user;
-            this.memberDetails = memberDetails;
-            this.isMember = isMember;
-        }
-
-        public String getName() { return user.getName(); }
-        public String getEmail() { return user.getEmail(); }
-        public String getAvatarUrl() { return user.getPhotoUrl(); }
-        public boolean isAdmin() { return memberDetails != null && "admin".equalsIgnoreCase(memberDetails.getRole()); }
+    public interface OnMemberClickListener {
+        void onMemberClick(Map<String, Object> memberData);
+        void onMemberDeleted(String userId);
+        void onMemberAdded(String userId);
     }
 
-    private List<MemberViewData> displayList = new ArrayList<>();
-    private final OnMemberInteractionListener listener;
-
-    // La interfaz con los métodos correctos
-    public interface OnMemberInteractionListener {
-        void onAddMember(User user);
-        void onRemoveMember(User user);
-        void onMemberRoleClick(User user, String currentRole);
-    }
-
-    public MembersAdapter(OnMemberInteractionListener listener) {
+    public MembersAdapter(List<Map<String, Object>> membersDataList, OnMemberClickListener listener) {
+        this.membersDataList = membersDataList;
         this.listener = listener;
-    }
-
-    public void setData(List<User> users, Map<String, Member> memberDetailsMap) {
-        displayList.clear();
-        if (users == null || memberDetailsMap == null) {
-            notifyDataSetChanged();
-            return;
-        }
-        for (User user : users) {
-            boolean isMember = memberDetailsMap.containsKey(user.getUserid());
-            Member details = isMember ? memberDetailsMap.get(user.getUserid()) : null;
-            displayList.add(new MemberViewData(user, details, isMember));
-        }
-        notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public MemberViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_members, parent, false);
-        return new MemberViewHolder(view);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.list_item_members, parent, false);
+        return new MemberViewHolder(view, listener);
     }
 
     @Override
     public void onBindViewHolder(@NonNull MemberViewHolder holder, int position) {
-        MemberViewData data = displayList.get(position);
-        holder.bind(data, listener);
+        Map<String, Object> memberData = membersDataList.get(position);
+        holder.bind(memberData);
     }
 
     @Override
     public int getItemCount() {
-        return displayList.size();
+        return membersDataList.size();
     }
 
-    static class MemberViewHolder extends RecyclerView.ViewHolder {
-        private final ShapeableImageView imgAvatar;
-        private final TextView tvName, tvEmail, tvAddedStatus;
-        private final Chip chipRole;
-        private final MaterialButton btnRemoveMember;
+    public void updateMembers(List<Map<String, Object>> newMembers) {
+        this.membersDataList.clear();
+        this.membersDataList.addAll(newMembers);
+        notifyDataSetChanged();
+    }
 
-        public MemberViewHolder(@NonNull View itemView) {
+
+    // --- ViewHolder ---
+    static class MemberViewHolder extends RecyclerView.ViewHolder {
+        private ShapeableImageView imgAvatar;
+        private TextView tvName;
+        private TextView tvEmail;
+        private TextView tvAddedStatus;
+        private Chip chipRole;
+        private MaterialButton btnRemoveMember;
+        private final OnMemberClickListener listener;
+
+        public MemberViewHolder(@NonNull View itemView, OnMemberClickListener listener) {
             super(itemView);
             imgAvatar = itemView.findViewById(R.id.imgAvatar);
             tvName = itemView.findViewById(R.id.tvName);
@@ -99,57 +81,82 @@ public class MembersAdapter extends RecyclerView.Adapter<MembersAdapter.MemberVi
             tvAddedStatus = itemView.findViewById(R.id.tvAddedStatus);
             chipRole = itemView.findViewById(R.id.chipRole);
             btnRemoveMember = itemView.findViewById(R.id.btnRemoveMember);
+            this.listener = listener;
         }
 
-        // CORRECCIÓN: El parámetro ahora es OnMemberInteractionListener
-        public void bind(final MemberViewData data, final OnMemberInteractionListener listener) {
-            tvName.setText(data.getName());
-            tvEmail.setText(data.getEmail());
+        /**
+         * Este es el método clave que ha sido modificado.
+         * Ahora acepta un Map en lugar de un solo objeto Member.
+         */
+        public void bind(Map<String, Object> memberData) {
+            User user = (User) memberData.get("user");
+            Member member = (Member) memberData.get("member");
 
-            Glide.with(itemView.getContext()).load(data.getAvatarUrl())
-                    .placeholder(R.drawable.ic_default_avatar).circleCrop().into(imgAvatar);
+            if (user == null || member == null) {
+                Log.e("MembersAdapter", "Datos de miembro incompletos en la posición: " + getAdapterPosition());
+                itemView.setVisibility(View.GONE);
+                return;
+            }
+            itemView.setVisibility(View.VISIBLE);
 
-            if (data.isMember) {
+
+            String imageUrl = user.getPhotoUrl();
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                Glide.with(itemView.getContext())
+                        .load(imageUrl)
+                        .placeholder(R.drawable.ic_default_avatar)
+                        .error(R.drawable.ic_default_avatar)
+                        .circleCrop()
+                        .into(imgAvatar);
+            } else {
+                imgAvatar.setImageResource(R.drawable.ic_default_avatar);
+            }
+
+
+            tvName.setText(user.getName());
+            tvEmail.setText(user.getEmail());
+
+            String role = member.getRole();
+            chipRole.setText(role.substring(0, 1).toUpperCase() + role.substring(1));
+
+            Context context = itemView.getContext();
+            if (member.isAdmin()) {
+                chipRole.setChipBackgroundColorResource(R.color.md_theme_primaryContainer);
+                chipRole.setTextColor(ContextCompat.getColor(context, R.color.md_theme_onPrimaryContainer));
+            } else {
+                chipRole.setChipBackgroundColorResource(R.color.md_theme_secondaryContainer);
+                chipRole.setTextColor(ContextCompat.getColor(context, R.color.md_theme_onSecondaryContainer));
+            }
+
+            if (member.isAdded()) {
                 tvAddedStatus.setVisibility(View.VISIBLE);
                 btnRemoveMember.setVisibility(View.VISIBLE);
-                chipRole.setVisibility(View.VISIBLE);
                 itemView.setAlpha(0.7f);
-
-                chipRole.setText(data.isAdmin() ? "Admin" : "Usuario");
-                Context context = itemView.getContext();
-                if (data.isAdmin()) {
-                    chipRole.setChipBackgroundColorResource(R.color.md_theme_primaryContainer);
-                    chipRole.setTextColor(ContextCompat.getColor(context, R.color.md_theme_onPrimaryContainer));
-                } else {
-                    chipRole.setChipBackgroundColorResource(R.color.md_theme_secondaryContainer);
-                    chipRole.setTextColor(ContextCompat.getColor(context, R.color.md_theme_onSecondaryContainer));
-                }
-
             } else {
                 tvAddedStatus.setVisibility(View.GONE);
                 btnRemoveMember.setVisibility(View.GONE);
-                chipRole.setVisibility(View.GONE);
                 itemView.setAlpha(1.0f);
             }
 
+
             itemView.setOnClickListener(v -> {
-                if (!data.isMember) {
-                    listener.onAddMember(data.user);
+                if (!member.isAdded()) {
+                    // Si no está agregado, agregarlo
+                    listener.onMemberAdded(user.getUserid());
                 } else {
-                    String currentRole = (data.memberDetails != null) ? data.memberDetails.getRole() : "member";
-                    listener.onMemberRoleClick(data.user, currentRole);
+                    listener.onMemberClick(memberData);
                 }
             });
 
             chipRole.setOnClickListener(v -> {
-                if (data.isMember) {
-                    String currentRole = (data.memberDetails != null) ? data.memberDetails.getRole() : "member";
-                    listener.onMemberRoleClick(data.user, currentRole);
+                if (member.isAdded()) {
+                    // Solo permitir cambiar rol si ya está agregado
+                    listener.onMemberClick(memberData);
                 }
             });
 
             btnRemoveMember.setOnClickListener(v -> {
-                listener.onRemoveMember(data.user);
+                listener.onMemberDeleted(user.getUserid());
             });
         }
     }

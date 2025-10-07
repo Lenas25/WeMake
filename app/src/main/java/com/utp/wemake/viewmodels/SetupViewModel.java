@@ -1,14 +1,19 @@
 package com.utp.wemake.viewmodels;
 
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import com.google.firebase.auth.FirebaseAuth;
+import com.utp.wemake.models.Member;
 import com.utp.wemake.repository.BoardRepository;
+import com.utp.wemake.repository.MemberRepository;
 
 public class SetupViewModel extends ViewModel {
 
     private final BoardRepository boardRepository = new BoardRepository();
+    private final MemberRepository memberRepository = new MemberRepository();
     private final FirebaseAuth auth = FirebaseAuth.getInstance();
 
     private final MutableLiveData<Boolean> joinSuccess = new MutableLiveData<>();
@@ -30,14 +35,7 @@ public class SetupViewModel extends ViewModel {
                 String boardId = task.getResult().getDocuments().get(0).getId();
                 String currentUserId = auth.getUid();
 
-                // 2. Añade al usuario actual como miembro de ese tablero
-                boardRepository.addMemberToBoard(boardId, currentUserId).addOnCompleteListener(joinTask -> {
-                    if (joinTask.isSuccessful()) {
-                        joinSuccess.setValue(true);
-                    } else {
-                        error.setValue("Error al unirte al tablero.");
-                    }
-                });
+
             } else if (task.isSuccessful()) {
                 // La búsqueda fue exitosa, pero no se encontraron resultados
                 error.setValue("Código de invitación no válido.");

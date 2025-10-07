@@ -21,6 +21,9 @@ public class BoardRepository {
     private final FirebaseAuth auth = FirebaseAuth.getInstance();
     private static final String COLLECTION_BOARDS = "boards";
 
+    /**
+     * Obtener los tableros a los que pertence un usuario.
+     */
     public Task<QuerySnapshot> getBoardsForCurrentUser() {
         String uid = auth.getUid();
         if (uid == null) return null;
@@ -36,25 +39,16 @@ public class BoardRepository {
             return Tasks.forException(new Exception("Usuario no autenticado"));
         }
 
-        // 1. Crea una referencia para el nuevo documento de tablero
         DocumentReference boardRef = db.collection(COLLECTION_BOARDS).document();
-
-        // 2. Crea una referencia para el documento del miembro DENTRO de la subcolección
         DocumentReference memberDetailsRef = boardRef.collection("members_details").document(currentUserId);
 
         Member firstMember = new Member("admin", 0); // Rol de admin, 0 puntos al inicio
-
-        // 4. Crea la escritura por lotes (batch)
         WriteBatch batch = db.batch();
+        batch.set(boardRef, board);
+        batch.set(memberDetailsRef, firstMember);
 
-        // 5. Añade las dos operaciones al lote
-        batch.set(boardRef, board);       // Escribe los datos del tablero
-        batch.set(memberDetailsRef, firstMember); // Escribe los datos del miembro en la subcolección
-
-        // 6. Ejecuta el lote. O ambas tienen éxito, o ambas fallan.
         return batch.commit();
     }
-
 
     /**
      * Busca un tablero por su código de invitación.
@@ -65,84 +59,6 @@ public class BoardRepository {
                 .whereEqualTo("invitationCode", code)
                 .limit(1) // Solo esperamos un resultado
                 .get();
-    }
-
-    /**
-     * Añade un usuario a un tablero usando una escritura por lotes.
-     */
-    public Task<Void> addMemberToBoard(String boardId, String userId) {
-        DocumentReference boardRef = db.collection(COLLECTION_BOARDS).document(boardId);
-        DocumentReference memberDetailsRef = boardRef.collection("members_details").document(userId);
-
-        WriteBatch batch = db.batch();
-        batch.update(boardRef, "members", FieldValue.arrayUnion(userId));
-        batch.set(memberDetailsRef, new Member("member", 0)); // Rol por defecto 'member', 0 puntos
-
-        return batch.commit();
-    }
-
-    /**
-     * Actualiza el rol de un miembro en la subcolección members_details.
-     */
-    public Task<Void> updateMemberRole(String boardId, String userId, String newRole) {
-        return db.collection(COLLECTION_BOARDS).document(boardId)
-                .collection("members_details").document(userId)
-                .update("role", newRole);
-    }
-
-    /**
-     * Elimina un usuario de un tablero usando una escritura por lotes.
-     * (Ya lo tenías, solo asegúrate de que esté correcto).
-     */
-    public Task<Void> removeMemberFromBoard(String boardId, String userId) {
-        DocumentReference boardRef = db.collection(COLLECTION_BOARDS).document(boardId);
-        DocumentReference memberDetailsRef = boardRef.collection("members_details").document(userId);
-
-        WriteBatch batch = db.batch();
-        batch.update(boardRef, "members", FieldValue.arrayRemove(userId));
-        batch.delete(memberDetailsRef);
-
-        return batch.commit();
-    }
-
-    /**
-     * Obtiene los detalles de un miembro específico (rol, puntos) dentro de un tablero.
-     */
-    public Task<Member> getMemberDetails(String boardId, String userId) {
-        return db.collection(COLLECTION_BOARDS).document(boardId)
-                .collection("members_details").document(userId)
-                .get().continueWith(task -> {
-                    if (task.isSuccessful() && task.getResult() != null) {
-                        return task.getResult().toObject(Member.class);
-                    }
-                    return null;
-                });
-    }
-
-    /**
-     * Obtiene los detalles (rol, puntos) de todos los miembros de un tablero.
-     * @param boardId El ID del tablero.
-     * @return Una Tarea que, al completarse, contiene un Map<UserId, Member>.
-     */
-    public Task<Map<String, Member>> getMembersDetailsForBoard(String boardId) {
-        if (boardId == null) return Tasks.forException(new IllegalArgumentException("Board ID cannot be null"));
-
-        return db.collection(COLLECTION_BOARDS).document(boardId).collection("members_details")
-                .get()
-                .continueWith(task -> {
-                    if (task.isSuccessful() && task.getResult() != null) {
-                        Map<String, Member> detailsMap = new HashMap<>();
-                        for (DocumentSnapshot doc : task.getResult().getDocuments()) {
-                            Member member = doc.toObject(Member.class);
-                            if (member != null) {
-                                // La clave del mapa es el ID del documento (que es el UserId)
-                                detailsMap.put(doc.getId(), member);
-                            }
-                        }
-                        return detailsMap;
-                    }
-                    throw task.getException();
-                });
     }
 
     public Task<DocumentSnapshot> getBoardById(String boardId) {
@@ -160,8 +76,23 @@ public class BoardRepository {
     }
 
     public Task<Void> deleteBoard(String boardId) {
-        // TODO: En una app real, también deberías eliminar todas las tareas y miembros
-        // de este tablero, posiblemente usando una Cloud Function.
+        // TODO: En una app real, también deberías eliminar todas las tareas y miembros con cloud functions
         return db.collection(COLLECTION_BOARDS).document(boardId).delete();
     }
+
+    /**
+     * Obtiene los detalles de un miembro específico (rol, puntos) dentro de un tablero.
+     */
+    public Task<Member> getMemberDetails(String boardId, String userId) {
+        return db.collection(COLLECTION_BOARDS).document(boardId)
+                .collection("members_details").document(userId)
+                .get().continueWith(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        return task.getResult().toObject(Member.class);
+                    }
+                    return null;
+                });
+    }
+
+
 }
