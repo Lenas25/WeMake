@@ -1,293 +1,192 @@
 package com.utp.wemake.repository;
 
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.utp.wemake.models.Member;
-import com.utp.wemake.constants.Roles;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.concurrent.atomic.AtomicInteger;
 import android.util.Log;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.WriteBatch;
+import com.utp.wemake.models.Member;
+import com.utp.wemake.models.User;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-/**
- * Repositorio para manejar las operaciones de miembros en Firebase
- * Implementa el patrón Repository para separar la lógica de datos
- */
 public class MemberRepository {
-    
-    private static final String COLLECTION_MEMBERS = "members";
+
+    private static final String COLLECTION_MEMBERS_DETAILS = "members_details";
     private static final String COLLECTION_BOARDS = "boards";
     private static final String COLLECTION_USERS = "users";
-    
-    private FirebaseFirestore db;
-    private FirebaseAuth auth;
-    
+    private static final String TAG = "MemberRepository";
+
+    private final FirebaseFirestore db;
+
     public MemberRepository() {
         this.db = FirebaseFirestore.getInstance();
-        this.auth = FirebaseAuth.getInstance();
     }
 
-    /**
-     * Busca usuarios por nombre o email en la colección de usuarios
-     * @param query Texto de búsqueda
-     * @param callback Callback para manejar el resultado
-     */
-    public void searchUsers(String query, SearchCallback callback) {
-        if (query == null || query.trim().isEmpty()) {
-            callback.onSuccess(new ArrayList<>());
-            return;
-        }
+    public Task<List<Map<String, Object>>> getBoardMembers(String boardId) {
+        return db.collection(COLLECTION_BOARDS).document(boardId).get().continueWithTask(task -> {
+            if (!task.isSuccessful() || task.getResult() == null) {
+                throw task.getException();
+            }
 
-        String lowerQuery = query.toLowerCase().trim();
-        
-        // Crear una lista para almacenar todos los resultados
-        List<Member> allResults = new ArrayList<>();
-        AtomicInteger completedQueries = new AtomicInteger(0);
-        final int totalQueries = 2; // Búsqueda por nombre y por email
-        
-        // Función para verificar si todas las consultas han terminado
-        Runnable checkCompletion = () -> {
-            if (completedQueries.incrementAndGet() == totalQueries) {
-                // Eliminar duplicados basándose en el ID
-                List<Member> uniqueResults = new ArrayList<>();
-                Set<String> seenIds = new HashSet<>();
-                
-                for (Member member : allResults) {
-                    if (!seenIds.contains(member.getId())) {
-                        uniqueResults.add(member);
-                        seenIds.add(member.getId());
+            DocumentSnapshot boardSnapshot = task.getResult();
+            List<String> memberIds = (List<String>) boardSnapshot.get("members");
+
+            if (memberIds == null || memberIds.isEmpty()) {
+                return Tasks.forResult(new ArrayList<>());
+            }
+
+            List<Task<Map<String, Object>>> tasks = new ArrayList<>();
+            for (String memberId : memberIds) {
+                tasks.add(getMemberDetails(boardId, memberId));
+            }
+
+            return Tasks.whenAllSuccess(tasks).continueWith(allTasks -> {
+                List<Object> resultsWithNulls = allTasks.getResult();
+                List<Map<String, Object>> filteredResults = new ArrayList<>();
+                for (Object result : resultsWithNulls) {
+                    if (result != null) {
+                        filteredResults.add((Map<String, Object>) result);
                     }
                 }
-                
-                callback.onSuccess(uniqueResults);
+
+                return filteredResults;
+            });
+        });
+    }
+
+    private Task<Map<String, Object>> getMemberDetails(String boardId, String memberId) {
+        Task<DocumentSnapshot> userTask = db.collection(COLLECTION_USERS).document(memberId).get();
+        Task<DocumentSnapshot> memberDetailsTask = db.collection(COLLECTION_BOARDS)
+                .document(boardId)
+                .collection(COLLECTION_MEMBERS_DETAILS)
+                .document(memberId)
+                .get();
+
+        return Tasks.whenAll(userTask, memberDetailsTask).continueWith(task -> {
+            DocumentSnapshot userSnapshot = userTask.getResult();
+            DocumentSnapshot memberDetailsSnapshot = memberDetailsTask.getResult();
+
+            if (!userSnapshot.exists() || !memberDetailsSnapshot.exists()) {
+                Log.w(TAG, "No se encontró el usuario o los detalles del miembro para el ID: " + memberId);
+                return null;
             }
-        };
-        
-        // Búsqueda por nombre
-        db.collection(COLLECTION_USERS)
-                .whereGreaterThanOrEqualTo("name", lowerQuery)
-                .whereLessThanOrEqualTo("name", lowerQuery + "\uf8ff")
-                .limit(10)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                        if (doc.exists()) {
-                            Member member = doc.toObject(Member.class);
-                            if (member != null) {
-                                // Asignar el ID del documento
-                                member.setId(doc.getId());
-                                allResults.add(member);
-                            }
+
+            User user = userSnapshot.toObject(User.class);
+            Member member = memberDetailsSnapshot.toObject(Member.class);
+
+            Map<String, Object> memberData = new HashMap<>();
+            memberData.put("user", user);
+            memberData.put("member", member);
+
+            return memberData;
+        });
+    }
+
+    public Task<Void> updateMemberRole(String boardId, String userId, String newRole) {
+        DocumentReference memberRef = db.collection(COLLECTION_BOARDS)
+                .document(boardId)
+                .collection(COLLECTION_MEMBERS_DETAILS)
+                .document(userId);
+        return memberRef.update("role", newRole);
+    }
+
+    public Task<Void> deleteMember(String boardId, String userId) {
+        DocumentReference boardRef = db.collection(COLLECTION_BOARDS).document(boardId);
+        DocumentReference memberDetailsRef = boardRef.collection(COLLECTION_MEMBERS_DETAILS).document(userId);
+
+        WriteBatch batch = db.batch();
+
+        batch.delete(memberDetailsRef);
+
+        batch.update(boardRef, "members", FieldValue.arrayRemove(userId));
+
+        return batch.commit();
+    }
+
+    public Task<Void> addMember(String boardId, String userId) {
+        Member newMember = new Member("user", 0);
+
+        DocumentReference boardRef = db.collection(COLLECTION_BOARDS).document(boardId);
+        DocumentReference memberDetailsRef = boardRef.collection(COLLECTION_MEMBERS_DETAILS).document(userId);
+
+        WriteBatch batch = db.batch();
+        batch.set(memberDetailsRef, newMember);
+
+        batch.update(boardRef, "members", FieldValue.arrayUnion(userId));
+
+        return batch.commit();
+    }
+
+    public Task<List<User>> searchUsers(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return Tasks.forResult(new ArrayList<>());
+        }
+
+        String lowerCaseQuery = query.toLowerCase().trim();
+
+        Query nameQuery = db.collection(COLLECTION_USERS)
+                .orderBy("name")
+                .startAt(lowerCaseQuery)
+                .endAt(lowerCaseQuery + "\uf8ff")
+                .limit(10);
+
+        Query emailQuery = db.collection(COLLECTION_USERS)
+                .orderBy("email")
+                .startAt(lowerCaseQuery)
+                .endAt(lowerCaseQuery + "\uf8ff")
+                .limit(10);
+
+        Task<QuerySnapshot> nameTask = nameQuery.get();
+        Task<QuerySnapshot> emailTask = emailQuery.get();
+
+        return Tasks.whenAll(nameTask, emailTask).continueWith(task -> {
+            HashMap<String, User> userMap = new HashMap<>();
+
+            if (nameTask.isSuccessful()) {
+                QuerySnapshot nameResults = nameTask.getResult();
+                if (nameResults != null) {
+                    for (DocumentSnapshot doc : nameResults) {
+                        User user = doc.toObject(User.class);
+                        if (user != null) {
+                            user.setUserid(doc.getId());
+                            userMap.put(doc.getId(), user);
                         }
                     }
-                    checkCompletion.run();
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("MemberRepository", "Error searching by name: " + e.getMessage());
-                    checkCompletion.run();
-                });
-        
-        // Búsqueda por email
-        db.collection(COLLECTION_USERS)
-                .whereGreaterThanOrEqualTo("email", lowerQuery)
-                .whereLessThanOrEqualTo("email", lowerQuery + "\uf8ff")
-                .limit(10)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                        if (doc.exists()) {
-                            Member member = doc.toObject(Member.class);
-                            if (member != null) {
-                                // Asignar el ID del documento
-                                member.setId(doc.getId());
-                                allResults.add(member);
-                            }
+                }
+            } else {
+                Log.e(TAG, "La búsqueda por nombre falló", nameTask.getException());
+            }
+
+            if (emailTask.isSuccessful()) {
+                QuerySnapshot emailResults = emailTask.getResult();
+                if (emailResults != null) {
+                    for (DocumentSnapshot doc : emailResults) {
+                        User user = doc.toObject(User.class);
+                        if (user != null) {
+                            user.setUserid(doc.getId());
+                            userMap.put(doc.getId(), user);
                         }
                     }
-                    checkCompletion.run();
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("MemberRepository", "Error searching by email: " + e.getMessage());
-                    checkCompletion.run();
-                });
+                }
+            } else {
+                Log.e(TAG, "La búsqueda por email falló", emailTask.getException());
+            }
+
+            if (!nameTask.isSuccessful() && !emailTask.isSuccessful()) {
+                throw new Exception("Ambas búsquedas fallaron.", task.getException());
+            }
+
+            return new ArrayList<>(userMap.values());
+        });
     }
 
-    /**
-     * Crea o actualiza un usuario en la colección de usuarios
-     * @param user Usuario de Firebase Auth
-     * @param callback Callback para manejar el resultado
-     */
-    public void createOrUpdateUser(FirebaseUser user, MemberCallback callback) {
-        if (user == null) {
-            callback.onError(new Exception("Usuario no válido"));
-            return;
-        }
-        
-        Member member = new Member(
-                user.getUid(),
-                user.getDisplayName() != null ? user.getDisplayName() : "Usuario",
-                user.getEmail(),
-                user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "",
-                Roles.USER
-        );
-        
-        db.collection(COLLECTION_USERS)
-                .document(user.getUid())
-                .set(member.toMap())
-                .addOnSuccessListener(aVoid -> callback.onSuccess(member))
-                .addOnFailureListener(callback::onError);
-    }
-
-    /**
-     * Obtiene todos los miembros de un tablero
-     * @param boardId ID del tablero
-     * @param callback Callback para manejar el resultado
-     */
-    public void getBoardMembers(String boardId, MembersCallback callback) {
-        db.collection(COLLECTION_BOARDS)
-                .document(boardId)
-                .collection(COLLECTION_MEMBERS)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    List<Member> members = new ArrayList<>();
-                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                        if (doc.exists()) {
-                            Member member = doc.toObject(Member.class);
-                            if (member != null) {
-                                // Asignar el ID del documento
-                                member.setId(doc.getId());
-                                members.add(member);
-                            }
-                        }
-                    }
-                    callback.onSuccess(members);
-                })
-                .addOnFailureListener(callback::onError);
-    }
-
-    /**
-     * Agrega un miembro a un tablero
-     * @param boardId ID del tablero
-     * @param member Miembro a agregar
-     * @param callback Callback para manejar el resultado
-     */
-    public void addMemberToBoard(String boardId, Member member, MemberCallback callback) {
-        // Validar que el miembro tenga un ID válido
-        if (member.getId() == null || member.getId().trim().isEmpty()) {
-            callback.onError(new Exception("El miembro no tiene un ID válido"));
-            return;
-        }
-        
-        // Validar que el boardId sea válido
-        if (boardId == null || boardId.trim().isEmpty()) {
-            callback.onError(new Exception("El ID del tablero no es válido"));
-            return;
-        }
-        
-        member.setBoardId(boardId);
-        member.setAdded(true);
-        
-        db.collection(COLLECTION_BOARDS)
-                .document(boardId)
-                .collection(COLLECTION_MEMBERS)
-                .document(member.getId())
-                .set(member.toMap())
-                .addOnSuccessListener(aVoid -> callback.onSuccess(member))
-                .addOnFailureListener(callback::onError);
-    }
-
-    /**
-     * Actualiza el rol de un miembro
-     * @param boardId ID del tablero
-     * @param memberId ID del miembro
-     * @param newRole Nuevo rol
-     * @param callback Callback para manejar el resultado
-     */
-    public void updateMemberRole(String boardId, String memberId, String newRole, MemberCallback callback) {
-        db.collection(COLLECTION_BOARDS)
-                .document(boardId)
-                .collection(COLLECTION_MEMBERS)
-                .document(memberId)
-                .update("role", newRole)
-                .addOnSuccessListener(aVoid -> {
-                    // Obtener el miembro actualizado
-                    db.collection(COLLECTION_BOARDS)
-                            .document(boardId)
-                            .collection(COLLECTION_MEMBERS)
-                            .document(memberId)
-                            .get()
-                            .addOnSuccessListener(documentSnapshot -> {
-                                if (documentSnapshot.exists()) {
-                                    Member member = documentSnapshot.toObject(Member.class);
-                                    callback.onSuccess(member);
-                                } else {
-                                    callback.onError(new Exception("Miembro no encontrado"));
-                                }
-                            })
-                            .addOnFailureListener(callback::onError);
-                })
-                .addOnFailureListener(callback::onError);
-    }
-
-    /**
-     * Elimina un miembro de un tablero
-     * @param boardId ID del tablero
-     * @param memberId ID del miembro
-     * @param callback Callback para manejar el resultado
-     */
-    public void removeMemberFromBoard(String boardId, String memberId, VoidCallback callback) {
-        db.collection(COLLECTION_BOARDS)
-                .document(boardId)
-                .collection(COLLECTION_MEMBERS)
-                .document(memberId)
-                .delete()
-                .addOnSuccessListener(aVoid -> callback.onSuccess())
-                .addOnFailureListener(callback::onError);
-    }
-
-    /**
-     * Obtiene el usuario actual
-     * @return Member con los datos del usuario actual
-     */
-    public Member getCurrentUser() {
-        if (auth.getCurrentUser() != null) {
-            return new Member(
-                    auth.getCurrentUser().getUid(),
-                    auth.getCurrentUser().getDisplayName() != null ? 
-                            auth.getCurrentUser().getDisplayName() : "Usuario",
-                    auth.getCurrentUser().getEmail(),
-                    auth.getCurrentUser().getPhotoUrl() != null ? 
-                            auth.getCurrentUser().getPhotoUrl().toString() : "",
-                    Roles.USER
-            );
-        }
-        return null;
-    }
-
-    // Interfaces para callbacks
-    public interface SearchCallback {
-        void onSuccess(List<Member> members);
-        void onError(Exception e);
-    }
-
-    public interface MembersCallback {
-        void onSuccess(List<Member> members);
-        void onError(Exception e);
-    }
-
-    public interface MemberCallback {
-        void onSuccess(Member member);
-        void onError(Exception e);
-    }
-
-    public interface VoidCallback {
-        void onSuccess();
-        void onError(Exception e);
-    }
 }

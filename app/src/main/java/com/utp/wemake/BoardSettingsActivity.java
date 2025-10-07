@@ -89,14 +89,14 @@ public class BoardSettingsActivity extends AppCompatActivity {
      */
     private void setupListeners() {
         findViewById(R.id.option_edit_board).setOnClickListener(v -> {
-            // Navegar a la pantalla de editar tablero
             Intent intent = new Intent(this, EditBoardActivity.class);
+            intent.putExtra(EditBoardActivity.EXTRA_BOARD_ID, "id_del_tablero_a_editar");
             startActivity(intent);
         });
 
         findViewById(R.id.option_manage_users).setOnClickListener(v -> {
             Intent intent = new Intent(this, AddMembersActivity.class);
-            intent.putExtra("boardId", "current_board_id"); // Pasar el ID del tablero actual
+            intent.putExtra("boardId", "current_board_id");
             startActivity(intent);
         });
     }

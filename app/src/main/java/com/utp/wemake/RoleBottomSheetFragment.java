@@ -1,42 +1,63 @@
 package com.utp.wemake;
 
+import android.content.res.ColorStateList;
 import android.os.Bundle;
+import androidx.annotation.AttrRes;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.utp.wemake.constants.Roles;
-import com.utp.wemake.models.Member;
-import com.utp.wemake.repository.MemberRepository;
 
 public class RoleBottomSheetFragment extends BottomSheetDialogFragment {
 
-    private Member member;
-    private OnRoleChangeListener listener;
-    private MemberRepository memberRepository;
+    // Argumentos que recibiremos
+    private String userId;
+    private String userName;
+    private String userEmail;;
+    private String photoUrl;
+    private String currentRole;
 
+
+    private RadioButton rbAdmin;
+    private RadioButton rbUser;
+    private MaterialCardView cardAdmin;
+    private MaterialCardView cardUser;
+    private ImageView iconAdmin;
+    private ImageView iconUser;
+
+    // Listener para notificar a la Activity/Fragment que lo llamó
+    private OnRoleChangeListener listener;
+
+    // La interfaz de comunicación
     public interface OnRoleChangeListener {
-        void onRoleChanged(Member member, String newRole);
-        void onMemberDeleted(Member member);
+        void onRoleChanged(String userId, String newRole);
+        void onMemberDeleted(String userId);
     }
 
-    public static RoleBottomSheetFragment newInstance(Member member) {
+    /**
+     * Método de fábrica para crear el BottomSheet y pasarle los datos necesarios.
+     */
+    public static RoleBottomSheetFragment newInstance(String userId, String userName, String userEmail, String photoUrl, String currentRole) {
         RoleBottomSheetFragment fragment = new RoleBottomSheetFragment();
         Bundle args = new Bundle();
-        args.putString("memberId", member.getId());
-        args.putString("memberName", member.getName());
-        args.putString("memberEmail", member.getEmail());
-        args.putString("memberRole", member.getRole());
-        args.putString("boardId", member.getBoardId());
+        args.putString("userId", userId);
+        args.putString("userName", userName);
+        args.putString("userEmail", userEmail);
+        args.putString("photoUrl", photoUrl);
+        args.putString("currentRole", currentRole);
         fragment.setArguments(args);
         return fragment;
     }
@@ -44,16 +65,13 @@ public class RoleBottomSheetFragment extends BottomSheetDialogFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        memberRepository = new MemberRepository();
-        
+
         if (getArguments() != null) {
-            String id = getArguments().getString("memberId");
-            String name = getArguments().getString("memberName");
-            String email = getArguments().getString("memberEmail");
-            String role = getArguments().getString("memberRole");
-            String boardId = getArguments().getString("boardId");
-            member = new Member(id, name, email, "", role);
-            member.setBoardId(boardId);
+            userId = getArguments().getString("userId");
+            userName = getArguments().getString("userName");
+            userEmail = getArguments().getString("userEmail");
+            photoUrl = getArguments().getString("photoUrl");
+            currentRole = getArguments().getString("currentRole");
         }
     }
 
@@ -66,102 +84,107 @@ public class RoleBottomSheetFragment extends BottomSheetDialogFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         setupViews(view);
         setupListeners(view);
     }
 
     private void setupViews(View view) {
+
+        ShapeableImageView imgAvatar = view.findViewById(R.id.imgMemberAvatar);
         TextView tvMemberName = view.findViewById(R.id.tvMemberName);
         TextView tvMemberEmail = view.findViewById(R.id.tvMemberEmail);
-        RadioButton rbAdmin = view.findViewById(R.id.rbAdmin);
-        RadioButton rbUser = view.findViewById(R.id.rbUser);
+        cardAdmin = view.findViewById(R.id.cardAdmin);
+        cardUser = view.findViewById(R.id.cardUser);
+        iconAdmin = view.findViewById(R.id.iconAdmin);
+        iconUser = view.findViewById(R.id.iconUser);
+        rbAdmin = view.findViewById(R.id.rbAdmin);
+        rbUser = view.findViewById(R.id.rbUser);
 
-        tvMemberName.setText(member.getName());
-        tvMemberEmail.setText(member.getEmail());
-
-        // Seleccionar el rol actual
-        if (member.isAdmin()) {
-            rbAdmin.setChecked(true);
+        if (photoUrl != null && !photoUrl.isEmpty()) {
+            Glide.with(view.getContext())
+                    .load(photoUrl)
+                    .placeholder(R.drawable.ic_default_avatar)
+                    .error(R.drawable.ic_default_avatar)
+                    .circleCrop()
+                    .into(imgAvatar);
         } else {
-            rbUser.setChecked(true);
+            imgAvatar.setImageResource(R.drawable.ic_default_avatar);
         }
+
+        tvMemberName.setText(userName);
+        tvMemberEmail.setText(userEmail);
+
+        updateSelectionUI(Roles.ADMIN.equals(currentRole));
     }
 
     private void setupListeners(View view) {
-        MaterialCardView cardAdmin = view.findViewById(R.id.cardAdmin);
-        MaterialCardView cardUser = view.findViewById(R.id.cardUser);
-        RadioButton rbAdmin = view.findViewById(R.id.rbAdmin);
-        RadioButton rbUser = view.findViewById(R.id.rbUser);
         MaterialButton btnSaveRole = view.findViewById(R.id.btnSaveRole);
         MaterialButton btnDeleteMember = view.findViewById(R.id.btnDeleteMember);
 
-        cardAdmin.setOnClickListener(v -> rbAdmin.setChecked(true));
-        cardUser.setOnClickListener(v -> rbUser.setChecked(true));
+        cardAdmin.setOnClickListener(v -> updateSelectionUI(true));
+        rbAdmin.setOnClickListener(v -> updateSelectionUI(true));
+        iconAdmin.setOnClickListener(v -> updateSelectionUI(true));
+        cardUser.setOnClickListener(v -> updateSelectionUI(false));
+        rbUser.setOnClickListener(v -> updateSelectionUI(false));
+        iconUser.setOnClickListener(v -> updateSelectionUI(false));
 
+        // Listeners de los botones de acción (no cambian)
         btnSaveRole.setOnClickListener(v -> {
             String newRole = rbAdmin.isChecked() ? Roles.ADMIN : Roles.USER;
-            
-            // Actualizar el rol localmente primero
-            member.setRole(newRole);
-            
-            // Si tiene boardId, actualizar en Firebase
-            if (member.getBoardId() != null && !member.getBoardId().isEmpty()) {
-                memberRepository.updateMemberRole(member.getBoardId(), member.getId(), newRole, 
-                    new MemberRepository.MemberCallback() {
-                        @Override
-                        public void onSuccess(Member updatedMember) {
-                            if (listener != null) {
-                                listener.onRoleChanged(updatedMember, newRole);
-                            }
-                            dismiss();
-                        }
-
-                        @Override
-                        public void onError(Exception e) {
-                            // Manejar error
-                            dismiss();
-                        }
-                    });
-            } else {
-                // Si no tiene boardId, solo notificar el cambio local
-                if (listener != null) {
-                    listener.onRoleChanged(member, newRole);
-                }
-                dismiss();
+            if (listener != null) {
+                listener.onRoleChanged(userId, newRole);
             }
+            dismiss();
         });
 
         btnDeleteMember.setOnClickListener(v -> {
-            // Si tiene boardId, eliminar de Firebase
-            if (member.getBoardId() != null && !member.getBoardId().isEmpty()) {
-                memberRepository.removeMemberFromBoard(member.getBoardId(), member.getId(), 
-                    new MemberRepository.VoidCallback() {
-                        @Override
-                        public void onSuccess() {
-                            if (listener != null) {
-                                listener.onMemberDeleted(member);
-                            }
-                            dismiss();
-                        }
-
-                        @Override
-                        public void onError(Exception e) {
-                            // Manejar error
-                            dismiss();
-                        }
-                    });
-            } else {
-                // Si no tiene boardId, solo notificar la eliminación local
-                if (listener != null) {
-                    listener.onMemberDeleted(member);
-                }
-                dismiss();
+            if (listener != null) {
+                listener.onMemberDeleted(userId);
             }
+            dismiss();
         });
     }
 
-    public void setOnRoleChangeListener(OnRoleChangeListener listener) {
-        this.listener = listener;
+    private void updateSelectionUI(boolean isAdminSelected) {
+        rbAdmin.setChecked(isAdminSelected);
+        rbUser.setChecked(!isAdminSelected);
+
+        int selectedStrokeWidth = (int) (2 * getResources().getDisplayMetrics().density);
+        int unselectedStrokeWidth = (int) (1 * getResources().getDisplayMetrics().density);
+
+        int colorPrimary = getThemeColor(R.attr.colorPrimary);
+        int colorOutline = getThemeColor(R.attr.colorOutlineVariant);
+
+        if (isAdminSelected) {
+            cardAdmin.setStrokeWidth(selectedStrokeWidth);
+            cardAdmin.setStrokeColor(colorPrimary);
+            iconAdmin.setImageTintList(ColorStateList.valueOf(colorPrimary));
+            cardUser.setStrokeWidth(unselectedStrokeWidth);
+            cardUser.setStrokeColor(colorOutline);
+            iconUser.setImageTintList(ColorStateList.valueOf(colorOutline));
+        } else {
+            cardAdmin.setStrokeWidth(unselectedStrokeWidth);
+            cardAdmin.setStrokeColor(colorOutline);
+            iconAdmin.setImageTintList(ColorStateList.valueOf(colorOutline));
+            cardUser.setStrokeWidth(selectedStrokeWidth);
+            cardUser.setStrokeColor(colorPrimary);
+            iconUser.setImageTintList(ColorStateList.valueOf(colorPrimary));
+        }
     }
+
+    /**
+     * Método auxiliar para resolver un atributo de color del tema actual.
+     * @param colorAttr El atributo a resolver, por ejemplo, R.attr.colorPrimary
+     * @return El valor del color entero.
+     */
+    private int getThemeColor(@AttrRes int colorAttr) {
+        TypedValue typedValue = new TypedValue();
+        requireContext().getTheme().resolveAttribute(colorAttr, typedValue, true);
+        return typedValue.data;
+    }
+
+
+    public void setOnRoleChangeListener(OnRoleChangeListener listener) {
+    this.listener = listener;
+}
 }

@@ -156,12 +156,19 @@ public class LoginActivity extends AppCompatActivity implements
     // Métodos de devolución de llamada de inicio de sesión de Google
     @Override
     public void onSignInSuccess(String userName, String userEmail, boolean isRegistration) {
+
         if (isRegistration) {
             showToast("¡Registro con Google exitoso!");
+
+            Intent intent = new Intent(LoginActivity.this, SetupActivity.class);
+            intent.putExtra(SetupActivity.EXTRA_USER_NAME, userName);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+
         } else {
             showToast("¡Inicio de sesión con Google exitoso!");
+            navigateToMain(userName);
         }
-        navigateToMain(userName);
     }
 
     @Override

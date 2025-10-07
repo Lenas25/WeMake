@@ -5,8 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_horizontal"
-    android:orientation="vertical"
-    android:paddingVertical="16dp">
+    android:orientation="vertical">
 
     <!--
         Aquí superponemos el botón de la cámara sobre el avatar.
@@ -20,8 +19,9 @@
         -->
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/profile_avatar"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
+            android:layout_width="130dp"
+            android:layout_height="130dp"
+            android:padding="2dp"
             app:shapeAppearanceOverlay="@style/ShapeAppearance.App.CircleImageView"
             tools:src="@drawable/ic_user_avatar"
             app:strokeColor="@color/md_theme_onSurface"
@@ -74,7 +74,7 @@
         android:id="@+id/profile_coins_chip"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="10dp"
         app:iconStartPadding="10dp"
         app:chipEndPadding="10dp"
         app:chipIcon="@drawable/ic_coins"

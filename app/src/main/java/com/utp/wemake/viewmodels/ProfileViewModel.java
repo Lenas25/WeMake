@@ -4,7 +4,10 @@ import android.net.Uri;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import com.google.firebase.auth.FirebaseAuth;
+import com.utp.wemake.models.Member; // Importar el modelo Member
 import com.utp.wemake.models.User;
+import com.utp.wemake.repository.BoardRepository; // Importar BoardRepository
 import com.utp.wemake.repository.ImageRepository;
 import com.utp.wemake.repository.UserRepository;
 
@@ -12,35 +15,46 @@ public class ProfileViewModel extends ViewModel {
 
     private final UserRepository userRepository = new UserRepository();
     private final ImageRepository imageRepository = new ImageRepository();
+    private final BoardRepository boardRepository = new BoardRepository();
+    private final FirebaseAuth auth = FirebaseAuth.getInstance();
 
-    // LiveData para los datos del usuario que la vista observará
-    private final MutableLiveData<User> userData = new MutableLiveData<>();
-    // LiveData para el estado de carga
+    // Lo reemplazamos con LiveData para los detalles del miembro.
+    private final MutableLiveData<Member> memberDetails = new MutableLiveData<>();
+
+    // LiveData existentes
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>();
-    // LiveData para mensajes de error
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
 
     public ProfileViewModel() {
-        loadUserData();
+        // La carga de 'loadUserData' se elimina de aquí.
     }
 
     // --- Getters para que la Vista los observe ---
-    public LiveData<User> getUserData() { return userData; }
+    public LiveData<Member> getMemberDetails() { return memberDetails; }
     public LiveData<Boolean> getIsLoading() { return isLoading; }
     public LiveData<String> getErrorMessage() { return errorMessage; }
 
     /**
-     * Carga los datos del perfil del usuario actual desde Firestore.
+     * Carga los detalles específicos del miembro (rol, puntos) para un tablero dado.
+     * Este método será llamado por el ProfileFragment cuando el tablero seleccionado cambie.
+     * @param boardId El ID del tablero seleccionado.
      */
-    public void loadUserData() {
+    public void loadMemberDetailsForBoard(String boardId) {
+        String currentUserId = auth.getUid();
+        if (boardId == null || currentUserId == null) {
+            errorMessage.setValue("No se puede cargar el perfil sin un tablero o usuario.");
+            memberDetails.setValue(new Member("member", 0)); // Mostramos 0 puntos por defecto
+            return;
+        }
+
         isLoading.setValue(true);
-        userRepository.getCurrentUserData().addOnCompleteListener(task -> {
+        boardRepository.getMemberDetails(boardId, currentUserId).addOnCompleteListener(task -> {
             isLoading.setValue(false);
             if (task.isSuccessful() && task.getResult() != null) {
-                User user = task.getResult().toObject(User.class);
-                userData.setValue(user);
+                memberDetails.setValue(task.getResult());
             } else {
-                errorMessage.setValue("Error al cargar el perfil.");
+                errorMessage.setValue("Error al cargar los puntos de este tablero.");
+                memberDetails.setValue(new Member("member", 0)); // Mostramos 0 puntos si hay error
             }
         });
     }
@@ -48,15 +62,17 @@ public class ProfileViewModel extends ViewModel {
     /**
      * Inicia el proceso de actualización de la foto de perfil.
      */
-    public void updateUserProfilePicture(Uri imageUri) {
+    public void updateUserProfilePicture(Uri imageUri, User currentUser) {
+        if (currentUser == null) {
+            errorMessage.setValue("Error: no se pueden guardar los cambios sin datos de usuario.");
+            return;
+        }
         isLoading.setValue(true);
 
-        // 1. Sube la imagen a Cloudinary
         imageRepository.uploadImage(imageUri, new ImageRepository.UploadCallbackListener() {
             @Override
             public void onSuccess(String imageUrl) {
-                // 2. Si la subida es exitosa, actualiza la URL en Firestore
-                updatePhotoUrlInFirestore(imageUrl);
+                updatePhotoUrlInFirestore(imageUrl, currentUser);
             }
 
             @Override
@@ -70,25 +86,17 @@ public class ProfileViewModel extends ViewModel {
     /**
      * Guarda la nueva URL de la imagen en el documento del usuario en Firestore.
      */
-    private void updatePhotoUrlInFirestore(String newPhotoUrl) {
-        User currentUser = userData.getValue();
-        if (currentUser == null) {
-            isLoading.setValue(false);
-            errorMessage.setValue("No se pudieron obtener los datos del usuario actual.");
-            return;
-        }
+    private void updatePhotoUrlInFirestore(String newPhotoUrl, User userToUpdate) {
+        userToUpdate.setPhotoUrl(newPhotoUrl);
 
-        currentUser.setPhotoUrl(newPhotoUrl);
-
-        // Llama al método del repositorio para actualizar el perfil
-        userRepository.updateProfileData(currentUser).addOnCompleteListener(task -> {
+        userRepository.updateProfileData(userToUpdate).addOnCompleteListener(task -> {
             isLoading.setValue(false);
-            if (task.isSuccessful()) {
-                // Notifica a la UI que los datos han cambiado
-                userData.setValue(currentUser);
-            } else {
+            if (!task.isSuccessful()) {
                 errorMessage.setValue("Error al guardar la nueva foto en el perfil.");
             }
         });
     }
+
+
+
 }

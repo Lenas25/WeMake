@@ -136,6 +136,7 @@
                 </LinearLayout>
 
                 <ImageView
+                    android:id="@+id/iconAdmin"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_admin_panel"
@@ -195,6 +196,7 @@
                 </LinearLayout>
 
                 <ImageView
+                    android:id="@+id/iconUser"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_user_group"
