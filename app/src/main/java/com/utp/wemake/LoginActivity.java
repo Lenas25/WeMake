@@ -3,6 +3,7 @@ package com.utp.wemake;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -12,8 +13,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.textview.MaterialTextView;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.utp.wemake.auth.FirebaseAuthHelper;
 import com.utp.wemake.auth.GoogleSignInHelper;
+import com.utp.wemake.repository.UserRepository;
 
 public class LoginActivity extends AppCompatActivity implements 
         GoogleSignInHelper.GoogleSignInCallback, 
@@ -35,6 +38,8 @@ public class LoginActivity extends AppCompatActivity implements
     private GoogleSignInHelper googleSignInHelper;
     // Asistente de autenticación de Firebase
     private FirebaseAuthHelper firebaseAuthHelper;
+    private UserRepository userRepository;
+    private static final String TAG = "LoginActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +72,8 @@ public class LoginActivity extends AppCompatActivity implements
         btnLogin = findViewById(R.id.btn_login);
         btnGoogle = findViewById(R.id.btn_google);
         tvRegisterNow = findViewById(R.id.register_now);
+
+        userRepository = new UserRepository();
     }
 
     // Configura los eventos de los botones (login y registro)
@@ -159,7 +166,7 @@ public class LoginActivity extends AppCompatActivity implements
 
         if (isRegistration) {
             showToast("¡Registro con Google exitoso!");
-
+            getAndSaveFcmToken();
             Intent intent = new Intent(LoginActivity.this, SetupActivity.class);
             intent.putExtra(SetupActivity.EXTRA_USER_NAME, userName);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -181,6 +188,7 @@ public class LoginActivity extends AppCompatActivity implements
     public void onSuccess(String userName, String userEmail, boolean isRegistration) {
         if (isRegistration) {
             showToast("¡Registro de cuenta exitoso!");
+            getAndSaveFcmToken();
         } else {
             showToast("¡Inicio de sesión exitoso!");
         }
@@ -202,5 +210,28 @@ public class LoginActivity extends AppCompatActivity implements
             String finalMessage = errorMessage + " (Intentos restantes: " + attemptsLeft + ")";
             showToast(finalMessage);
         }
+    }
+
+    /**
+     * Obtiene el token de FCM actual del dispositivo y lo guarda en Firestore.
+     * Esta función se llama después de un registro exitoso.
+     */
+    private void getAndSaveFcmToken() {
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                Log.w(TAG, "Fetching FCM registration token failed", task.getException());
+                return;
+            }
+
+            // Obtener el nuevo token de registro de FCM
+            String token = task.getResult();
+            Log.d(TAG, "FCM Token obtained: " + token);
+
+            // Usamos el repositorio para registrar el token en Firestore.
+            // Es importante que tengas el método updateUserFcmToken en tu UserRepository.
+            userRepository.updateUserFcmToken(token)
+                    .addOnSuccessListener(aVoid -> Log.d(TAG, "FCM Token updated successfully in Firestore."))
+                    .addOnFailureListener(e -> Log.e(TAG, "Error updating FCM Token in Firestore", e));
+        });
     }
 }

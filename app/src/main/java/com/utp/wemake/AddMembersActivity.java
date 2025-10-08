@@ -17,6 +17,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.utp.wemake.MembersAdapter;
 import com.utp.wemake.databinding.ActivityAddMembersBinding;
 import com.utp.wemake.models.Member;
@@ -37,12 +39,23 @@ public class AddMembersActivity extends AppCompatActivity
     private AddMembersViewModel viewModel;
     private MembersAdapter adapter;
     private String boardId;
+    private String currentUserId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_add_members);
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            // Si por alguna razón no hay usuario, cerramos la actividad.
+            Toast.makeText(this, "Error de autenticación", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        this.currentUserId = currentUser.getUid();
 
         BoardSelectionPrefs prefs = new BoardSelectionPrefs(getApplicationContext());
         boardId = prefs.getSelectedBoardId();
@@ -83,7 +96,7 @@ public class AddMembersActivity extends AppCompatActivity
     }
 
     private void setupRecyclerView() {
-        adapter = new MembersAdapter(new ArrayList<>(), this);
+        adapter = new MembersAdapter(new ArrayList<>(), currentUserId, this);
         rvMembers.setLayoutManager(new LinearLayoutManager(this));
         rvMembers.setAdapter(adapter);
     }
@@ -122,6 +135,11 @@ public class AddMembersActivity extends AppCompatActivity
 
         if (user == null || member == null) {
             Toast.makeText(this, "Error: Datos de miembro incompletos.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (currentUserId != null && currentUserId.equals(user.getUserid())) {
+            Toast.makeText(this, "No puedes editar tu propio rol.", Toast.LENGTH_SHORT).show();
             return;
         }
 

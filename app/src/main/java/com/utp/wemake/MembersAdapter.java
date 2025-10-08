@@ -25,6 +25,7 @@ public class MembersAdapter extends RecyclerView.Adapter<MembersAdapter.MemberVi
 
     private List<Map<String, Object>> membersDataList;
     private OnMemberClickListener listener;
+    private String currentUserId;
 
     public interface OnMemberClickListener {
         void onMemberClick(Map<String, Object> memberData);
@@ -32,8 +33,9 @@ public class MembersAdapter extends RecyclerView.Adapter<MembersAdapter.MemberVi
         void onMemberAdded(String userId);
     }
 
-    public MembersAdapter(List<Map<String, Object>> membersDataList, OnMemberClickListener listener) {
+    public MembersAdapter(List<Map<String, Object>> membersDataList, String currentUserId, OnMemberClickListener listener) {
         this.membersDataList = membersDataList;
+        this.currentUserId = currentUserId;
         this.listener = listener;
     }
 
@@ -64,7 +66,7 @@ public class MembersAdapter extends RecyclerView.Adapter<MembersAdapter.MemberVi
 
 
     // --- ViewHolder ---
-    static class MemberViewHolder extends RecyclerView.ViewHolder {
+    class MemberViewHolder extends RecyclerView.ViewHolder {
         private ShapeableImageView imgAvatar;
         private TextView tvName;
         private TextView tvEmail;
@@ -128,31 +130,30 @@ public class MembersAdapter extends RecyclerView.Adapter<MembersAdapter.MemberVi
                 chipRole.setTextColor(ContextCompat.getColor(context, R.color.md_theme_onSecondaryContainer));
             }
 
-            if (member.isAdded()) {
-                tvAddedStatus.setVisibility(View.VISIBLE);
-                btnRemoveMember.setVisibility(View.VISIBLE);
-                itemView.setAlpha(0.7f);
+            String memberUserId = user.getUserid();
+
+            // Comparamos el ID del miembro de esta fila con el ID del usuario actual
+            if (currentUserId != null && currentUserId.equals(memberUserId)) {
+                // ES EL USUARIO ACTUAL
+                tvName.setText(user.getName() + " (Tú)"); // Añadimos un indicador visual
+                btnRemoveMember.setVisibility(View.GONE); // Ocultamos el botón de eliminar
+                chipRole.setClickable(false); // Deshabilitamos el clic en el rol
+                itemView.setClickable(false); // Deshabilitamos el clic en el ítem completo
             } else {
-                tvAddedStatus.setVisibility(View.GONE);
-                btnRemoveMember.setVisibility(View.GONE);
-                itemView.setAlpha(1.0f);
+                // ES OTRO USUARIO
+                tvName.setText(user.getName()); // Nos aseguramos de que no tenga el "(Tú)"
+                btnRemoveMember.setVisibility(View.VISIBLE); // Mostramos el botón de eliminar
+                chipRole.setClickable(true); // Habilitamos el clic en el rol
+                itemView.setClickable(true); // Habilitamos el clic en el ítem
             }
 
 
             itemView.setOnClickListener(v -> {
-                if (!member.isAdded()) {
-                    // Si no está agregado, agregarlo
                     listener.onMemberAdded(user.getUserid());
-                } else {
-                    listener.onMemberClick(memberData);
-                }
             });
 
             chipRole.setOnClickListener(v -> {
-                if (member.isAdded()) {
-                    // Solo permitir cambiar rol si ya está agregado
                     listener.onMemberClick(memberData);
-                }
             });
 
             btnRemoveMember.setOnClickListener(v -> {

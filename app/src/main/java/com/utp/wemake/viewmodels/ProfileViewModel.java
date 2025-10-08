@@ -97,6 +97,19 @@ public class ProfileViewModel extends ViewModel {
         });
     }
 
+    /**
+     * Llama al repositorio para actualizar la preferencia de notificaciones del usuario en Firestore.
+     * @param isEnabled El nuevo estado de la preferencia.
+     */
+    public void updateNotificationPreference(boolean isEnabled) {
+        // Simplemente pasamos la llamada al repositorio
+        userRepository.updateNotificationPreference(isEnabled).addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                errorMessage.setValue("Error al guardar la preferencia.");
+            }
+        });
+    }
+
 
 
 }

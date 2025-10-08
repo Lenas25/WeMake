@@ -26,6 +26,7 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.materialswitch.MaterialSwitch;
+import com.utp.wemake.auth.FirebaseAuthHelper;
 import com.utp.wemake.models.User;
 import com.utp.wemake.utils.NotificationPrefs;
 import com.utp.wemake.viewmodels.MainViewModel;
@@ -42,6 +43,9 @@ public class ProfileFragment extends Fragment {
     private ProgressBar progressBar;
     private TextView profileName, profileEmail;
     private Chip profileCoinsChip;
+    private MaterialSwitch notificationSwitch;
+
+    private FirebaseAuthHelper auth;
 
     // --- Utilidades ---
     private NotificationPrefs notificationPrefs;
@@ -67,6 +71,15 @@ public class ProfileFragment extends Fragment {
         // Inicializa ambos ViewModels
         profileViewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
         mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
+
+        auth = new FirebaseAuthHelper(requireActivity(), new FirebaseAuthHelper.AuthCallback() {
+            @Override
+            public void onSuccess(String userName, String userEmail, boolean isRegistration) {
+            }
+            @Override
+            public void onError(String errorMessage) {
+            }
+        });
     }
 
     @Override
@@ -91,6 +104,8 @@ public class ProfileFragment extends Fragment {
         profileEmail = view.findViewById(R.id.profile_email);
         profileCoinsChip = view.findViewById(R.id.profile_coins_chip);
         progressBar = view.findViewById(R.id.progress_bar);
+        notificationSwitch = view.findViewById(R.id.option_notifications).findViewById(R.id.list_item_switch);
+
     }
 
     private void setupToolbar(View view) {
@@ -145,23 +160,27 @@ public class ProfileFragment extends Fragment {
         });
         view.findViewById(R.id.option_sign_out).setOnClickListener(v -> showLogoutConfirmationDialog());
 
-        MaterialSwitch notificationSwitch = view.findViewById(R.id.option_notifications).findViewById(R.id.list_item_switch);
-        notificationSwitch.setChecked(notificationPrefs.areNotificationsEnabled());
         notificationSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            notificationPrefs.setNotificationsEnabled(isChecked);
-            Toast.makeText(getContext(), "Notificaciones " + (isChecked ? "Activadas" : "Desactivadas"), Toast.LENGTH_SHORT).show();
+            if (buttonView.isPressed()) {
+                notificationPrefs.setNotificationsEnabled(isChecked);
+                profileViewModel.updateNotificationPreference(isChecked);
+                Toast.makeText(getContext(), "Notificaciones " + (isChecked ? "Activadas" : "Desactivadas"), Toast.LENGTH_SHORT).show();
+            }
         });
 
     }
 
     private void setupObservers() {
-        // --- Observadores del MainViewModel (Datos Globales) ---
         mainViewModel.getCurrentUserData().observe(getViewLifecycleOwner(), user -> {
             if (user != null) {
                 profileName.setText(user.getName());
                 profileEmail.setText(user.getEmail());
                 Glide.with(this).load(user.getPhotoUrl())
                         .placeholder(R.drawable.ic_default_avatar).circleCrop().into(profileAvatar);
+
+                boolean isEnabledFromFirestore = user.isNotificationsEnabled();
+                notificationSwitch.setChecked(isEnabledFromFirestore);
+                notificationPrefs.setNotificationsEnabled(isEnabledFromFirestore);
             }
         });
 
@@ -209,6 +228,7 @@ public class ProfileFragment extends Fragment {
                 .setMessage(getString(R.string.logout_dialog_message))
                 .setNegativeButton(getString(R.string.dialog_cancel), (dialog, which) -> dialog.dismiss())
                 .setPositiveButton(getString(R.string.dialog_accept), (dialog, which) -> {
+                    auth.signOut();
                     Intent intent = new Intent(getContext(), LoginActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
