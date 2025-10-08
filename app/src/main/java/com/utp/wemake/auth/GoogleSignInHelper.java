@@ -156,7 +156,8 @@ public class GoogleSignInHelper {
                 user.getEmail(),
                 user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "",
                 user.getPhoneNumber() != null ? user.getPhoneNumber().toString() : "" ,
-                null);
+                null,
+                true);
 
         firestore.collection("users").document(user.getUid())
                 .set(newUser)

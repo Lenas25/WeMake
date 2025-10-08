@@ -33,35 +33,32 @@ android {
 }
 
 dependencies {
-    implementation 'com.github.bumptech.glide:glide:4.15.1'
-    implementation libs.firebase.messaging
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.15.1'
-    implementation "com.cloudinary:cloudinary-android:2.4.0"
+
     implementation platform('com.google.firebase:firebase-bom:34.3.0')
+    implementation 'com.google.firebase:firebase-auth'
+    implementation 'com.google.firebase:firebase-firestore'
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-messaging'
+    implementation 'com.google.android.gms:play-services-auth'
     implementation "com.google.android.material:material:1.13.0"
-    implementation('com.airbnb.android:lottie:6.6.9')
-    implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
-    implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
-    implementation("com.google.android.material:material:1.12.0")
-    implementation platform('com.google.firebase:firebase-bom:34.2.0')
-    implementation 'com.google.firebase:firebase-auth:24.0.1'
-    implementation("com.google.firebase:firebase-analytics")
-    implementation 'com.google.firebase:firebase-firestore:26.0.0'
-    implementation 'com.google.android.gms:play-services-auth:21.4.0'
+    implementation "androidx.navigation:navigation-fragment-ktx:2.7.7"
+    implementation "androidx.navigation:navigation-ui-ktx:2.7.7"
     implementation libs.appcompat
-    implementation libs.material
     implementation libs.activity
     implementation libs.constraintlayout
-    implementation libs.filament.android
-    implementation libs.google.material
     implementation libs.lifecycle.livedata.ktx
     implementation libs.lifecycle.viewmodel.ktx
-    implementation libs.navigation.fragment
-    implementation libs.navigation.ui
     implementation libs.credentials
     implementation libs.credentials.play.services.auth
     implementation libs.googleid
+
+    implementation 'com.github.bumptech.glide:glide:4.15.1'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.15.1'
+    implementation "com.cloudinary:cloudinary-android:2.4.0"
+    implementation 'com.airbnb.android:lottie:6.6.9'
+
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
+
 }

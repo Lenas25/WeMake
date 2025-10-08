@@ -59,30 +59,12 @@ public class UserRepository {
     }
 
     /**
-     * Obtiene los detalles completos de una lista de usuarios a partir de sus IDs.
-     * @param userIds La lista de UIDs a buscar.
-     */
-    public Task<List<User>> getUsersByIds(List<String> userIds) {
-        if (userIds == null || userIds.isEmpty()) {
-            // Devuelve una tarea exitosa con una lista vacía si no hay IDs
-            return Tasks.forResult(new ArrayList<>());
-        }
-
-        // Una consulta 'whereIn' puede buscar hasta 30 IDs a la vez.
-        return db.collection(COLLECTION_USERS)
-                .whereIn(FieldPath.documentId(), userIds)
-                .get()
-                .continueWith(task -> task.getResult().toObjects(User.class));
-    }
-
-    /**
      * Crea un documento para un nuevo usuario o actualiza los datos básicos si ya existe.
      * @param firebaseUser El objeto FirebaseUser del usuario autenticado.
      * @return Una Tarea de Firebase que se completa cuando la operación de escritura termina.
      */
     public Task<Void> createOrUpdateUser(FirebaseUser firebaseUser) {
         if (firebaseUser == null) {
-            // Devuelve una tarea fallida si el usuario es nulo
             return com.google.android.gms.tasks.Tasks.forException(new IllegalArgumentException("FirebaseUser cannot be null"));
         }
 
@@ -99,6 +81,7 @@ public class UserRepository {
         user.setName(fullName);
         user.setPublicName(publicName);
         user.setEmail(firebaseUser.getEmail());
+        user.setNotificationsEnabled(true);
         if (firebaseUser.getPhotoUrl() != null) {
             user.setPhotoUrl(firebaseUser.getPhotoUrl().toString());
         }
@@ -118,6 +101,37 @@ public class UserRepository {
         String uid = auth.getUid();
         if (uid == null) return Tasks.forException(new Exception("No user logged in"));
         return db.collection("users").document(uid).get();
+    }
+
+    /**
+     * Actualiza la preferencia de notificaciones para el usuario actual en Firestore.
+     * @param isEnabled El nuevo estado de la preferencia.
+     * @return Una Tarea que se completa cuando la actualización termina.
+     */
+    public Task<Void> updateNotificationPreference(boolean isEnabled) {
+        FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser == null) {
+            return Tasks.forException(new IllegalStateException("No user is currently logged in."));
+        }
+
+        return db.collection(COLLECTION_USERS)
+                .document(currentUser.getUid())
+                .update("notificationsEnabled", isEnabled);
+    }
+
+    /**
+     * Actualiza o añade el token de FCM para el usuario actual en su documento de Firestore.
+     * @param token El token de FCM del dispositivo actual.
+     * @return Una Tarea que se completa cuando la actualización termina.
+     */
+    public Task<Void> updateUserFcmToken(String token) {
+        FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser == null || token == null) {
+            return Tasks.forException(new IllegalStateException("User not logged in or token is null."));
+        }
+        return db.collection(COLLECTION_USERS)
+                .document(currentUser.getUid())
+                .update("fcmToken", token);
     }
 
 

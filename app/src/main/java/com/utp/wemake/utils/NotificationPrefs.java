@@ -17,6 +17,8 @@ public class NotificationPrefs {
         sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
     }
 
+
+
     /**
      * Guarda la preferencia de notificaciones del usuario.
      */

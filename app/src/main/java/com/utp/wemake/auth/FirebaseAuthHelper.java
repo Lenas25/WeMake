@@ -122,7 +122,8 @@ public class FirebaseAuthHelper {
                 firebaseUser.getEmail(),
                 firebaseUser.getPhotoUrl() != null ? firebaseUser.getPhotoUrl().toString() : null,
                 null,
-                null );
+                null,
+                true);
 
         firestore.collection("users").document(firebaseUser.getUid())
                 .set(user)
@@ -146,7 +147,6 @@ public class FirebaseAuthHelper {
                 if (task.isSuccessful()) {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
-                        sendFcmTokenToFirestore(firebaseUser.getUid());
                         String userName = document.getString("name");
                         if (userName == null || userName.isEmpty()) {
                             userName = firebaseUser.getDisplayName() != null ?
@@ -168,44 +168,31 @@ public class FirebaseAuthHelper {
 
     // Método para cerrar sesión
     public void signOut() {
-        firebaseAuth.signOut();
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        if (currentUser != null) {
+            String userId = currentUser.getUid();
+            DocumentReference userDocRef = firestore.collection("users").document(userId);
+
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("fcmToken", null);
+
+            userDocRef.update(updates)
+                    .addOnSuccessListener(aVoid -> {
+                        firebaseAuth.signOut();
+                        Log.d(TAG, "FCM Token cleared and user signed out successfully.");
+                    })
+                    .addOnFailureListener(e -> {
+                        firebaseAuth.signOut();
+                        Log.w(TAG, "Error clearing FCM token, but signed out anyway.", e);
+                    });
+        } else {
+            // Si no hay usuario, por si acaso, llamamos a signOut.
+            firebaseAuth.signOut();
+        }
     }
 
     // Método para obtener el usuario actual
     public FirebaseUser getCurrentUser() {
         return firebaseAuth.getCurrentUser();
-    }
-
-    /**
-     * Obtiene el token de FCM del dispositivo y lo guarda en el documento
-     * del usuario en Firestore.
-     * @param userId El ID del usuario al que pertenece el token.
-     */
-    private void sendFcmTokenToFirestore(String userId) {
-        if (userId == null) {
-            Log.e(TAG, "Cannot send FCM token without a user ID.");
-            return;
-        }
-
-        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
-            if (!task.isSuccessful()) {
-                Log.w(TAG, "Fetching FCM registration token failed", task.getException());
-                return;
-            }
-
-            // Obtiene el nuevo token FCM
-            String token = task.getResult();
-
-            // Prepara los datos para la actualización
-            // Usar un mapa es la forma más segura de actualizar un solo campo
-            Map<String, Object> tokenUpdate = new HashMap<>();
-            tokenUpdate.put("fcmToken", token);
-
-            // Guarda/Actualiza el token en el documento del usuario en Firestore
-            firestore.collection("users").document(userId)
-                    .update(tokenUpdate) // Usamos .update() con un mapa
-                    .addOnSuccessListener(aVoid -> Log.d(TAG, "FCM Token updated successfully for user: " + userId))
-                    .addOnFailureListener(e -> Log.e(TAG, "Error updating FCM Token for user: " + userId, e));
-        });
     }
 }

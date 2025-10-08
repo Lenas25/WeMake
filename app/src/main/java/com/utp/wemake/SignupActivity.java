@@ -3,6 +3,7 @@ package com.utp.wemake; // Define el paquete al que pertenece esta clase
 import android.content.Intent; // Importa la clase Intent, que se usa para iniciar nuevas pantallas
 import android.os.Bundle; // Importa la clase Bundle, usada para pasar datos entre actividades y guardar el estado
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View; // Importa la clase View, la clase para todos los componentes de la interfaz de usuario
 import android.widget.Toast;
 
@@ -13,8 +14,10 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.textview.MaterialTextView; // Importa el componente de texto específico de Material Design
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.utp.wemake.auth.FirebaseAuthHelper;
 import com.utp.wemake.auth.GoogleSignInHelper;
+import com.utp.wemake.repository.UserRepository;
 
 public class SignupActivity extends AppCompatActivity implements FirebaseAuthHelper.AuthCallback, GoogleSignInHelper.GoogleSignInCallback { // Declara la clase de la actividad, que hereda de AppCompatActivity
 
@@ -28,6 +31,8 @@ public class SignupActivity extends AppCompatActivity implements FirebaseAuthHel
     private FirebaseAuthHelper firebaseAuthHelper;
     // Asistente de inicio de sesión de Google
     private GoogleSignInHelper googleSignInHelper;
+    private UserRepository userRepository;
+    private static final String TAG = "SignupActivity";
 
     @Override // Anotación que indica que estamos sobrescribiendo
     protected void onCreate(Bundle savedInstanceState) { // Este método se ejecuta automáticamente cuando se crea la actividad por primera vez
@@ -53,6 +58,8 @@ public class SignupActivity extends AppCompatActivity implements FirebaseAuthHel
         btnGoogle = findViewById(R.id.btn_google); // Busca el botón de Google con id 'btn_google' en el layout
         tvLogin = findViewById(R.id.tv_login); // Busca la vista en el XML que tiene el id 'tv_login'
         checkBox = findViewById(R.id.checkBox);
+
+        userRepository = new UserRepository();
     }
 
     private void initFirebaseAuth() {
@@ -167,6 +174,7 @@ public class SignupActivity extends AppCompatActivity implements FirebaseAuthHel
     public void onSignInSuccess(String userName, String userEmail, boolean isRegistration) {
         if (isRegistration) {
             showToast("¡Registro con Google exitoso!");
+            getAndSaveFcmToken();
 
             Intent intent = new Intent(SignupActivity.this, SetupActivity.class);
             intent.putExtra(SetupActivity.EXTRA_USER_NAME, userName); // Pasa el nombre
@@ -189,6 +197,7 @@ public class SignupActivity extends AppCompatActivity implements FirebaseAuthHel
     public void onSuccess(String userName, String userEmail, boolean isRegistration) {
         if (isRegistration) {
             showToast("¡Registro de cuenta exitoso! Inicia sesión con tus credenciales");
+            getAndSaveFcmToken();
             Intent intent = new Intent(SignupActivity.this, SetupActivity.class);
             intent.putExtra(SetupActivity.EXTRA_USER_NAME, userName);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -202,5 +211,28 @@ public class SignupActivity extends AppCompatActivity implements FirebaseAuthHel
     @Override
     public void onError(String errorMessage) {
         showToast(errorMessage);
+    }
+
+    /**
+     * Obtiene el token de FCM actual del dispositivo y lo guarda en Firestore.
+     * Esta función se llama después de un registro exitoso.
+     */
+    private void getAndSaveFcmToken() {
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                Log.w(TAG, "Fetching FCM registration token failed", task.getException());
+                return;
+            }
+
+            // Obtener el nuevo token de registro de FCM
+            String token = task.getResult();
+            Log.d(TAG, "FCM Token obtained: " + token);
+
+            // Usamos el repositorio para registrar el token en Firestore.
+            // Es importante que tengas el método updateUserFcmToken en tu UserRepository.
+            userRepository.updateUserFcmToken(token)
+                    .addOnSuccessListener(aVoid -> Log.d(TAG, "FCM Token updated successfully in Firestore."))
+                    .addOnFailureListener(e -> Log.e(TAG, "Error updating FCM Token in Firestore", e));
+        });
     }
 }

@@ -8,12 +8,22 @@ public class User {
     private String photoUrl;
     private String phone;
     private String birthDate;
+    private boolean notificationsEnabled;
+    private String fcmToken;
+
+    public boolean isNotificationsEnabled() {
+        return notificationsEnabled;
+    }
+
+    public void setNotificationsEnabled(boolean notificationsEnabled) {
+        this.notificationsEnabled = notificationsEnabled;
+    }
 
     public User() {
         // Constructor vacío requerido para Firestore
     }
 
-    public User(String userid, String name, String publicName, String email, String photoUrl, String phone, String birthDate) {
+    public User(String userid, String name, String publicName, String email, String photoUrl, String phone, String birthDate, boolean notificationsEnabled) {
         this.userid = userid;
         this.name = name;
         this.publicName = publicName;
@@ -21,6 +31,7 @@ public class User {
         this.photoUrl = photoUrl;
         this.phone = phone;
         this.birthDate = birthDate;
+        this.notificationsEnabled = notificationsEnabled;
     }
 
     public String getUserid() { return userid; }
@@ -42,4 +53,6 @@ public class User {
     public void setPhone(String phone) { this.phone = phone; }
     public String getBirthDate() { return birthDate; }
     public void setBirthDate(String birthDate) { this.birthDate = birthDate; }
+    public String getFcmToken() { return fcmToken; }
+    public void setFcmToken(String fcmToken) { this.fcmToken = fcmToken; }
 }
