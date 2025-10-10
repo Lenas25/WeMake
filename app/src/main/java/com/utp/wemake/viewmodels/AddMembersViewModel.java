@@ -14,7 +14,6 @@ import java.util.Map;
 public class AddMembersViewModel extends ViewModel {
 
     private final MemberRepository memberRepository;
-    private List<Map<String, Object>> originalMembersList = new ArrayList<>();
     private final MutableLiveData<List<Map<String, Object>>> _members = new MutableLiveData<>();
     public LiveData<List<Map<String, Object>>> members = _members;
     private final MutableLiveData<Boolean> _updateSuccess = new MutableLiveData<>();
@@ -24,13 +23,19 @@ public class AddMembersViewModel extends ViewModel {
     private final MutableLiveData<String> _errorMessage = new MutableLiveData<>();
     public LiveData<String> errorMessage = _errorMessage;
 
+    private final MutableLiveData<Boolean> _isLoading = new MutableLiveData<>();
+    public LiveData<Boolean> isLoading = _isLoading;
+
     public AddMembersViewModel() {
         this.memberRepository = new MemberRepository();
         _updateSuccess.setValue(false);
+        _isLoading.setValue(false);
     }
 
     public void loadMembers(String boardId) {
+        _isLoading.setValue(true);
         memberRepository.getBoardMembers(boardId).addOnCompleteListener(task -> {
+            _isLoading.setValue(false);
             if (task.isSuccessful()) {
                 _members.setValue(task.getResult());
             } else {
@@ -40,7 +45,9 @@ public class AddMembersViewModel extends ViewModel {
     }
 
     public void updateMemberRole(String boardId, String userId, String newRole) {
+        _isLoading.setValue(true);
         memberRepository.updateMemberRole(boardId, userId, newRole).addOnCompleteListener(task -> {
+            _isLoading.setValue(false);
             if (task.isSuccessful()) {
                 loadMembers(boardId);
                 _updateSuccess.setValue(true);
@@ -51,7 +58,9 @@ public class AddMembersViewModel extends ViewModel {
     }
 
     public void deleteMember(String boardId, String userId) {
+        _isLoading.setValue(true);
         memberRepository.deleteMember(boardId, userId).addOnCompleteListener(task -> {
+            _isLoading.setValue(false);
             if (task.isSuccessful()) {
                 loadMembers(boardId);
                 _updateSuccess.setValue(true);
@@ -61,8 +70,15 @@ public class AddMembersViewModel extends ViewModel {
         });
     }
 
-    public void searchForUser(String query) {
+    public void searchUsers(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            _searchResults.setValue(new ArrayList<>());
+            return;
+        }
+
+        _isLoading.setValue(true);
         memberRepository.searchUsers(query).addOnCompleteListener(task -> {
+            _isLoading.setValue(false);
             if (task.isSuccessful()) {
                 _searchResults.setValue(task.getResult());
             } else {
@@ -73,12 +89,15 @@ public class AddMembersViewModel extends ViewModel {
     }
 
     public void addMemberToBoard(String boardId, String userId) {
+        _isLoading.setValue(true);
         memberRepository.addMember(boardId, userId).addOnCompleteListener(task -> {
+            _isLoading.setValue(false);
             if (task.isSuccessful()) {
                 // Si se añade con éxito, recargamos la lista de miembros actuales
                 loadMembers(boardId);
                 // Opcional: puedes limpiar los resultados de búsqueda
                 _searchResults.setValue(new ArrayList<>());
+                _updateSuccess.setValue(true);
             } else {
                 _errorMessage.setValue("Error al añadir miembro.");
             }

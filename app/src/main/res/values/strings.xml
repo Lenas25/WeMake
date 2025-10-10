@@ -170,6 +170,7 @@
     <string name="no_members">No hay miembros agregados</string>
     <string name="search_members">Busca y agrega miembros al tablero</string>
     <string name="user_added">Agregado</string>
+    <string name="search_result">Resultados de búsqueda</string>
 
     <!-- Change Role -->
     <string name="title_change_role">Cambiar Rol</string>
