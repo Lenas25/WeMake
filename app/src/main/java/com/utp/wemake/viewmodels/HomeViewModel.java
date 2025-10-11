@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.google.firebase.firestore.ListenerRegistration;
 import com.utp.wemake.constants.TaskConstants;
 import com.utp.wemake.models.KanbanColumn;
 import com.utp.wemake.models.TaskModel;
@@ -14,6 +15,7 @@ import com.utp.wemake.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import android.util.Log;
 
 public class HomeViewModel extends ViewModel {
     private final TaskRepository taskRepository;
@@ -33,6 +35,7 @@ public class HomeViewModel extends ViewModel {
     // LiveData para mensajes de error
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
 
+    private ListenerRegistration tasksListener;
     public HomeViewModel() {
         this.taskRepository = new TaskRepository();
     }
@@ -50,14 +53,26 @@ public class HomeViewModel extends ViewModel {
     public void loadBoardData(String boardId) {
         isLoading.setValue(true);
 
-        taskRepository.getTasksByBoard(boardId).addOnCompleteListener(task -> {
-            isLoading.setValue(false);
-            if (task.isSuccessful()) {
-                List<TaskModel> allTasks = task.getResult();
-                organizeTasksIntoColumns(allTasks);
-                calculateSummaryStats(allTasks);
-            } else {
-                errorMessage.setValue("Error al cargar las tareas del tablero");
+        // Cancelar listener anterior si existe
+        if (tasksListener != null) {
+            tasksListener.remove();
+        }
+
+        // Usar listener en tiempo real
+        tasksListener = taskRepository.listenToTasksByBoard(boardId, new TaskRepository.OnTasksChangedListener() {
+            @Override
+            public void onTasksChanged(List<TaskModel> tasks) {
+                isLoading.setValue(false);
+                Log.d("HomeViewModel", "Tareas actualizadas: " + tasks.size());
+
+                organizeTasksIntoColumns(tasks);
+                calculateSummaryStats(tasks);
+            }
+
+            @Override
+            public void onError(Exception error) {
+                isLoading.setValue(false);
+                Log.e("HomeViewModel", "Error en listener: " + error.getMessage());
             }
         });
     }
@@ -149,5 +164,13 @@ public class HomeViewModel extends ViewModel {
                 errorMessage.setValue("Error al cargar el perfil.");
             }
         });
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        if (tasksListener != null) {
+            tasksListener.remove();
+        }
     }
 }

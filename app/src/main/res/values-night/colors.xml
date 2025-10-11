@@ -142,4 +142,16 @@
     <color name="md_theme_surfaceContainerHigh_highContrast">#3A3B41</color>
     <color name="md_theme_surfaceContainerHighest_highContrast">#45474C</color>
     <color name="bottomAppBarColor">#445E91</color>
+
+    <!-- Colores de prioridad para modo oscuro -->
+    <color name="priority_high">#2D1B1E</color>      <!-- Rojo oscuro -->
+    <color name="priority_medium">#2D2A1B</color>    <!-- Amarillo oscuro -->
+    <color name="priority_low">#1B2D1B</color>       <!-- Verde oscuro -->
+    <color name="priority_default">#1E1E1E</color>   <!-- Gris oscuro -->
+
+    <!-- Colores de borde para prioridad en modo oscuro -->
+    <color name="priority_high_border">#4A2C2E</color>
+    <color name="priority_medium_border">#4A452C</color>
+    <color name="priority_low_border">#2C4A2C</color>
+    <color name="priority_default_border">#2E2E2E</color>
 </resources>

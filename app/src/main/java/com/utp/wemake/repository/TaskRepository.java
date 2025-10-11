@@ -7,12 +7,14 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.WriteBatch;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.utp.wemake.constants.TaskConstants;
 import com.utp.wemake.models.Subtask;
 import com.utp.wemake.models.TaskModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import android.util.Log;
 
 public class TaskRepository {
     private static final String TAG = "TaskRepository";
@@ -152,5 +154,39 @@ public class TaskRepository {
         return db.collection(TaskConstants.COLLECTION_TASKS)
                 .document(task.getId())
                 .set(task);
+    }
+
+    /**
+     * Escucha cambios en tiempo real de las tareas de un tablero
+     */
+    public ListenerRegistration listenToTasksByBoard(String boardId, OnTasksChangedListener listener) {
+        return db.collection(TaskConstants.COLLECTION_TASKS)
+                .whereEqualTo("boardId", boardId)
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .addSnapshotListener((snapshot, error) -> {
+                    if (error != null) {
+                        Log.e("TaskRepository", "Error en listener: " + error.getMessage());
+                        listener.onError(error);
+                        return;
+                    }
+
+                    List<TaskModel> tasks = new ArrayList<>();
+                    if (snapshot != null) {
+                        for (DocumentSnapshot doc : snapshot) {
+                            TaskModel task = doc.toObject(TaskModel.class);
+                            if (task != null) {
+                                task.setId(doc.getId());
+                                tasks.add(task);
+                            }
+                        }
+                    }
+                    listener.onTasksChanged(tasks);
+                });
+    }
+
+    // Interfaz para el callback
+    public interface OnTasksChangedListener {
+        void onTasksChanged(List<TaskModel> tasks);
+        void onError(Exception error);
     }
 }

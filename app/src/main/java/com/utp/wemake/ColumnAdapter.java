@@ -70,7 +70,7 @@ public class ColumnAdapter extends RecyclerView.Adapter<ColumnAdapter.ColumnView
 
             tasksRecyclerView.setOnDragListener((v, event) -> {
                 View draggedView = (View) event.getLocalState();
-                int highlightColor = getColorFromAttr(v.getContext(), com.google.android.material.R.attr.colorSurfaceContainerHighest);
+                int highlightColor = getColorFromAttr(v.getContext(), R.color.md_theme_primaryContainer);
 
                 switch (event.getAction()) {
                     case DragEvent.ACTION_DRAG_STARTED:

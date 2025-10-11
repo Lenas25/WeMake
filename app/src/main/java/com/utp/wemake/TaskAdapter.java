@@ -80,9 +80,18 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             holder.dueDate.setText("Sin fecha");
         }
 
-        // Mostrar indicador de prioridad
+        // Mostrar indicador de prioridad con colores mejorados
         int priorityColor = getPriorityColor(task.getPriority(), holder.itemView.getContext());
+        int priorityBorderColor = getPriorityBorderColor(task.getPriority(), holder.itemView.getContext());
+
+        // Aplicar color de fondo sutil
         holder.itemView.setBackgroundTintList(ColorStateList.valueOf(priorityColor));
+
+        // Aplicar color de borde sutil
+        if (holder.itemView instanceof com.google.android.material.card.MaterialCardView) {
+            ((com.google.android.material.card.MaterialCardView) holder.itemView)
+                .setStrokeColor(priorityBorderColor);
+        }
 
         holder.externalButton.setOnClickListener(v -> {
             Context ctx = v.getContext();
@@ -157,13 +166,26 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     private int getPriorityColor(String priority, Context context) {
         switch (priority) {
             case TaskConstants.PRIORITY_HIGH:
-                return ContextCompat.getColor(context, R.color.md_theme_error);
+                return ContextCompat.getColor(context, R.color.priority_high);
             case TaskConstants.PRIORITY_MEDIUM:
-                return ContextCompat.getColor(context, R.color.md_theme_tertiaryContainer);
+                return ContextCompat.getColor(context, R.color.priority_medium);
             case TaskConstants.PRIORITY_LOW:
-                return ContextCompat.getColor(context, R.color.md_theme_primaryContainer);
+                return ContextCompat.getColor(context, R.color.priority_low);
             default:
-                return ContextCompat.getColor(context, R.color.md_theme_onPrimaryContainer);
+                return ContextCompat.getColor(context, R.color.priority_default);
+        }
+    }
+
+    private int getPriorityBorderColor(String priority, Context context) {
+        switch (priority) {
+            case TaskConstants.PRIORITY_HIGH:
+                return ContextCompat.getColor(context, R.color.priority_high_border);
+            case TaskConstants.PRIORITY_MEDIUM:
+                return ContextCompat.getColor(context, R.color.priority_medium_border);
+            case TaskConstants.PRIORITY_LOW:
+                return ContextCompat.getColor(context, R.color.priority_low_border);
+            default:
+                return ContextCompat.getColor(context, R.color.priority_default_border);
         }
     }
 

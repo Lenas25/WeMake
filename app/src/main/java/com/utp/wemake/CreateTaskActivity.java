@@ -3,6 +3,7 @@ package com.utp.wemake;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,7 +27,6 @@ import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.textfield.TextInputEditText;
 import com.utp.wemake.constants.TaskConstants;
 import com.utp.wemake.models.Subtask;
-import com.utp.wemake.models.TaskModel;
 import com.utp.wemake.models.User;
 import com.utp.wemake.utils.BoardSelectionPrefs;
 import com.utp.wemake.viewmodels.CreateTaskViewModel;
@@ -177,6 +177,7 @@ public class CreateTaskActivity extends AppCompatActivity {
 
         viewModel.errorMessage.observe(this, error -> {
             if (error != null && !error.isEmpty()) {
+                Log.e("CreateTaskActivity", "Error: " + error);
                 Toast.makeText(this, error, Toast.LENGTH_LONG).show();
             }
         });

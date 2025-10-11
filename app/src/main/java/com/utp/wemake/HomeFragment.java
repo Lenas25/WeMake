@@ -1,5 +1,6 @@
 package com.utp.wemake;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -44,6 +45,10 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
     private MainViewModel mainViewModel;
     private AutoCompleteTextView dropdownText;
 
+    // Flag para evitar múltiples cargas
+    private boolean isLoadingData = false;
+    private String currentBoardId = null;
+
     public HomeFragment() {
         // Required empty public constructor
     }
@@ -67,6 +72,34 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
         initializeViews(view);
         setupListeners(view);
         setupObservers();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // Solo recargar si hay un tablero seleccionado y no estamos cargando
+        Board selectedBoard = mainViewModel.getSelectedBoard().getValue();
+        if (selectedBoard != null && !isLoadingData) {
+            String boardId = selectedBoard.getId();
+            // Siempre recargar datos en onResume para capturar nuevas tareas
+            Log.d("HomeFragment", "Recargando datos para tablero: " + selectedBoard.getName());
+            loadBoardDataSafely(boardId);
+        }
+    }
+
+    /**
+     * Carga datos de forma segura evitando múltiples llamadas simultáneas
+     */
+    private void loadBoardDataSafely(String boardId) {
+        if (isLoadingData) {
+            Log.d("HomeFragment", "Ya se está cargando datos, ignorando llamada duplicada");
+            return;
+        }
+
+        isLoadingData = true;
+        currentBoardId = boardId;
+        homeViewModel.loadBoardData(boardId);
     }
 
     /**
@@ -147,7 +180,12 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
                 Log.d("HomeFragment", "Tablero cambiado a: " + selectedBoard.getName() + " (ID: " + selectedBoard.getId() + ")");
 
                 // Llamando al HomeViewModel para cargar los datos del tablero seleccionado
-                homeViewModel.loadBoardData(selectedBoard.getId());
+                //homeViewModel.loadBoardData(selectedBoard.getId());
+
+                // Solo cargar si es un tablero diferente
+                if (!selectedBoard.getId().equals(currentBoardId)) {
+                    loadBoardDataSafely(selectedBoard.getId());
+                }
             }
         });
 
@@ -190,6 +228,17 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
         homeViewModel.getErrorMessage().observe(getViewLifecycleOwner(), error -> {
             if (error != null && !error.isEmpty()) {
                 Toast.makeText(getContext(), error, Toast.LENGTH_LONG).show();
+            }
+        });
+
+        // Observador para loading
+        homeViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            if (isLoading) {
+                Log.d("HomeFragment", "Cargando datos del tablero...");
+            } else {
+                // Cuando termina de cargar, resetear el flag
+                isLoadingData = false;
+                Log.d("HomeFragment", "Carga de datos completada");
             }
         });
     }
