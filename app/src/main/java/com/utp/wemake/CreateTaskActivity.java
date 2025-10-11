@@ -100,10 +100,7 @@ public class CreateTaskActivity extends AppCompatActivity {
      */
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        Toast.makeText(this, "Botón presionado: " + item.getItemId(), Toast.LENGTH_SHORT).show();
-
         if (item.getItemId() == R.id.action_save) {
-            Toast.makeText(this, "Guardando tarea...", Toast.LENGTH_SHORT).show();
             saveTask(); // Llama a tu lógica de guardado
             return true;
         }
@@ -114,6 +111,9 @@ public class CreateTaskActivity extends AppCompatActivity {
         MaterialToolbar toolbar = findViewById(R.id.top_app_bar);
         toolbar.setTitle(R.string.new_task);
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
+
+        // Configurar la toolbar como ActionBar
+        setSupportActionBar(toolbar);
 
         // Maneja los insets para el modo EdgeToEdge
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_container), (v, insets) -> {
@@ -178,12 +178,6 @@ public class CreateTaskActivity extends AppCompatActivity {
         viewModel.errorMessage.observe(this, error -> {
             if (error != null && !error.isEmpty()) {
                 Toast.makeText(this, error, Toast.LENGTH_LONG).show();
-            }
-        });
-
-        viewModel.isLoading.observe(this, isLoading -> {
-            if (isLoading) {
-                Toast.makeText(this, "Creando tarea...", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -292,21 +286,13 @@ public class CreateTaskActivity extends AppCompatActivity {
      * Valida los campos y guarda la información de la tarea.
      */
     private void saveTask() {
-        // Agregar logs para debug
-        Toast.makeText(this, "Iniciando guardado...", Toast.LENGTH_SHORT).show();
-
         String title = inputTitle.getText().toString().trim();
         if (!isTitleValid(title)) return;
 
         String description = inputDescription.getText().toString().trim();
-        // Puedes añadir validación para la descripción si es necesario.
-
         String priority = getSelectedPriority();
         List<String> assignedMemberIds = getSelectedMemberIds();
         List<Subtask> subtasks = getChecklistItems();
-
-        // Log de datos para debug
-        Toast.makeText(this, "Datos: " + title + " - " + priority, Toast.LENGTH_SHORT).show();
 
         viewModel.createTask(boardId, title, description, priority, assignedMemberIds,
                 selectedDateTime.getTime(), subtasks);

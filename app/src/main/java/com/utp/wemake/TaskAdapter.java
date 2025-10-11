@@ -154,7 +154,6 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         return taskList.size();
     }
 
-    // Método movido dentro de la clase y corregido
     private int getPriorityColor(String priority, Context context) {
         switch (priority) {
             case TaskConstants.PRIORITY_HIGH:
