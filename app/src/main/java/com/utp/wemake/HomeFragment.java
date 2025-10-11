@@ -1,6 +1,5 @@
 package com.utp.wemake;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,7 +10,6 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,10 +25,9 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.utp.wemake.models.Board;
 import com.utp.wemake.models.KanbanColumn;
-import com.utp.wemake.models.Task;
+import com.utp.wemake.models.TaskModel;
 import com.utp.wemake.viewmodels.HomeViewModel;
 import com.utp.wemake.viewmodels.MainViewModel;
-import com.utp.wemake.viewmodels.ProfileViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +35,7 @@ import java.util.stream.Collectors;
 
 public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteractionListener {
 
+    private HomeViewModel homeViewModel;
     private RecyclerView kanbanBoardRecycler;
     private ColumnAdapter columnAdapter;
     private List<KanbanColumn> columns = new ArrayList<>();
@@ -54,6 +52,7 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
+        homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
     }
 
     @Override
@@ -78,7 +77,10 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
         profileName = view.findViewById(R.id.name);
         dropdownText = view.findViewById(R.id.dropdown_text);
 
-        setupKanbanBoard(view);
+        // Inicializar el RecyclerView del Kanban
+        kanbanBoardRecycler = view.findViewById(R.id.recycler_kanban_board);
+        kanbanBoardRecycler.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+
         setupSummaryCards(view);
     }
 
@@ -144,8 +146,50 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
                 // 2. MUESTRA EN CONSOLA EL CAMBIO
                 Log.d("HomeFragment", "Tablero cambiado a: " + selectedBoard.getName() + " (ID: " + selectedBoard.getId() + ")");
 
-                // (Próximo paso) Aquí es donde llamarías a tu HomeViewModel para cargar los datos de este tablero
-                // homeViewModel.loadDataForBoard(selectedBoard.getId());
+                // Llamando al HomeViewModel para cargar los datos del tablero seleccionado
+                homeViewModel.loadBoardData(selectedBoard.getId());
+            }
+        });
+
+        // Observadores del HomeViewModel
+        homeViewModel.getKanbanColumns().observe(getViewLifecycleOwner(), columns -> {
+            if (columns != null && kanbanBoardRecycler != null) {
+                columnAdapter = new ColumnAdapter(columns, this);
+                kanbanBoardRecycler.setAdapter(columnAdapter);
+            }
+        });
+
+        homeViewModel.getTotalTasks().observe(getViewLifecycleOwner(), total -> {
+            if (total != null && getView() != null) {
+                TextView valueTareas = getView().findViewById(R.id.card_tareas).findViewById(R.id.summary_value);
+                valueTareas.setText(String.valueOf(total));
+            }
+        });
+
+        homeViewModel.getPendingTasks().observe(getViewLifecycleOwner(), pending -> {
+            if (pending != null && getView() != null) {
+                TextView valuePendientes = getView().findViewById(R.id.card_pendientes).findViewById(R.id.summary_value);
+                valuePendientes.setText(String.valueOf(pending));
+            }
+        });
+
+        homeViewModel.getExpiredTasks().observe(getViewLifecycleOwner(), expired -> {
+            if (expired != null && getView() != null) {
+                TextView valueVencidos = getView().findViewById(R.id.card_vencidos).findViewById(R.id.summary_value);
+                valueVencidos.setText(String.valueOf(expired));
+            }
+        });
+
+        homeViewModel.getTotalPoints().observe(getViewLifecycleOwner(), points -> {
+            if (points != null && getView() != null) {
+                TextView valuePuntos = getView().findViewById(R.id.card_puntos).findViewById(R.id.summary_value);
+                valuePuntos.setText(String.valueOf(points));
+            }
+        });
+
+        homeViewModel.getErrorMessage().observe(getViewLifecycleOwner(), error -> {
+            if (error != null && !error.isEmpty()) {
+                Toast.makeText(getContext(), error, Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -161,7 +205,7 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
         TextView valueTareas = cardTareas.findViewById(R.id.summary_value);
         TextView labelTareas = cardTareas.findViewById(R.id.summary_label);
         iconTareas.setImageResource(R.drawable.ic_tasks);
-        valueTareas.setText("12");
+        valueTareas.setText("0"); // Valor inicial
         labelTareas.setText("tareas");
 
         // --- Tarjeta de Pendientes ---
@@ -170,7 +214,7 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
         TextView valuePendientes = cardPendientes.findViewById(R.id.summary_value);
         TextView labelPendientes = cardPendientes.findViewById(R.id.summary_label);
         iconPendientes.setImageResource(R.drawable.ic_pending);
-        valuePendientes.setText("4");
+        valuePendientes.setText("0"); // Valor inicial
         labelPendientes.setText("pendientes");
 
         // --- Tarjeta de Vencidos ---
@@ -179,7 +223,7 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
         TextView valueVencidos = cardVencidos.findViewById(R.id.summary_value);
         TextView labelVencidos = cardVencidos.findViewById(R.id.summary_label);
         iconVencidos.setImageResource(R.drawable.ic_expired);
-        valueVencidos.setText("5");
+        valueVencidos.setText("0"); // Valor inicial
         labelVencidos.setText("vencidos");
 
         // --- Tarjeta de Puntos ---
@@ -188,48 +232,17 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
         TextView valuePuntos = cardPuntos.findViewById(R.id.summary_value);
         TextView labelPuntos = cardPuntos.findViewById(R.id.summary_label);
         iconPuntos.setImageResource(R.drawable.ic_rocket);
-        valuePuntos.setText("150");
+        valuePuntos.setText("0"); // Valor inicial
         labelPuntos.setText("puntos");
-    }
-
-    /**
-     * Configura el RecyclerView principal del tablero Kanban.
-     */
-    private void setupKanbanBoard(View view) {
-        kanbanBoardRecycler = view.findViewById(R.id.recycler_kanban_board);
-        kanbanBoardRecycler.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-        columns.clear();
-
-        List<Task> pendingTasks = getSampleTasks("Pendiente");
-        List<Task> inProgressTasks = getSampleTasks("En Progreso");
-        List<Task> doneTasks = getSampleTasks("Completado");
-
-        columns.add(new KanbanColumn("Pendiente", pendingTasks));
-        columns.add(new KanbanColumn("En Progreso", inProgressTasks));
-        columns.add(new KanbanColumn("Completado", doneTasks));
-
-        columnAdapter = new ColumnAdapter(columns, this);
-        kanbanBoardRecycler.setAdapter(columnAdapter);
-    }
-
-    /**
-     * Genera una lista de tareas de ejemplo.
-     */
-    private List<Task> getSampleTasks(String estado) {
-        List<Task> list = new ArrayList<>();
-        list.add(new Task("Reunión semanal", "Definir pendientes", "Elena"));
-        list.add(new Task("Revisión de código", "Pull request módulo test", "Mario"));
-        list.add(new Task("Diseño UI", "Pantalla Estadisticas", "Carlos"));
-        return list;
     }
 
     /**
      * Listener que se activa cuando se hace clic en el botón de cambiar estado de una tarea.
      */
     @Override
-    public void onChangeStatusClicked(Task task) {
+    public void onChangeStatusClicked(TaskModel task) {
         ChangeStatusBottomSheet bottomSheet = ChangeStatusBottomSheet.newInstance(
-                task.getId(), task.getEstado()
+                task.getId(), task.getStatus()
         );
         bottomSheet.show(getChildFragmentManager(), "ChangeStatusBottomSheetTag");
     }

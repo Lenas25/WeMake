@@ -1,6 +1,5 @@
 package com.utp.wemake;
 
-import android.graphics.Color;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,13 +11,16 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.utp.wemake.constants.TaskConstants;
 import com.utp.wemake.models.KanbanColumn;
-import com.utp.wemake.models.Task;
+import com.utp.wemake.models.TaskModel;
+import com.utp.wemake.repository.TaskRepository;
 
 import java.util.List;
 
 public class ColumnAdapter extends RecyclerView.Adapter<ColumnAdapter.ColumnViewHolder> {
 
+    private TaskRepository taskRepository;
     private List<KanbanColumn> columnList;
 
     private final TaskAdapter.OnTaskInteractionListener taskInteractionListener;
@@ -26,6 +28,7 @@ public class ColumnAdapter extends RecyclerView.Adapter<ColumnAdapter.ColumnView
     public ColumnAdapter(List<KanbanColumn> columnList, TaskAdapter.OnTaskInteractionListener listener) {
         this.columnList = columnList;
         this.taskInteractionListener = listener;
+        this.taskRepository = new TaskRepository();
     }
 
     @NonNull
@@ -90,13 +93,23 @@ public class ColumnAdapter extends RecyclerView.Adapter<ColumnAdapter.ColumnView
 
                         if (fromColumnIndex != toColumnIndex) {
                             // Mover los datos y actualizar la base de datos/API
-                            Task taskToMove = columnList.get(fromColumnIndex).getTasks().remove(fromTaskIndex);
+                            TaskModel taskToMove = columnList.get(fromColumnIndex).getTasks().remove(fromTaskIndex);
                             columnList.get(toColumnIndex).getTasks().add(taskToMove);
 
-                            // Aquí iría tu lógica de actualización de estado
-                            // String newState = columnList.get(toColumnIndex).getTitle();
-                            // taskToMove.setEstado(newState);
-                            // updateTaskInDatabase(taskToMove);
+                            // Actualizar estado en Firebase
+                            String newStatus = getStatusFromColumnTitle(columnList.get(toColumnIndex).getTitle());
+                            taskToMove.setStatus(newStatus);
+
+                            taskRepository.updateTaskStatus(taskToMove.getId(), newStatus)
+                                    .addOnCompleteListener(task -> {
+                                        if (!task.isSuccessful()) {
+                                            // Revertir cambios locales si falla la actualización
+                                            columnList.get(toColumnIndex).getTasks().remove(taskToMove);
+                                            columnList.get(fromColumnIndex).getTasks().add(fromTaskIndex, taskToMove);
+                                            notifyItemChanged(fromColumnIndex);
+                                            notifyItemChanged(toColumnIndex);
+                                        }
+                                    });
 
                             notifyItemChanged(fromColumnIndex);
                             notifyItemChanged(toColumnIndex);
@@ -124,6 +137,18 @@ public class ColumnAdapter extends RecyclerView.Adapter<ColumnAdapter.ColumnView
             });
         }
 
+        private String getStatusFromColumnTitle(String title) {
+            switch (title) {
+                case "Pendiente":
+                    return TaskConstants.STATUS_PENDING;
+                case "En Progreso":
+                    return TaskConstants.STATUS_IN_PROGRESS;
+                case "Completado":
+                    return TaskConstants.STATUS_COMPLETED;
+                default:
+                    return TaskConstants.STATUS_PENDING;
+            }
+        }
         private int getColorFromAttr(android.content.Context context, int attr) {
             android.util.TypedValue typedValue = new android.util.TypedValue();
             context.getTheme().resolveAttribute(attr, typedValue, true);

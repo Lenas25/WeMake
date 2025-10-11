@@ -1,6 +1,7 @@
 package com.utp.wemake;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,18 +10,22 @@ import android.widget.Button;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import android.content.ClipData;
 import android.content.ClipDescription;
 
-import com.utp.wemake.models.Task;
+import com.utp.wemake.constants.TaskConstants;
+import com.utp.wemake.models.TaskModel;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
 // Adaptador para manejar la lista de tareas en un RecyclerView
 public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
 
-    private List<Task> taskList; // Lista de tareas que se mostrará en el RecyclerView
+    private List<TaskModel> taskList; // Lista de tareas que se mostrará en el RecyclerView
 
     private int columnIndex;
 
@@ -28,10 +33,10 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
 
     public interface OnTaskInteractionListener {
-        void onChangeStatusClicked(Task task);
+        void onChangeStatusClicked(TaskModel task);
     }
 
-    public TaskAdapter(List<Task> taskList, int columnIndex, OnTaskInteractionListener listener) {
+    public TaskAdapter(List<TaskModel> taskList, int columnIndex, OnTaskInteractionListener listener) {
         this.taskList = taskList;
         this.columnIndex = columnIndex; // Guardamos el índice
         this.listener = listener; // Guardamos la referencia.
@@ -48,17 +53,41 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
-        Task task = taskList.get(position);
+        TaskModel task = taskList.get(position);
 
-        // Asigna los valores de la tarea a los TextViews (esto se queda igual)
-        holder.title.setText(task.getTitulo());
-        holder.description.setText(task.getDescripcion());
-        holder.responsible.setText(task.getResponsable());
-        holder.dueDate.setText("10/09/2025");
+        // Asigna los valores de la tarea a los TextViews
+        holder.title.setText(task.getTitle());
+        holder.description.setText(task.getDescription());
+
+        // Mostrar miembros asignados
+        if (task.getAssignedMembers() != null && !task.getAssignedMembers().isEmpty()) {
+            holder.responsible.setText(task.getAssignedMembers().size() + " miembro(s)");
+        } else {
+            holder.responsible.setText("Sin asignar");
+        }
+
+        // Mostrar fecha de vencimiento
+        if (task.getDueDate() != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+            holder.dueDate.setText(sdf.format(task.getDueDate()));
+
+            // Cambiar color si está vencida
+            if (task.getDueDate().getTime() < System.currentTimeMillis() &&
+                    !TaskConstants.STATUS_COMPLETED.equals(task.getStatus())) {
+                holder.dueDate.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.md_theme_error));
+            }
+        } else {
+            holder.dueDate.setText("Sin fecha");
+        }
+
+        // Mostrar indicador de prioridad
+        int priorityColor = getPriorityColor(task.getPriority(), holder.itemView.getContext());
+        holder.itemView.setBackgroundTintList(ColorStateList.valueOf(priorityColor));
 
         holder.externalButton.setOnClickListener(v -> {
             Context ctx = v.getContext();
             Intent intent = new Intent(ctx, TaskDetailActivity.class);
+            intent.putExtra("taskId", task.getId());
             ctx.startActivity(intent);
         });
 
@@ -70,7 +99,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             }
         });
 
-        // Listener de pulsación larga corregido
+        // Listener de pulsación larga para drag & drop
         holder.itemView.setOnLongClickListener(view -> {
 
             // 1. Preparar los datos del drag (esto se queda igual)
@@ -123,6 +152,20 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     @Override
     public int getItemCount() {
         return taskList.size();
+    }
+
+    // Método movido dentro de la clase y corregido
+    private int getPriorityColor(String priority, Context context) {
+        switch (priority) {
+            case TaskConstants.PRIORITY_HIGH:
+                return ContextCompat.getColor(context, R.color.md_theme_error);
+            case TaskConstants.PRIORITY_MEDIUM:
+                return ContextCompat.getColor(context, R.color.md_theme_tertiaryContainer);
+            case TaskConstants.PRIORITY_LOW:
+                return ContextCompat.getColor(context, R.color.md_theme_primaryContainer);
+            default:
+                return ContextCompat.getColor(context, R.color.md_theme_onPrimaryContainer);
+        }
     }
 
     public static class TaskViewHolder extends RecyclerView.ViewHolder {
