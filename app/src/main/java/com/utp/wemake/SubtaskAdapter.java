@@ -12,9 +12,15 @@ import java.util.List;
 
 public class SubtaskAdapter extends RecyclerView.Adapter<SubtaskAdapter.SubtaskViewHolder> {
     private List<Subtask> subtasks;
+    private OnSubtaskChangeListener listener;
 
-    public SubtaskAdapter(List<Subtask> subtasks) {
+    public interface OnSubtaskChangeListener {
+        void onSubtaskChanged(Subtask subtask, boolean isCompleted);
+    }
+
+    public SubtaskAdapter(List<Subtask> subtasks, OnSubtaskChangeListener listener) {
         this.subtasks = subtasks;
+        this.listener = listener;
     }
 
     @NonNull
@@ -22,7 +28,7 @@ public class SubtaskAdapter extends RecyclerView.Adapter<SubtaskAdapter.SubtaskV
     public SubtaskViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_subtask, parent, false);
-        return new SubtaskViewHolder(view);
+        return new SubtaskViewHolder(view, listener);
     }
 
     @Override
@@ -36,12 +42,21 @@ public class SubtaskAdapter extends RecyclerView.Adapter<SubtaskAdapter.SubtaskV
         return subtasks.size();
     }
 
+    public void updateSubtask(int position, boolean completed) {
+        if (position >= 0 && position < subtasks.size()) {
+            subtasks.get(position).setCompleted(completed);
+            notifyItemChanged(position);
+        }
+    }
+
     static class SubtaskViewHolder extends RecyclerView.ViewHolder {
         private CheckBox checkBox;
         private TextView text;
+        private OnSubtaskChangeListener listener;
 
-        public SubtaskViewHolder(@NonNull View itemView) {
+        public SubtaskViewHolder(@NonNull View itemView, OnSubtaskChangeListener listener) {
             super(itemView);
+            this.listener = listener;
             checkBox = itemView.findViewById(R.id.subtask_checkbox);
             text = itemView.findViewById(R.id.subtask_text);
         }
@@ -58,6 +73,13 @@ public class SubtaskAdapter extends RecyclerView.Adapter<SubtaskAdapter.SubtaskV
                 text.setAlpha(1.0f);
                 text.setPaintFlags(text.getPaintFlags() & (~android.graphics.Paint.STRIKE_THRU_TEXT_FLAG));
             }
+
+            // Listener para cambios en el checkbox
+            checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (listener != null) {
+                    listener.onSubtaskChanged(subtask, isChecked);
+                }
+            });
         }
     }
 }

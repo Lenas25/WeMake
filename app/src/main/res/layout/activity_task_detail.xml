@@ -64,7 +64,7 @@
     </LinearLayout>
 
     <!-- Contenido principal -->
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="?attr/actionBarSize"
@@ -151,10 +151,14 @@
 
                         <TextView
                             android:id="@+id/task_detail_assigned_members"
-                            style="@style/TextAppearance.Material3.BodyMedium"
-                            android:layout_width="0dp"
+                            style="@style/TextAppearance.Material3.BodyLarge"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="16dp" />
+                            android:text="Sin asignar"
+                            android:layout_marginTop="8dp"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textStyle="bold"
+                            android:gravity="center"/>
                     </LinearLayout>
 
                     <!-- Revisado por -->
@@ -406,12 +410,13 @@
                     <!-- Lista de subtareas -->
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/subtasks_recycler"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp" />
+                        android:paddingVertical="4dp"
+                        android:nestedScrollingEnabled="false"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

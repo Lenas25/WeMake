@@ -26,6 +26,11 @@ public class TaskModel {
     private Date dueDate;
     private List<Subtask> subtasks;
 
+    // Campos para recompensa y penalidad
+    private int rewardPoints;
+    private int penaltyPoints;
+    private String reviewerId; // ID del usuario que revisa la tarea
+
     // Constructor vacío para Firebase
     public TaskModel() {}
 
@@ -84,6 +89,15 @@ public class TaskModel {
 
     public List<Subtask> getSubtasks() { return subtasks; }
     public void setSubtasks(List<Subtask> subtasks) { this.subtasks = subtasks; }
+
+    public int getRewardPoints() { return rewardPoints; }
+    public void setRewardPoints(int rewardPoints) { this.rewardPoints = rewardPoints; }
+
+    public int getPenaltyPoints() { return penaltyPoints; }
+    public void setPenaltyPoints(int penaltyPoints) { this.penaltyPoints = penaltyPoints; }
+
+    public String getReviewerId() { return reviewerId; }
+    public void setReviewerId(String reviewerId) { this.reviewerId = reviewerId; }
 
     // Métodos de utilidad
     public boolean isPending() { return "pending".equals(status); }

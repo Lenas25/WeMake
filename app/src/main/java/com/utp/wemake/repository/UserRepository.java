@@ -134,5 +134,30 @@ public class UserRepository {
                 .update("fcmToken", token);
     }
 
+    /**
+     * Obtiene usuarios por sus IDs
+     */
+    public Task<List<User>> getUsersByIds(List<String> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return Tasks.forResult(new ArrayList<>());
+        }
+
+        return db.collection(COLLECTION_USERS)
+                .whereIn(FieldPath.documentId(), userIds)
+                .get()
+                .continueWith(task -> {
+                    List<User> users = new ArrayList<>();
+                    if (task.isSuccessful()) {
+                        for (DocumentSnapshot doc : task.getResult()) {
+                            User user = doc.toObject(User.class);
+                            if (user != null) {
+                                user.setUserid(doc.getId());
+                                users.add(user);
+                            }
+                        }
+                    }
+                    return users;
+                });
+    }
 
 }

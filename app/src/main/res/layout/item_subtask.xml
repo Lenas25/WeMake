@@ -1,41 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/layoutSubtasks"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
-    android:padding="8dp">
+    android:layout_marginVertical="4dp"
+    android:layout_marginHorizontal="4dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:cardUseCompatPadding="true"
+    app:strokeColor="?attr/colorOutlineVariant"
+    app:strokeWidth="1dp"
+    app:cardBackgroundColor="?attr/colorSurfaceContainerLow">
 
-    <com.google.android.material.card.MaterialCardView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="2dp"
-        app:cardBackgroundColor="?attr/colorSurface">
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="12dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <CheckBox
+            android:id="@+id/subtask_checkbox"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:padding="12dp">
+            android:layout_marginEnd="12dp" />
 
-            <CheckBox
-                android:id="@+id/subtask_checkbox"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="12dp" />
-
-            <TextView
-                android:id="@+id/subtask_text"
-                style="@style/TextAppearance.Material3.BodyMedium"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Texto de la subtarea" />
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-</LinearLayout>
+        <TextView
+            android:id="@+id/subtask_text"
+            style="@style/TextAppearance.Material3.BodyMedium"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Texto de la subtarea"
+            android:textColor="?attr/colorOnSurface"/>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

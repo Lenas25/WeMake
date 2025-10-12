@@ -184,6 +184,49 @@ public class TaskRepository {
                 });
     }
 
+    /**
+     * Obtiene una tarea específica por su ID incluyendo sus subtareas
+     */
+    public Task<TaskModel> getTaskWithSubtasks(String taskId) {
+        return getTaskById(taskId).continueWithTask(taskResult -> {
+            if (taskResult.isSuccessful() && taskResult.getResult() != null) {
+                TaskModel task = taskResult.getResult();
+                // Cargar subtareas
+                return getSubtasksByTask(taskId).continueWith(subtasksResult -> {
+                    if (subtasksResult.isSuccessful()) {
+                        task.setSubtasks(subtasksResult.getResult());
+                    }
+                    return task;
+                });
+            }
+            return taskResult;
+        });
+    }
+
+    /**
+     * Actualiza una tarea completa incluyendo subtareas
+     */
+    public Task<Void> updateTaskWithSubtasks(TaskModel task) {
+        WriteBatch batch = db.batch();
+        
+        // Actualizar la tarea principal
+        DocumentReference taskRef = db.collection(TaskConstants.COLLECTION_TASKS)
+                .document(task.getId());
+        batch.set(taskRef, task);
+        
+        // Actualizar subtareas si existen
+        if (task.getSubtasks() != null && !task.getSubtasks().isEmpty()) {
+            for (Subtask subtask : task.getSubtasks()) {
+                DocumentReference subtaskRef = taskRef
+                        .collection(TaskConstants.COLLECTION_SUBTASKS)
+                        .document(subtask.getId());
+                batch.set(subtaskRef, subtask);
+            }
+        }
+        
+        return batch.commit();
+    }
+
     // Interfaz para el callback
     public interface OnTasksChangedListener {
         void onTasksChanged(List<TaskModel> tasks);
