@@ -112,6 +112,34 @@
                     android:padding="4dp"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
 
+                <!-- Layout para resultados de búsqueda -->
+                <LinearLayout
+                    android:id="@+id/layoutSearchResults"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        style="@style/TextAppearance.Material3.BodyMedium"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:text="@string/search_result"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorOnSurface"/>
+                </LinearLayout>
+
+                <!-- RecyclerView para resultados de búsqueda -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvSearchResults"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="200dp"
+                    android:padding="4dp"
+                    android:visibility="gone"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+
                 <!-- Estado vacío -->
                 <LinearLayout
                     android:id="@+id/layoutEmptyState"
@@ -130,6 +158,7 @@
                         android:alpha="0.5"/>
 
                     <TextView
+                        android:id="@+id/empty_title"
                         style="@style/TextAppearance.Material3.BodyLarge"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -138,6 +167,7 @@
                         android:textColor="?attr/colorOnSurfaceVariant"/>
 
                     <TextView
+                        android:id="@+id/empty_subtitle"
                         style="@style/TextAppearance.Material3.BodySmall"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -147,23 +177,6 @@
                         android:alpha="0.7"/>
                 </LinearLayout>
             </LinearLayout>
-
-            <!-- Botón de acción flotante -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSaveMembers"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:text="@string/btn_add_members"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.01"
-                style="@style/Widget.Material3.Button"
-                app:icon="@drawable/ic_save"
-                app:iconGravity="textStart"
-                app:iconPadding="8dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="24dp"
-                android:enabled="false"/>
         </LinearLayout>
     </ScrollView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

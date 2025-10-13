@@ -142,4 +142,16 @@
     <color name="md_theme_surfaceContainerHigh_highContrast">#D4D4DB</color>
     <color name="md_theme_surfaceContainerHighest_highContrast">#C6C6CD</color>
     <color name="bottomAppBarColor">#95B1EE</color>
+
+    <!-- Colores de prioridad para modo claro -->
+    <color name="priority_high">#FFEBEE</color>      <!-- Rojo muy claro -->
+    <color name="priority_medium">#FFF8E1</color>     <!-- Amarillo muy claro -->
+    <color name="priority_low">#E8F5E8</color>       <!-- Verde muy claro -->
+    <color name="priority_default">#F5F5F5</color>   <!-- Gris muy claro -->
+
+    <!-- Colores de borde para prioridad -->
+    <color name="priority_high_border">#FFCDD2</color>
+    <color name="priority_medium_border">#FFECB3</color>
+    <color name="priority_low_border">#C8E6C9</color>
+    <color name="priority_default_border">#E0E0E0</color>
 </resources>

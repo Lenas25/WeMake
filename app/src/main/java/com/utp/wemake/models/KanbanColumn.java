@@ -5,13 +5,13 @@ import java.util.List;
 public class KanbanColumn {
 
     private String title;
-    private List<Task> tasks;
+    private List<TaskModel> tasks;
 
-    public KanbanColumn(String title, List<Task> tasks) {
+    public KanbanColumn(String title, List<TaskModel> tasks) {
         this.title = title;
         this.tasks = tasks;
     }
 
     public String getTitle() { return title; }
-    public List<Task> getTasks() { return tasks; }
+    public List<TaskModel> getTasks() { return tasks; }
 }

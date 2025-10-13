@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:id="@+id/main"
+    tools:context=".ApproveRequestsActivity">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/top_app_bar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:titleCentered="true"
+            app:navigationIcon="@drawable/ic_arrow_back"
+            app:titleTextColor="?attr/colorOnSurface"
+            android:letterSpacing="0.01"
+            tools:title="@string/approve_requests"
+            style="@style/Widget.Material3.Toolbar.Surface"
+            />
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- RecyclerView para mostrar la lista de solicitudes pendientes -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_requests"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:padding="16dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:listitem="@layout/item_redemption_request" />
+
+    <!--
+        Vista de "Estado Vacío": Se muestra solo cuando no hay solicitudes.
+        Está centrada en la pantalla y oculta por defecto.
+    -->
+    <TextView
+        android:id="@+id/tv_empty_state"
+        style="@style/TextAppearance.Material3.BodyLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/empty_approve_coupons"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:visibility="gone"
+        tools:visibility="visible"
+        android:paddingHorizontal="50dp"
+        android:textAlignment="center"
+        android:layout_gravity="center"/>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

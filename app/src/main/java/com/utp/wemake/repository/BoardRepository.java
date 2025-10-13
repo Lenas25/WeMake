@@ -3,15 +3,21 @@ package com.utp.wemake.repository;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.firestore.WriteBatch;
 import com.utp.wemake.models.Board;
+import com.utp.wemake.models.Coupon;
 import com.utp.wemake.models.Member;
-
+import com.utp.wemake.models.RedemptionRequest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +58,7 @@ public class BoardRepository {
 
     /**
      * Busca un tablero por su código de invitación.
+     *
      * @return Una Tarea que contendrá el QuerySnapshot con el tablero encontrado (si existe).
      */
     public Task<QuerySnapshot> findBoardByInviteCode(String code) {
@@ -94,5 +101,121 @@ public class BoardRepository {
                 });
     }
 
+    /**
+     * Inicia una escucha en tiempo real para la colección de cupones de un tablero.
+     * @param boardId El ID del tablero.
+     * @param listener El callback que se activará con cada cambio.
+     * @return El registro del listener para poder cancelarlo después.
+     */
+    public ListenerRegistration listenToCouponsForBoard(String boardId, EventListener<QuerySnapshot> listener) {
+        return db.collection(COLLECTION_BOARDS).document(boardId).collection("coupons")
+                .addSnapshotListener(listener);
+    }
+
+    public Task<Void> createCoupon(String boardId, Coupon coupon) {
+        return db.collection(COLLECTION_BOARDS).document(boardId).collection("coupons").add(coupon).continueWith(task -> null);
+    }
+
+    public Task<Void> updateCoupon(String boardId, Coupon coupon) {
+        return db.collection(COLLECTION_BOARDS).document(boardId)
+                .collection("coupons").document(coupon.getId())
+                .set(coupon, SetOptions.merge()); // Merge para no borrar otros campos
+    }
+
+    public Task<Void> deleteCoupon(String boardId, String couponId) {
+        return db.collection(COLLECTION_BOARDS).document(boardId)
+                .collection("coupons").document(couponId)
+                .delete();
+    }
+
+    public Task<Void> requestCouponRedemption(String boardId, String userId, String userName, Coupon coupon) {
+        DocumentReference boardRef = db.collection(COLLECTION_BOARDS).document(boardId);
+
+        DocumentReference memberRef = boardRef.collection("members_details").document(userId);
+
+        DocumentReference requestRef = boardRef.collection("redemption_requests").document();
+
+        return db.runTransaction(transaction -> {
+            DocumentSnapshot memberSnap = transaction.get(memberRef);
+
+            Member member = memberSnap.toObject(Member.class);
+
+            if (member == null || member.getPoints() < coupon.getCost()) {
+                throw new FirebaseFirestoreException("No tienes suficientes puntos.", FirebaseFirestoreException.Code.ABORTED);
+            }
+
+            long newPoints = member.getPoints() - coupon.getCost();
+            transaction.update(memberRef, "points", newPoints);
+
+            RedemptionRequest request = new RedemptionRequest();
+            request.setUserId(userId);
+            request.setUserName(userName);
+            request.setCouponId(coupon.getId());
+            request.setCouponTitle(coupon.getTitle());
+            request.setCost(coupon.getCost());
+            request.setStatus("pendiente");
+
+            transaction.set(requestRef, request);
+
+            return null; // La transacción fue exitosa
+        });
+    }
+
+    public ListenerRegistration listenToPendingRedemptions(String boardId, EventListener<QuerySnapshot> listener) {
+        return db.collection(COLLECTION_BOARDS).document(boardId).collection("redemption_requests")
+                .whereEqualTo("status", "pendiente")
+                .orderBy("requestedAt", Query.Direction.DESCENDING)
+                .addSnapshotListener(listener);
+    }
+
+    public Task<Void> approveRedemptionRequest(String boardId, String requestId, String adminId) {
+        DocumentReference requestRef = db.collection(COLLECTION_BOARDS).document(boardId).collection("redemption_requests").document(requestId);
+        return requestRef.update("status", "aprobado", "reviewedBy", adminId, "reviewedAt", FieldValue.serverTimestamp());
+    }
+
+    public Task<Void> denyRedemptionRequest(String boardId, RedemptionRequest request, String adminId) {
+        DocumentReference requestRef = db.collection(COLLECTION_BOARDS).document(boardId).collection("redemption_requests").document(request.getId());
+        DocumentReference memberRef = db.collection(COLLECTION_BOARDS).document(boardId).collection("members_details").document(request.getUserId());
+
+        return db.runTransaction(transaction -> {
+            transaction.update(requestRef, "status", "denegado", "reviewedBy", adminId, "reviewedAt", FieldValue.serverTimestamp());
+            transaction.update(memberRef, "points", FieldValue.increment(request.getCost()));
+            return null;
+        });
+    }
+
+    /**
+     * Escucha en tiempo real las solicitudes de canje APROBADAS de un usuario específico en un tablero.
+     */
+    public ListenerRegistration listenToRedeemedCoupons(String boardId, String userId, EventListener<QuerySnapshot> listener) {
+        return db.collection(COLLECTION_BOARDS).document(boardId).collection("redemption_requests")
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("status", "aprobado")
+                .orderBy("requestedAt", Query.Direction.DESCENDING)
+                .addSnapshotListener(listener);
+    }
+
+    /**
+     * Escucha los cambios de un tablero en tiempo real.
+     * @param boardId El ID del tablero.
+     * @param listener El callback para manejar los cambios.
+     * @return El registro del listener para poder cancelarlo después.
+     */
+    public ListenerRegistration listenToBoardById(String boardId, EventListener<DocumentSnapshot> listener) {
+        return db.collection(COLLECTION_BOARDS).document(boardId).addSnapshotListener(listener);
+    }
+
+    /**
+     * Escucha los cambios de los detalles de un miembro en tiempo real.
+     * @param boardId El ID del tablero.
+     * @param userId El ID del usuario.
+     * @param listener El callback para manejar los cambios.
+     * @return El registro del listener para poder cancelarlo después.
+     */
+    public ListenerRegistration listenToMemberDetails(String boardId, String userId, EventListener<DocumentSnapshot> listener) {
+        return db.collection(COLLECTION_BOARDS).document(boardId)
+                .collection("members_details").document(userId)
+                .addSnapshotListener(listener);
+    }
 
 }

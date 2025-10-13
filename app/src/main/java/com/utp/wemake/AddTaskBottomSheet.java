@@ -14,6 +14,8 @@ import com.google.android.material.button.MaterialButton;
 
 public class AddTaskBottomSheet extends BottomSheetDialogFragment {
 
+    public static final String TAG = "AddTaskBottomSheet";
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -31,6 +33,8 @@ public class AddTaskBottomSheet extends BottomSheetDialogFragment {
         voiceButton.setOnClickListener(v -> {
             // Lógica para crear tarea por voz
             Toast.makeText(getContext(), "Iniciando creación por voz...", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(requireActivity(), VoiceTaskActivity.class);
+            startActivity(intent);
             dismiss(); // Cierra el BottomSheet
         });
 

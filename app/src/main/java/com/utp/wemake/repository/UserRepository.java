@@ -42,23 +42,6 @@ public class UserRepository {
     }
 
     /**
-     * Busca usuarios cuyo email empiece con el texto de búsqueda.
-     * @param query El email o parte del email a buscar.
-     * @return Una Tarea que contendrá la lista de objetos User.
-     */
-    public Task<List<User>> searchUsersByEmail(String query) {
-        String lowerQuery = query.toLowerCase().trim();
-        Query searchQuery = db.collection(COLLECTION_USERS)
-                .whereGreaterThanOrEqualTo("email", lowerQuery)
-                .whereLessThanOrEqualTo("email", lowerQuery + "\uf8ff")
-                .limit(10);
-
-        return searchQuery.get().continueWith(task ->
-                task.getResult().toObjects(User.class)
-        );
-    }
-
-    /**
      * Crea un documento para un nuevo usuario o actualiza los datos básicos si ya existe.
      * @param firebaseUser El objeto FirebaseUser del usuario autenticado.
      * @return Una Tarea de Firebase que se completa cuando la operación de escritura termina.
@@ -134,5 +117,30 @@ public class UserRepository {
                 .update("fcmToken", token);
     }
 
+    /**
+     * Obtiene usuarios por sus IDs
+     */
+    public Task<List<User>> getUsersByIds(List<String> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return Tasks.forResult(new ArrayList<>());
+        }
+
+        return db.collection(COLLECTION_USERS)
+                .whereIn(FieldPath.documentId(), userIds)
+                .get()
+                .continueWith(task -> {
+                    List<User> users = new ArrayList<>();
+                    if (task.isSuccessful()) {
+                        for (DocumentSnapshot doc : task.getResult()) {
+                            User user = doc.toObject(User.class);
+                            if (user != null) {
+                                user.setUserid(doc.getId());
+                                users.add(user);
+                            }
+                        }
+                    }
+                    return users;
+                });
+    }
 
 }

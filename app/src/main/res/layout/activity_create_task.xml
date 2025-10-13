@@ -129,27 +129,6 @@
                     app:singleLine="false"
                     app:singleSelection="false">
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chip_jorge"
-                        style="@style/Widget.Material3.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Jorge"
-                        app:chipIcon="@drawable/ic_profile"
-                        app:chipIconSize="20dp"
-                        app:closeIconEnabled="true" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chip_elena"
-                        style="@style/Widget.Material3.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Elena"
-                        android:layout_marginStart="8dp"
-                        app:chipIcon="@drawable/ic_profile"
-                        app:chipIconSize="20dp"
-                        app:closeIconEnabled="true" />
-
                 </com.google.android.material.chip.ChipGroup>
             </com.google.android.material.card.MaterialCardView>
 
