@@ -1,6 +1,10 @@
 package com.utp.wemake;
 
+import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
@@ -11,11 +15,13 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.utp.wemake.utils.ShakeDetector;
 
 public class MainActivity extends AppCompatActivity {
 
     // Declara el NavController como una variable de clase para que sea accesible en toda la actividad.
     private NavController navController;
+    private ShakeDetector shakeDetector;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +33,49 @@ public class MainActivity extends AppCompatActivity {
         setupNavigation();
         setupFab();
         setupBackButton();
+        setupShakeDetector();
+    }
+
+    private void setupShakeDetector() {
+        shakeDetector = new ShakeDetector(this);
+        shakeDetector.setOnShakeListener(() -> {
+            vibratePhone();
+            showAddTaskBottomSheet();
+        });
+    }
+
+    /**
+     * Genera una vibración corta de confirmación.
+     */
+    private void vibratePhone() {
+        Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        if (vibrator == null || !vibrator.hasVibrator()) {
+            return; // No hacer nada si el dispositivo no puede vibrar
+        }
+
+        // La API de vibración cambió en Android Oreo (API 26)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Para versiones nuevas de Android
+            vibrator.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            // Para versiones antiguas (deprecated en API 26)
+            vibrator.vibrate(50); // Vibra por 50 milisegundos
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Empieza a escuchar los sensores cuando la actividad está en primer plano.
+        shakeDetector.resume();
+    }
+
+    // --- AÑADIR ---
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Deja de escuchar los sensores para ahorrar batería cuando la actividad no está en primer plano.
+        shakeDetector.pause();
     }
 
     /**
@@ -88,22 +137,12 @@ public class MainActivity extends AppCompatActivity {
      * Crea y muestra el BottomSheet para añadir una nueva tarea.
      */
     private void showAddTaskBottomSheet() {
-        // Asumiendo que has creado una clase AddTaskBottomSheet que hereda de BottomSheetDialogFragment
-        // y que usa el nuevo layout que diseñaste.
-        AddTaskBottomSheet bottomSheet = new AddTaskBottomSheet();
-
-        // Muestra el BottomSheet.
-        bottomSheet.show(getSupportFragmentManager(), "AddTaskBottomSheetTag");
-    }
-
-    /**
-     * Método público para que los fragments puedan obtener el nombre del usuario.
-     */
-    public String getUserName() {
-        // Es una buena práctica verificar si el Intent tiene la clave antes de acceder a ella.
-        if (getIntent() != null && getIntent().hasExtra(LoginActivity.USER_NAME)) {
-            return getIntent().getStringExtra(LoginActivity.USER_NAME);
+        if (getSupportFragmentManager().findFragmentByTag("AddTaskBottomSheetTag") != null) {
+            return;
         }
-        return null; // Devuelve null si no se encuentra el nombre.
+
+        // Si no está visible, entonces sí creamos y mostramos una nueva instancia.
+        AddTaskBottomSheet bottomSheet = new AddTaskBottomSheet();
+        bottomSheet.show(getSupportFragmentManager(), "AddTaskBottomSheetTag");
     }
 }

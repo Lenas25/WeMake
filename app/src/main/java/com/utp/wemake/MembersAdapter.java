@@ -138,19 +138,12 @@ public class MembersAdapter extends RecyclerView.Adapter<MembersAdapter.MemberVi
                 tvName.setText(user.getName() + " (Tú)"); // Añadimos un indicador visual
                 btnRemoveMember.setVisibility(View.GONE); // Ocultamos el botón de eliminar
                 chipRole.setClickable(false); // Deshabilitamos el clic en el rol
-                itemView.setClickable(false); // Deshabilitamos el clic en el ítem completo
             } else {
                 // ES OTRO USUARIO
                 tvName.setText(user.getName()); // Nos aseguramos de que no tenga el "(Tú)"
                 btnRemoveMember.setVisibility(View.VISIBLE); // Mostramos el botón de eliminar
                 chipRole.setClickable(true); // Habilitamos el clic en el rol
-                itemView.setClickable(true); // Habilitamos el clic en el ítem
             }
-
-
-            itemView.setOnClickListener(v -> {
-                    listener.onMemberAdded(user.getUserid());
-            });
 
             chipRole.setOnClickListener(v -> {
                     listener.onMemberClick(memberData);

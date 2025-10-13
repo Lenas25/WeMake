@@ -104,8 +104,8 @@
                             android:gravity="top"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Selector de Color -->
                     <LinearLayout
+                        android:id="@+id/color_selector_layout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
@@ -113,7 +113,6 @@
                         android:layout_marginTop="20dp"
                         android:padding="12dp"
                         android:background="?attr/colorSurfaceContainerHighest"
-                        android:backgroundTint="?attr/colorSurfaceContainerHighest"
                         android:clickable="true"
                         android:focusable="true">
 
@@ -132,61 +131,20 @@
                             android:text="@string/background_color"
                             android:textColor="?attr/colorOnSurface"/>
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:paddingVertical="15dp"
-                            android:paddingHorizontal="10dp"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
+                        <View
+                            android:id="@+id/color_preview"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/circle_background_with_border"
+                            android:backgroundTint="#DDEA96" />
 
-                            <!-- Colores predefinidos -->
-                            <View
-                                android:id="@+id/color_option_1"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:background="@drawable/circle_background_with_border"
-                                android:backgroundTint="#E6EE9C"
-                                android:layout_marginEnd="8dp"
-                                android:clickable="true"
-                                android:focusable="true"/>
-
-                            <View
-                                android:id="@+id/color_option_2"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:background="@drawable/circle_background_with_border"
-                                android:backgroundTint="#FFCDD2"
-                                android:layout_marginEnd="8dp"
-                                android:clickable="true"
-                                android:focusable="true"/>
-
-                            <View
-                                android:id="@+id/color_option_3"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:background="@drawable/circle_background_with_border"
-                                android:backgroundTint="#C8E6C9"
-                                android:layout_marginEnd="8dp"
-                                android:clickable="true"
-                                android:focusable="true"/>
-
-                            <View
-                                android:id="@+id/color_option_4"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:background="@drawable/circle_background_with_border"
-                                android:backgroundTint="#BBDEFB"
-                                android:clickable="true"
-                                android:focusable="true"/>
-
-                            <ImageView
-                                android:layout_width="20dp"
-                                android:layout_height="20dp"
-                                android:src="@drawable/ic_arrow_right"
-                                app:tint="?attr/colorOnSurfaceVariant"
-                                android:layout_marginStart="8dp"/>
-                        </LinearLayout>
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_arrow_right"
+                            app:tint="?attr/colorOnSurfaceVariant"
+                            android:layout_marginStart="8dp"/>
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

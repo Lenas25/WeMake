@@ -1,5 +1,6 @@
 package com.utp.wemake;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
@@ -11,6 +12,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.github.dhaval2404.colorpicker.ColorPickerDialog;
+import com.github.dhaval2404.colorpicker.model.ColorShape;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -26,6 +29,8 @@ public class EditBoardActivity extends AppCompatActivity {
     private MaterialButton btnSave, btnDelete;
     private View selectedColorView;
     private Map<Integer, String> colorMap = new HashMap<>();
+    private String selectedColorHex = "#DDEA96";
+    private View colorPreview;
 
     private BoardViewModel viewModel;
     private String currentBoardId;
@@ -33,6 +38,7 @@ public class EditBoardActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_edit_board);
 
         currentBoardId = getIntent().getStringExtra(EXTRA_BOARD_ID);
@@ -45,7 +51,8 @@ public class EditBoardActivity extends AppCompatActivity {
 
         // Determina el modo (Crear o Editar)
         if (currentBoardId != null) {
-            // Modo Editar: carga los datos del tablero
+            MaterialToolbar toolbar = findViewById(R.id.top_app_bar);
+            toolbar.setTitle("Editar Tablero");
             viewModel.loadBoard(currentBoardId);
         } else {
             // Modo Crear: ajusta la UI
@@ -57,23 +64,26 @@ public class EditBoardActivity extends AppCompatActivity {
         MaterialToolbar toolbar = findViewById(R.id.top_app_bar);
         toolbar.setTitle("Crear Nuevo Tablero");
         btnDelete.setVisibility(View.GONE);
-        // Selecciona el primer color por defecto
-        updateColorSelection(findViewById(R.id.color_option_1));
+        updateColorPreview(selectedColorHex);
     }
 
     private void setupToolbar() {
         MaterialToolbar toolbar = findViewById(R.id.top_app_bar);
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_container), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
     }
 
     private void initializeViews() {
-        setupViews();
-
-        // Mapea los IDs de las vistas de color a sus valores hexadecimales
-        colorMap.put(R.id.color_option_1, "#E6EE9C");
-        colorMap.put(R.id.color_option_2, "#FFCDD2");
-        colorMap.put(R.id.color_option_3, "#C8E6C9");
-        colorMap.put(R.id.color_option_4, "#BBDEFB");
+        etBoardName = findViewById(R.id.et_board_name);
+        etBoardDescription = findViewById(R.id.et_board_description);
+        btnSave = findViewById(R.id.btn_save);
+        btnDelete = findViewById(R.id.btn_delete);
+        colorPreview = findViewById(R.id.color_preview);
     }
 
     private void setupObservers() {
@@ -82,14 +92,8 @@ public class EditBoardActivity extends AppCompatActivity {
             if (board != null) {
                 etBoardName.setText(board.getName());
                 etBoardDescription.setText(board.getDescription());
-
-                // Encuentra la vista de color que coincide y la selecciona
-                for (Map.Entry<Integer, String> entry : colorMap.entrySet()) {
-                    if (entry.getValue().equalsIgnoreCase(board.getColor())) {
-                        updateColorSelection(findViewById(entry.getKey()));
-                        break;
-                    }
-                }
+                selectedColorHex = board.getColor();
+                updateColorPreview(selectedColorHex);
             }
         });
 
@@ -106,37 +110,6 @@ public class EditBoardActivity extends AppCompatActivity {
         });
     }
 
-
-    /**
-     * Configuración de la barra de navegación superior (Toolbar) y el modo EdgeToEdge.
-     */
-    private void setupToolBar() {
-        MaterialToolbar toolbar = findViewById(R.id.top_app_bar);
-        toolbar.setTitle(R.string.title_edit_board);
-        toolbar.setNavigationOnClickListener(v -> onBackPressed());
-
-        // Maneja los insets para el modo EdgeToEdge
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_container), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-    }
-
-    /**
-     * Inicializa las vistas del layout.
-     */
-    private void setupViews() {
-        etBoardName = findViewById(R.id.et_board_name);
-        etBoardDescription = findViewById(R.id.et_board_description);
-        btnSave = findViewById(R.id.btn_save);
-        btnDelete = findViewById(R.id.btn_delete);
-        
-        // Seleccionar el primer color por defecto
-        selectedColorView = findViewById(R.id.color_option_1);
-        updateColorSelection(selectedColorView);
-    }
-
     /**
      * Configura los listeners para los botones y selectores de color.
      */
@@ -151,29 +124,7 @@ public class EditBoardActivity extends AppCompatActivity {
             showDeleteConfirmation();
         });
 
-        // Selectores de color
-        findViewById(R.id.color_option_1).setOnClickListener(v -> updateColorSelection(v));
-        findViewById(R.id.color_option_2).setOnClickListener(v -> updateColorSelection(v));
-        findViewById(R.id.color_option_3).setOnClickListener(v -> updateColorSelection(v));
-        findViewById(R.id.color_option_4).setOnClickListener(v -> updateColorSelection(v));
-    }
-
-    /**
-     * Actualiza la selección visual del color.
-     */
-    private void updateColorSelection(View colorView) {
-        // Remover selección anterior
-        if (selectedColorView != null) {
-            selectedColorView.setScaleX(1.0f);
-            selectedColorView.setScaleY(1.0f);
-            selectedColorView.setAlpha(0.7f);
-        }
-        
-        // Aplicar nueva selección
-        selectedColorView = colorView;
-        selectedColorView.setScaleX(1.2f);
-        selectedColorView.setScaleY(1.2f);
-        selectedColorView.setAlpha(1.0f);
+        findViewById(R.id.color_selector_layout).setOnClickListener(v -> showColorPickerDialog());
     }
 
     /**
@@ -182,7 +133,7 @@ public class EditBoardActivity extends AppCompatActivity {
     private void saveBoardChanges() {
         String boardName = etBoardName.getText().toString().trim();
         String boardDescription = etBoardDescription.getText().toString().trim();
-        String selectedColor = colorMap.get(selectedColorView.getId());
+        String selectedColor = this.selectedColorHex;
 
         if (boardName.isEmpty()) {
             etBoardName.setError("El nombre del tablero es requerido");
@@ -197,15 +148,37 @@ public class EditBoardActivity extends AppCompatActivity {
         }
 
         viewModel.saveBoard(currentBoardId, boardName, boardDescription, selectedColor);
-
-        // Aquí implementarías la lógica para guardar los cambios
-        Toast.makeText(this, "Cambios guardados exitosamente", Toast.LENGTH_SHORT).show();
-        
-        // Regresar a la pantalla anterior
-        onBackPressed();
     }
 
+        /**
+         * Muestra el diálogo del selector de color.
+         */
+        private void showColorPickerDialog() {
+            new ColorPickerDialog
+                    .Builder(this)
+                    .setTitle("Elige un color para el tablero")
+                    .setColorShape(ColorShape.SQAURE) // O ColorShape.CIRCLE
+                    .setDefaultColor(selectedColorHex) // El color actualmente seleccionado
+                    .setColorListener((color, colorHex) -> {
+                        // Este código se ejecuta cuando el usuario selecciona un color y pulsa "OK"
+                        selectedColorHex = colorHex;
+                        updateColorPreview(colorHex);
+                    })
+                    .show();
+        }
 
+        /**
+         * Actualiza la previsualización del color.
+         * @param colorHex El color en formato hexadecimal (ej: "#FF5733").
+         */
+        private void updateColorPreview(String colorHex) {
+            try {
+                int color = Color.parseColor(colorHex);
+                colorPreview.getBackground().setTint(color);
+            } catch (IllegalArgumentException e) {
+                colorPreview.getBackground().setTint(Color.LTGRAY);
+            }
+        }
 
     /**
      * Muestra un diálogo de confirmación para eliminar el tablero.

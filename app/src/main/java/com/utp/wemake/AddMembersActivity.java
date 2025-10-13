@@ -260,7 +260,6 @@ public class AddMembersActivity extends AppCompatActivity
         viewModel.addMemberToBoard(boardId, userId);
     }
 
-    // Implementación de SearchUsersAdapter.OnUserClickListener
     @Override
     public void onUserClick(User user) {
         viewModel.addMemberToBoard(boardId, user.getUserid());

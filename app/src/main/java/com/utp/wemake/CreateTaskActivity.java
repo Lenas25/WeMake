@@ -112,9 +112,6 @@ public class CreateTaskActivity extends AppCompatActivity {
         toolbar.setTitle(R.string.new_task);
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
-        // Configurar la toolbar como ActionBar
-        setSupportActionBar(toolbar);
-
         // Maneja los insets para el modo EdgeToEdge
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_container), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());

@@ -44,6 +44,7 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
     private TextView profileName;
     private MainViewModel mainViewModel;
     private AutoCompleteTextView dropdownText;
+    private View emptyStateLayout;
 
     // Flag para evitar múltiples cargas
     private boolean isLoadingData = false;
@@ -109,6 +110,7 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
         profileAvatar = view.findViewById(R.id.avatar);
         profileName = view.findViewById(R.id.name);
         dropdownText = view.findViewById(R.id.dropdown_text);
+        emptyStateLayout = view.findViewById(R.id.empty_state_layout);
 
         // Inicializar el RecyclerView del Kanban
         kanbanBoardRecycler = view.findViewById(R.id.recycler_kanban_board);
@@ -201,6 +203,15 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
             if (total != null && getView() != null) {
                 TextView valueTareas = getView().findViewById(R.id.card_tareas).findViewById(R.id.summary_value);
                 valueTareas.setText(String.valueOf(total));
+                if (total == 0) {
+                    // Si no hay tareas, oculta el RecyclerView y muestra el layout de estado vacío.
+                    kanbanBoardRecycler.setVisibility(View.GONE);
+                    emptyStateLayout.setVisibility(View.VISIBLE);
+                } else {
+                    // Si hay una o más tareas, muestra el RecyclerView y oculta el estado vacío.
+                    kanbanBoardRecycler.setVisibility(View.VISIBLE);
+                    emptyStateLayout.setVisibility(View.GONE);
+                }
             }
         });
 

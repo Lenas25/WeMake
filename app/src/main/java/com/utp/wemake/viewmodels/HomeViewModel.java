@@ -150,22 +150,6 @@ public class HomeViewModel extends ViewModel {
         });
     }
 
-    /**
-     * Carga los datos del perfil del usuario actual desde Firestore.
-     */
-    public void loadUserData() {
-        isLoading.setValue(true);
-        userRepository.getCurrentUserData().addOnCompleteListener(task -> {
-            isLoading.setValue(false);
-            if (task.isSuccessful() && task.getResult() != null) {
-                User user = task.getResult().toObject(User.class);
-                userData.setValue(user);
-            } else {
-                errorMessage.setValue("Error al cargar el perfil.");
-            }
-        });
-    }
-
     @Override
     protected void onCleared() {
         super.onCleared();

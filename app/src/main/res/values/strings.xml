@@ -28,7 +28,6 @@
     <string name="no_account">¿Aún no tienes una cuenta?</string>
     <string name="register_now">Registrate ahora</string>
 
-
     <string name="title_signup">Nueva Cuenta</string>
     <string name="description_signup">¡Ingresa tus datos para conocerte mejor!</string>
     <string name="lbl_name">Ingresa tu nombre completo</string>
@@ -73,6 +72,8 @@
     <string name="ex_task_duedate">Fecha</string>
     <string name="btn_change">Cambiar Estado</string>
     <string name="btn_open">Abrir Tarea</string>
+    <string name="empty_task_title">No hay tareas en este tablero</string>
+    <string name="empty_task_description">¡Crea una nueva tarea para empezar a organizarte!</string>
 
     <!-- Create Task -->
     <string name="new_task_title">¡Nueva Responsabilidad!</string>
@@ -108,6 +109,7 @@
 
     <!-- Board Configuration -->
     <string name="board_name_sample">Crypto Dashboard</string>
+    <string name="more_members">+1</string>
     <string name="detail_board">Veremos más sobre criptomonedas</string>
     <string name="members">Integrantes</string>
     <string name="edit_board">Editar Tablero</string>
@@ -120,9 +122,34 @@
     <string name="detail_redeem_points">Canjea tus puntos ganados</string>
     <string name="approve_tasks">Aprobar Tareas</string>
     <string name="detail_approve_tasks">Establecer fecha limite y puntajes</string>
+    <string name="approve_requests">Aprobar Cupones</string>
+    <string name="detail_approve_requests">Aceptar o denegar las solcitudes</string>
+
+    <!-- Manage Coupons -->
+    <string name="empty_manage_coupons">Aún no has creado cupones.</string>
+    <string name="new_coupon">Crear nuevo cupón</string>
+    <string name="create_coupon">Nuevo cupón</string>
+    <string name="edit_coupon">Editar cupón</string>
+    <string name="hint_title_coupon">Título (ej. Una hora libre)</string>
+    <string name="hint_description_coupon">Descripción</string>
+    <string name="hint_points_coupon">Costo en Puntos</string>
+
+    <!-- Approves Coupons -->
+    <string name="empty_approve_coupons">No hay solicitudes pendientes en este momento.</string>
+
+
+    <!-- Approve Tasks -->
+
+
+    <!-- Redeem Points -->
+    <string name="available_points">Tus Puntos Disponibles</string>
+    <string name="available_coupons">Recompensas Disponibles</string>
+    <string name="redeemed_coupons">Mis Recompensas Canjeadas</string>
+    <string name="empty_title_coupons">No hay recompensas disponibles</string>
+    <string name="empty_detail_coupons">Vuelve más tarde para ver nuevas opciones.</string>
+
 
     <string name="default_web_client_id">480368312007-p5m8b0hi0k3e6a7ubqvjrqrd823fpvhg.apps.googleusercontent.com</string>
-
 
     <!-- Profile -->
     <string name="option_edit_profile">Editar Perfil</string>
@@ -189,4 +216,10 @@
 
     <string name="dialog_cancel">Cancelar</string>
     <string name="dialog_accept">Aceptar</string>
+    <string name="delete">Eliminar</string>
+    <string name="create">Crear</string>
+    <string name="edit">Editar</string>
+    <string name="denied">Denegar</string>
+    <string name="approve">Aprobar</string>
+    <string name="loading">Cargando ...</string>
 </resources>
