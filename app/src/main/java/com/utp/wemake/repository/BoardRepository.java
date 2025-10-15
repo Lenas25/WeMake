@@ -217,5 +217,24 @@ public class BoardRepository {
                 .collection("members_details").document(userId)
                 .addSnapshotListener(listener);
     }
+    /**
+     * Une un usuario a un tablero existente. Realiza dos operaciones en un batch:
+     * Añade el ID del usuario al array 'members' del tablero.
+     * Crea un nuevo documento para el miembro en la subcolección 'members_details'.
+     */
+    public Task<Void> joinBoard(String boardId, String userId) {
+        DocumentReference boardRef = db.collection(COLLECTION_BOARDS).document(boardId);
+        DocumentReference memberDetailsRef = boardRef.collection("members_details").document(userId);
+
+        Member newMember = new Member("member", 0);
+
+        WriteBatch batch = db.batch();
+
+        batch.update(boardRef, "members", FieldValue.arrayUnion(userId));
+
+        batch.set(memberDetailsRef, newMember);
+
+        return batch.commit();
+    }
 
 }

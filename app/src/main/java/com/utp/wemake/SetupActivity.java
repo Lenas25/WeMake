@@ -9,19 +9,16 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.utp.wemake.viewmodels.MainViewModel;
-import com.utp.wemake.viewmodels.SetupViewModel;
 
 public class SetupActivity extends AppCompatActivity {
 
     public static final String EXTRA_USER_NAME = "user_name";
-    private SetupViewModel viewModel;
     private MainViewModel mainViewModel;
 
     @Override
@@ -29,7 +26,6 @@ public class SetupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setup);
 
-        viewModel = new ViewModelProvider(this).get(SetupViewModel.class);
         mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);
 
         TextView tvWelcome = findViewById(R.id.tv_welcome_title);
@@ -52,20 +48,19 @@ public class SetupActivity extends AppCompatActivity {
             showJoinBoardDialog();
         });
 
-        viewModel.getJoinSuccess().observe(this, success -> {
-            if (success) {
-                Toast.makeText(this, "¡Te has unido al tablero!", Toast.LENGTH_SHORT).show();
-                // Navega a la pantalla principal
-                Intent intent = new Intent(this, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                finish();
-            }
-        });
-
-        viewModel.getError().observe(this, errorMessage -> {
-            if (errorMessage != null) {
-                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show();
+        mainViewModel.getJoinBoardSuccess().observe(this, success -> {
+            if (success != null) {
+                if (success) {
+                    Toast.makeText(this, "¡Te has unido al tablero!", Toast.LENGTH_SHORT).show();
+                    // Navega a la pantalla principal
+                    Intent intent = new Intent(this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    // El MainViewModel ahora notifica el fallo, así que podemos mostrar un error
+                    Toast.makeText(this, "No se pudo unir al tablero. Verifica el código.", Toast.LENGTH_LONG).show();
+                }
             }
         });
     }
@@ -97,9 +92,5 @@ public class SetupActivity extends AppCompatActivity {
         builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.cancel());
 
         builder.show();
-    }
-
-    @Override
-    public void onBackPressed() {
     }
 }

@@ -2,6 +2,8 @@ package com.utp.wemake.auth;
 
 import android.app.Activity;
 import android.util.Log;
+import com.utp.wemake.utils.DataCleaner;
+import android.content.Context;
 
 import androidx.annotation.NonNull;
 
@@ -173,22 +175,24 @@ public class FirebaseAuthHelper {
             String userId = currentUser.getUid();
             DocumentReference userDocRef = firestore.collection("users").document(userId);
 
-            Map<String, Object> updates = new HashMap<>();
-            updates.put("fcmToken", null);
-
-            userDocRef.update(updates)
-                    .addOnSuccessListener(aVoid -> {
-                        firebaseAuth.signOut();
-                        Log.d(TAG, "FCM Token cleared and user signed out successfully.");
-                    })
-                    .addOnFailureListener(e -> {
-                        firebaseAuth.signOut();
-                        Log.w(TAG, "Error clearing FCM token, but signed out anyway.", e);
+            // 1. Limpiar token FCM
+            userDocRef.update("fcmToken", null)
+                    .addOnCompleteListener(task -> {
+                        if (!task.isSuccessful()) {
+                            Log.w(TAG, "Error al limpiar el token FCM.", task.getException());
+                        }
+                        performLocalCleanupAndSignOut();
                     });
         } else {
-            // Si no hay usuario, por si acaso, llamamos a signOut.
-            firebaseAuth.signOut();
+            performLocalCleanupAndSignOut();
         }
+    }
+
+    private void performLocalCleanupAndSignOut() {
+        DataCleaner.clearAllLocalData(activity.getApplicationContext());
+
+        firebaseAuth.signOut();
+        Log.d(TAG, "Datos locales limpios y sesión cerrada.");
     }
 
     // Método para obtener el usuario actual
