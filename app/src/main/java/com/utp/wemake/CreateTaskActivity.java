@@ -86,37 +86,16 @@ public class CreateTaskActivity extends AppCompatActivity {
         viewModel.loadBoardMembers(boardId);
     }
 
-    /**
-     * Infla el menú de opciones en la Toolbar.
-     */
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.save_menu, menu);
-        return true;
-    }
-
-    /**
-     * Maneja los clics en los ítems del menú de la Toolbar (ej. "Guardar").
-     */
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.action_save) {
-            saveTask(); // Llama a tu lógica de guardado
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
     private void setupToolbar() {
         MaterialToolbar toolbar = findViewById(R.id.top_app_bar);
-        toolbar.setTitle(R.string.new_task);
+        // El menú se infla automáticamente por app:menu en el XML
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
-
-        // Maneja los insets para el modo EdgeToEdge
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_container), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
+        toolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_save) {
+                saveTask(); // Llama a la lógica de guardado
+                return true;
+            }
+            return false;
         });
     }
 
