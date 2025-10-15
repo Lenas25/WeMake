@@ -15,11 +15,15 @@ public class ProfileViewModel extends ViewModel {
 
     private final UserRepository userRepository = new UserRepository();
     private final ImageRepository imageRepository = new ImageRepository();
+    private final MutableLiveData<String> _profilePictureUrlUpdated = new MutableLiveData<>();
     private final BoardRepository boardRepository = new BoardRepository();
     private final FirebaseAuth auth = FirebaseAuth.getInstance();
 
     // Lo reemplazamos con LiveData para los detalles del miembro.
     private final MutableLiveData<Member> memberDetails = new MutableLiveData<>();
+    public LiveData<String> getProfilePictureUrlUpdated() {
+        return _profilePictureUrlUpdated;
+    }
 
     // LiveData existentes
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>();
@@ -91,7 +95,9 @@ public class ProfileViewModel extends ViewModel {
 
         userRepository.updateProfileData(userToUpdate).addOnCompleteListener(task -> {
             isLoading.setValue(false);
-            if (!task.isSuccessful()) {
+            if (task.isSuccessful()) {
+                _profilePictureUrlUpdated.setValue(newPhotoUrl);
+            } else {
                 errorMessage.setValue("Error al guardar la nueva foto en el perfil.");
             }
         });

@@ -8,6 +8,7 @@ import android.os.Looper;
 import com.cloudinary.android.MediaManager;
 import com.cloudinary.android.callback.ErrorInfo;
 import com.cloudinary.android.callback.UploadCallback;
+import com.utp.wemake.R;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,9 +26,9 @@ public class ImageRepository {
     // Constructor para inicializar MediaManager (llámalo en tu clase Application)
     public static void initialize(Context context) {
         Map<String, String> config = new HashMap<>();
-        config.put("cloud_name", "TU_CLOUD_NAME");
-        config.put("api_key", "TU_API_KEY");
-        config.put("api_secret", "TU_API_SECRET");
+        config.put("cloud_name", context.getString(R.string.cloudinary_cloud_name));
+        config.put("api_key", context.getString(R.string.cloudinary_api_key));
+        config.put("api_secret", context.getString(R.string.cloudinary_api_secret));
         MediaManager.init(context, config);
     }
 
@@ -43,7 +44,7 @@ public class ImageRepository {
 
         executor.execute(() -> {
             MediaManager.get().upload(imageUri)
-                    .unsigned("TU_UPLOAD_PRESET") // ¡Importante! Usa un upload preset sin firmar
+                    .unsigned("android_profile_pics")
                     .callback(new UploadCallback() {
                         @Override
                         public void onStart(String requestId) {

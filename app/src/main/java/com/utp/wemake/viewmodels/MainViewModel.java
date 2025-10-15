@@ -23,7 +23,6 @@ public class MainViewModel extends AndroidViewModel {
 
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
-    private final MemberRepository memberRepository;
     private final BoardSelectionPrefs boardSelectionRepo;
     private final FirebaseAuth auth = FirebaseAuth.getInstance();
 
@@ -39,7 +38,6 @@ public class MainViewModel extends AndroidViewModel {
         super(application);
         userRepository = new UserRepository();
         boardRepository = new BoardRepository();
-        memberRepository = new MemberRepository();
         boardSelectionRepo = new BoardSelectionPrefs(application);
         loadInitialData();
     }
@@ -70,7 +68,6 @@ public class MainViewModel extends AndroidViewModel {
         });
     }
 
-
     private void loadUserBoards() {
         boardRepository.getBoardsForCurrentUser().addOnCompleteListener(task -> {
             if (task.isSuccessful() && task.getResult() != null) {
@@ -82,6 +79,17 @@ public class MainViewModel extends AndroidViewModel {
             }
         });
     }
+
+    public void updateUserPhotoLocally(String newPhotoUrl) {
+        User currentUser = currentUserData.getValue();
+
+        if (currentUser != null) {
+            currentUser.setPhotoUrl(newPhotoUrl);
+
+            currentUserData.setValue(currentUser);
+        }
+    }
+
 
     private void determineInitialSelectedBoard(List<Board> boards) {
         if (boards == null || boards.isEmpty()) return;
@@ -117,26 +125,35 @@ public class MainViewModel extends AndroidViewModel {
      */
     public void joinBoardWithCode(String code) {
         if (code == null || code.trim().length() != 6) {
-            // Podrías usar un LiveData para errores también si quieres
+            joinBoardSuccess.setValue(false);
             return;
         }
 
         String upperCaseCode = code.trim().toUpperCase();
         String currentUserId = auth.getUid();
-        if (currentUserId == null) return;
+        if (currentUserId == null) {
+            joinBoardSuccess.setValue(false);
+            return;
+        }
 
-        // 1. Busca el tablero con el código
         boardRepository.findBoardByInviteCode(upperCaseCode).addOnCompleteListener(findTask -> {
             if (findTask.isSuccessful() && findTask.getResult() != null && !findTask.getResult().isEmpty()) {
-                // Tablero encontrado
                 String boardId = findTask.getResult().getDocuments().get(0).getId();
 
+                boardRepository.joinBoard(boardId, currentUserId).addOnCompleteListener(joinTask -> {
+                    if (joinTask.isSuccessful()) {
+                        joinBoardSuccess.setValue(true);
+                        loadUserBoards();
+                    } else {
+                        joinBoardSuccess.setValue(false);
+                    }
+                });
 
             } else if (findTask.isSuccessful()) {
-                // Búsqueda exitosa, pero no se encontró el código
+                // La búsqueda funcionó, pero el código no existe
                 joinBoardSuccess.setValue(false);
             } else {
-                // Error en la búsqueda
+                // Ocurrió un error durante la búsqueda
                 joinBoardSuccess.setValue(false);
             }
         });
