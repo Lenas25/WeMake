@@ -54,76 +54,142 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:clipChildren="false"
-                    android:clipToPadding="false"
-                    android:paddingVertical="30dp"
+                    android:orientation="vertical"
+                    android:paddingVertical="20dp"
                     android:paddingHorizontal="20dp">
 
-                    <!-- Texto a la izquierda -->
+                    <!-- Información principal del tablero -->
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/tvBoardName"
-                            style="@style/TextAppearance.Material3.HeadlineSmall"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/loading"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnSurface"/>
-
-                        <TextView
-                            android:id="@+id/tvBoardDescription"
-                            style="@style/TextAppearance.Material3.LabelMedium"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/detail_board"
-                            android:textColor="?attr/colorOnSurfaceVariant"/>
-                    </LinearLayout>
-
-                    <!-- Integrantes a la derecha -->
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:clipChildren="false"
                         android:clipToPadding="false"
-                        android:orientation="vertical"
-                        android:gravity="center">
+                        android:paddingHorizontal="12dp">
 
-                        <TextView
-                            android:id="@+id/tvMembersLabel"
-                            style="@style/TextAppearance.Material3.LabelMedium"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/members"
-                            android:textColor="?attr/colorOnSurfaceVariant"/>
-
+                        <!-- Texto a la izquierda -->
                         <LinearLayout
-                            android:id="@+id/members_avatar_container"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="5dp"
-                            android:clipChildren="false"
-                            android:clipToPadding="false"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal">
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
                             <TextView
-                                android:id="@+id/members_overflow_count"
+                                android:id="@+id/tvBoardName"
+                                style="@style/TextAppearance.Material3.HeadlineSmall"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:background="@drawable/circle_background_with_border"
-                                android:backgroundTint="?attr/colorSurfaceVariant"
-                                android:gravity="center"
-                                android:text="@string/more_members"
-                                android:textColor="?attr/colorOnSurfaceVariant"
-                                android:textSize="12sp"
-                                android:visibility="gone" />
+                                android:text="@string/loading"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface"/>
+
+                            <TextView
+                                android:id="@+id/tvBoardDescription"
+                                style="@style/TextAppearance.Material3.LabelMedium"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/detail_board"
+                                android:textColor="?attr/colorOnSurfaceVariant"/>
                         </LinearLayout>
+
+                        <!-- Integrantes a la derecha -->
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:clipChildren="false"
+                            android:clipToPadding="false"
+                            android:orientation="vertical"
+                            android:gravity="center">
+
+                            <TextView
+                                android:id="@+id/tvMembersLabel"
+                                style="@style/TextAppearance.Material3.LabelMedium"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/members"
+                                android:textColor="?attr/colorOnSurfaceVariant"/>
+
+                            <LinearLayout
+                                android:id="@+id/members_avatar_container"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="5dp"
+                                android:clipChildren="false"
+                                android:clipToPadding="false"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+                                <TextView
+                                    android:id="@+id/members_overflow_count"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:background="@drawable/circle_background_with_border"
+                                    android:backgroundTint="?attr/colorSurfaceVariant"
+                                    android:gravity="center"
+                                    android:text="@string/more_members"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    android:textSize="12sp"
+                                    android:visibility="gone" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Código de invitación -->
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="10dp"
+                        app:dividerColor="?attr/colorOutlineVariant"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="12dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginEnd="12dp"
+                            android:src="@drawable/ic_share"
+                            android:contentDescription="@string/invitation_code"
+                            app:tint="?attr/colorPrimary"/>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                style="@style/TextAppearance.Material3.LabelMedium"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/invitation_code"
+                                android:textColor="?attr/colorOnSurface"/>
+
+                            <TextView
+                                android:id="@+id/tvInvitationCode"
+                                style="@style/TextAppearance.Material3.TitleMedium"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/loading"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface"
+                                android:fontFamily="monospace"
+                                android:letterSpacing="0.1"/>
+                        </LinearLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCopyInviteCode"
+                            style="@style/Widget.Material3.Button.IconButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:contentDescription="@string/copy_code"
+                            app:icon="@drawable/ic_copy"
+                            app:iconSize="20dp"
+                            app:iconTint="?attr/colorPrimary"/>
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
