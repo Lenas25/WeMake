@@ -124,6 +124,9 @@
     <string name="detail_approve_tasks">Establecer fecha limite y puntajes</string>
     <string name="approve_requests">Aprobar Cupones</string>
     <string name="detail_approve_requests">Aceptar o denegar las solcitudes</string>
+    <string name="invitation_code">Código de invitación</string>
+    <string name="copy_code">Copiar código</string>
+    <string name="code_copied">Código copiado al portapapeles</string>
 
     <!-- Manage Coupons -->
     <string name="empty_manage_coupons">Aún no has creado cupones.</string>

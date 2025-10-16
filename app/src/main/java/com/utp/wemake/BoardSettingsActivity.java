@@ -21,6 +21,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.shape.ShapeAppearanceModel;
@@ -43,6 +44,8 @@ public class BoardSettingsActivity extends AppCompatActivity {
     private LinearLayout membersAvatarContainer;
     private TextView membersOverflowCount;
     private View optionManageUsers, optionManageCoupons, optionApproveTasks, optionEditBoard, optionApproveRequests;
+    private TextView tvInvitationCode;
+    private MaterialButton btnCopyInviteCode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +91,9 @@ public class BoardSettingsActivity extends AppCompatActivity {
         tvMembersLabel = findViewById(R.id.tvMembersLabel);
         membersAvatarContainer = findViewById(R.id.members_avatar_container);
         membersOverflowCount = findViewById(R.id.members_overflow_count);
+
+        tvInvitationCode = findViewById(R.id.tvInvitationCode);
+        btnCopyInviteCode = findViewById(R.id.btnCopyInviteCode);
 
         optionEditBoard = findViewById(R.id.option_edit_board);
         optionManageUsers = findViewById(R.id.option_manage_users);
@@ -155,7 +161,22 @@ public class BoardSettingsActivity extends AppCompatActivity {
         if (board == null) return;
 
         tvBoardName.setText(board.getName());
-        tvBoardDescription.setText(board.getDescription());
+
+        if (board.getDescription() != null && !board.getDescription().isEmpty()) {
+            tvBoardDescription.setText(board.getDescription());
+            tvBoardDescription.setVisibility(View.VISIBLE);
+        } else {
+            tvBoardDescription.setVisibility(View.GONE);
+        }
+
+        // Actualizar el código de invitación
+        if (board.getInvitationCode() != null && !board.getInvitationCode().isEmpty()) {
+            tvInvitationCode.setText(board.getInvitationCode());
+            tvInvitationCode.setVisibility(View.VISIBLE);
+        } else {
+            tvInvitationCode.setText("N/A");
+            tvInvitationCode.setVisibility(View.VISIBLE);
+        }
 
         // Cambiar color de la tarjeta
         try {
@@ -321,6 +342,17 @@ public class BoardSettingsActivity extends AppCompatActivity {
             Intent intent = new Intent(this, RedeemPointsActivity.class);
             intent.putExtra("boardId", boardId);
             startActivity(intent);
+        });
+
+        // Listener para copiar el código de invitación
+        btnCopyInviteCode.setOnClickListener(v -> {
+            String inviteCode = tvInvitationCode.getText().toString();
+            if (!inviteCode.equals("N/A") && !inviteCode.isEmpty()) {
+                android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                android.content.ClipData clip = android.content.ClipData.newPlainText("Código de invitación", inviteCode);
+                clipboard.setPrimaryClip(clip);
+                Toast.makeText(this, getString(R.string.code_copied), Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
