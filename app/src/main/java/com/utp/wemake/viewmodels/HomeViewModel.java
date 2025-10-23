@@ -13,6 +13,7 @@ import com.utp.wemake.repository.TaskRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
 
 public class HomeViewModel extends ViewModel {
     private final TaskRepository taskRepository;
@@ -59,6 +60,7 @@ public class HomeViewModel extends ViewModel {
             public void onTasksUpdated(List<TaskModel> tasks) {
                 _isLoading.setValue(false); // La carga inicial ya terminó
                 processTasks(tasks);
+                checkForOverdueTasks(tasks);
             }
 
             @Override
@@ -128,12 +130,53 @@ public class HomeViewModel extends ViewModel {
      * Pide al repositorio que actualice el estado de una tarea.
      */
     public void updateTaskStatus(String taskId, String newStatus) {
-        taskRepository.updateTaskStatus(taskId, newStatus)
+        List<TaskModel> allTasks = new ArrayList<>();
+        if (_kanbanColumns.getValue() != null) {
+            _kanbanColumns.getValue().forEach(col -> allTasks.addAll(col.getTasks()));
+        }
+
+        TaskModel taskToUpdate = allTasks.stream()
+                .filter(t -> t.getId().equals(taskId))
+                .findFirst()
+                .orElse(null);
+
+        if (taskToUpdate == null) {
+            _errorMessage.setValue("Error: No se encontró la tarea para actualizar.");
+            return;
+        }
+
+        taskRepository.updateStatusAndApplyPoints(taskToUpdate, newStatus)
                 .addOnSuccessListener(aVoid -> {
-                    Log.d("HomeViewModel", "Estado de la tarea actualizado con éxito.");
+                    Log.d("HomeViewModel", "Estado y puntos actualizados con éxito.");
                 })
                 .addOnFailureListener(e -> {
-                    _errorMessage.setValue("Error al actualizar el estado: " + e.getMessage());
+                    _errorMessage.setValue("Error al actualizar la tarea: " + e.getMessage());
                 });
+    }
+
+    /**
+     * comprueba la lista de tareas y aplica penalidades si es necesario.
+     */
+    private void checkForOverdueTasks(List<TaskModel> tasks) {
+        Date now = new Date();
+        for (TaskModel task : tasks) {
+            // Comprobar si:
+            // 1. Tiene fecha límite.
+            // 2. La fecha ya pasó.
+            // 3. No está completada.
+            // 4. La penalidad no ha sido aplicada aún.
+            if (task.getDeadline() != null &&
+                    task.getDeadline().before(now) &&
+                    !TaskConstants.STATUS_COMPLETED.equals(task.getStatus()) &&
+                    !task.isPenaltyApplied())
+            {
+                Log.d("HomeViewModel", "Tarea vencida encontrada: " + task.getTitle() + ". Aplicando penalidad.");
+
+                taskRepository.applyPenaltyAndMarkTask(task)
+                        .addOnFailureListener(e -> {
+                            _errorMessage.setValue("No se pudo aplicar la penalidad a la tarea: " + task.getTitle());
+                        });
+            }
+        }
     }
 }

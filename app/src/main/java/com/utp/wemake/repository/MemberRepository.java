@@ -228,4 +228,33 @@ public class MemberRepository {
                 });
     }
 
+    /**
+     * Incrementa los puntos para una lista de miembros dentro de un tablero.
+     * Usa un WriteBatch para asegurar que todas las actualizaciones se hagan a la vez.
+     * @param batch El WriteBatch existente al que se añadirán las operaciones. Puede ser null si se crea uno nuevo.
+     * @param boardId El ID del tablero.
+     * @param memberIds La lista de IDs de los miembros a actualizar.
+     * @param pointsToAdd La cantidad de puntos a sumar (puede ser negativo para restar).
+     * @return El WriteBatch con las nuevas operaciones añadidas.
+     */
+    public WriteBatch addPointsToMembersBatch(WriteBatch batch, String boardId, List<String> memberIds, int pointsToAdd) {
+        if (batch == null) {
+            batch = db.batch();
+        }
+
+        if (memberIds == null || memberIds.isEmpty() || pointsToAdd == 0) {
+            return batch;
+        }
+
+        for (String memberId : memberIds) {
+            DocumentReference memberRef = db.collection(COLLECTION_BOARDS)
+                    .document(boardId)
+                    .collection(COLLECTION_MEMBERS_DETAILS)
+                    .document(memberId);
+
+            batch.update(memberRef, "points", FieldValue.increment(pointsToAdd));
+        }
+        return batch;
+    }
+
 }

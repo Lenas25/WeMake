@@ -13,6 +13,7 @@ import com.google.firebase.firestore.WriteBatch;
 import com.utp.wemake.models.Subtask;
 import com.utp.wemake.models.TaskModel;
 import com.utp.wemake.models.TaskProposal;
+import com.utp.wemake.constants.TaskConstants;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,6 +25,7 @@ public class TaskRepository {
     private static final String COLLECTION_TASKS = "tasks";
     private static final String COLLECTION_TASK_PROPOSALS = "task_proposals";
     private final FirebaseFirestore db;
+    private final MemberRepository memberRepository;
     private final CollectionReference proposalsCollection;
     private final CollectionReference tasksCollection;
     private final List<ListenerRegistration> activeListeners = new ArrayList<>();
@@ -32,6 +34,7 @@ public class TaskRepository {
         this.db = FirebaseFirestore.getInstance();
         this.proposalsCollection = db.collection(COLLECTION_TASK_PROPOSALS);
         tasksCollection = db.collection(COLLECTION_TASKS);
+        this.memberRepository = new MemberRepository();
     }
 
     public interface OnTasksUpdatedListener {
@@ -183,17 +186,6 @@ public class TaskRepository {
     }
 
     /**
-     * Actualiza únicamente el campo 'status' de una tarea.
-     * Es más eficiente que 'updateTask' si solo cambia el estado.
-     */
-    public Task<Void> updateTaskStatus(String taskId, String newStatus) {
-        if (taskId == null || taskId.isEmpty()) {
-            return Tasks.forException(new IllegalArgumentException("Task ID cannot be null."));
-        }
-        return tasksCollection.document(taskId).update("status", newStatus);
-    }
-
-    /**
      * Elimina una tarea de la base de datos.
      */
     public Task<Void> deleteTask(String taskId) {
@@ -228,5 +220,45 @@ public class TaskRepository {
         });
     }
 
+    /**
+     * Actualiza el estado de una tarea y, si se completa, aplica los puntos de recompensa.
+     * @param task La tarea que se está actualizando.
+     * @param newStatus El nuevo estado.
+     * @return Una Tarea que se completa cuando la operación termina.
+     */
+    public Task<Void> updateStatusAndApplyPoints(TaskModel task, String newStatus) {
+        DocumentReference taskRef = tasksCollection.document(task.getId());
+
+        WriteBatch batch = db.batch();
+
+        batch.update(taskRef, "status", newStatus);
+
+        if (TaskConstants.STATUS_COMPLETED.equals(newStatus)) {
+            batch = memberRepository.addPointsToMembersBatch(
+                    batch,
+                    task.getBoardId(),
+                    task.getAssignedMembers(),
+                    task.getRewardPoints()
+            );
+        }
+
+        return batch.commit();
+    }
+
+    public Task<Void> applyPenaltyAndMarkTask(TaskModel task) {
+        DocumentReference taskRef = tasksCollection.document(task.getId());
+        WriteBatch batch = db.batch();
+
+        batch.update(taskRef, "penaltyApplied", true);
+
+        batch = memberRepository.addPointsToMembersBatch(
+                batch,
+                task.getBoardId(),
+                task.getAssignedMembers(),
+                -task.getPenaltyPoints()
+        );
+
+        return batch.commit();
+    }
 
 }

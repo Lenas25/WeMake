@@ -9,6 +9,9 @@ import java.util.List;
 
 // Clase modelo que representa una tarea
 public class TaskModel {
+
+    private boolean penaltyApplied = false;
+
     @DocumentId
     // Atributos principales de la tarea
     private String id;
@@ -30,6 +33,10 @@ public class TaskModel {
     private Date approvedAt;
     private String reviewerId; // ID del admin/usuario que debe revisarla
     private List<String> assignedMembers;
+
+
+    public boolean isPenaltyApplied() { return penaltyApplied; }
+    public void setPenaltyApplied(boolean penaltyApplied) { this.penaltyApplied = penaltyApplied; }
 
     public String getId() {
         return id;
