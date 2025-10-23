@@ -1,102 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    tools:context=".HomeFragment"
-    tools:ignore="MissingClass">
+    tools:context=".TasksFragment">
 
-    <!-- Usamos un LinearLayout horizontal con peso para las columnas.
-         Si fuera para una tablet, esto sería ideal. Para un teléfono,
-         un LinearLayout vertical es más práctico. ¡Vamos con el vertical! -->
-    <LinearLayout
+    <!-- AppBarLayout contiene la Toolbar y los Tabs para que se comporten juntos al hacer scroll -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="8dp">
+        android:background="?attr/colorSurface">
 
-        <!-- ======================= COLUMNA PENDIENTE ======================= -->
-        <LinearLayout
+
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/top_app_bar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:titleCentered="true"
+                app:navigationIcon="@drawable/ic_arrow_back"
+                app:titleTextColor="?attr/colorOnSurface"
+                android:letterSpacing="0.01"
+                app:title="@string/item_tasks"
+                style="@style/Widget.Material3.Toolbar.Surface"
+                />
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tab_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="16dp">
+            app:tabMode="fixed"
+            app:tabGravity="fill">
 
-            <TextView
-                android:id="@+id/header_pending"
+            <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Pendiente"
-                android:textAppearance="?attr/textAppearanceTitleMedium"
-                android:textStyle="bold"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:paddingBottom="8dp"/>
+                android:text="@string/state_pending" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_view_pending"
-                android:layout_width="match_parent"
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_cards"
-                tools:itemCount="3"/>
-        </LinearLayout>
+                android:text="@string/state_inprogress" />
 
-        <!-- ======================= COLUMNA EN PROGRESO ======================= -->
-        <LinearLayout
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/state_done" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/state_revision" />
+
+        </com.google.android.material.tabs.TabLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view_tasks"
             android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="8dp"
+            android:clipToPadding="false"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_task_card" />
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="16dp">
+            android:layout_gravity="center"
+            android:visibility="gone"
+            tools:visibility="visible"/>
 
-            <TextView
-                android:id="@+id/header_in_progress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="En Progreso"
-                android:textAppearance="?attr/textAppearanceTitleMedium"
-                android:textStyle="bold"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:paddingBottom="8dp"/>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_view_in_progress"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_cards"
-                tools:itemCount="1"/>
-        </LinearLayout>
-
-        <!-- ======================= COLUMNA COMPLETADO ======================= -->
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/empty_state_text"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_gravity="center"
+            android:text="@string/empty_state_title"
+            android:textAppearance="?attr/textAppearanceBodyLarge"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:visibility="gone" />
 
-            <TextView
-                android:id="@+id/header_completed"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Completado"
-                android:textAppearance="?attr/textAppearanceTitleMedium"
-                android:textStyle="bold"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:paddingBottom="8dp"/>
+    </FrameLayout>
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_view_completed"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_cards"
-                tools:itemCount="2"/>
-        </LinearLayout>
-
-    </LinearLayout>
-</androidx.core.widget.NestedScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

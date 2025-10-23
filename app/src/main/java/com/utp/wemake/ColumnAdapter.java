@@ -51,6 +51,13 @@ public class ColumnAdapter extends RecyclerView.Adapter<ColumnAdapter.ColumnView
     }
 
 
+    public void updateData(List<KanbanColumn> newColumns) {
+        this.columnList.clear();
+        this.columnList.addAll(newColumns);
+        notifyDataSetChanged();
+    }
+
+
     class ColumnViewHolder extends RecyclerView.ViewHolder {
         TextView columnTitle;
         RecyclerView tasksRecyclerView;
@@ -100,16 +107,6 @@ public class ColumnAdapter extends RecyclerView.Adapter<ColumnAdapter.ColumnView
                             String newStatus = getStatusFromColumnTitle(columnList.get(toColumnIndex).getTitle());
                             taskToMove.setStatus(newStatus);
 
-                            taskRepository.updateTaskStatus(taskToMove.getId(), newStatus)
-                                    .addOnCompleteListener(task -> {
-                                        if (!task.isSuccessful()) {
-                                            // Revertir cambios locales si falla la actualización
-                                            columnList.get(toColumnIndex).getTasks().remove(taskToMove);
-                                            columnList.get(fromColumnIndex).getTasks().add(fromTaskIndex, taskToMove);
-                                            notifyItemChanged(fromColumnIndex);
-                                            notifyItemChanged(toColumnIndex);
-                                        }
-                                    });
 
                             notifyItemChanged(fromColumnIndex);
                             notifyItemChanged(toColumnIndex);

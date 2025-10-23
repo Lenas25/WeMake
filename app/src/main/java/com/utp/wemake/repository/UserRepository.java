@@ -31,6 +31,18 @@ public class UserRepository {
     }
 
     /**
+     * Obtiene los datos de un usuario específico por su ID.
+     * @param userId El ID del usuario a buscar.
+     * @return Una Tarea que devuelve el DocumentSnapshot del usuario.
+     */
+    public Task<DocumentSnapshot> getUserData(String userId) {
+        if (userId == null || userId.isEmpty()) {
+            return Tasks.forException(new IllegalArgumentException("User ID cannot be null or empty."));
+        }
+        return db.collection(COLLECTION_USERS).document(userId).get();
+    }
+
+    /**
      * Actualiza los datos del perfil del usuario actual.
      */
     public Task<Void> updateProfileData(User user) {
@@ -142,5 +154,4 @@ public class UserRepository {
                     return users;
                 });
     }
-
 }

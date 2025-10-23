@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="4dp"
+    android:layout_marginBottom="12dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <!-- Título de la tarea propuesta -->
+        <TextView
+            android:id="@+id/tv_task_title"
+            style="@style/TextAppearance.Material3.TitleLarge"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="Diseñar la nueva pantalla de inicio" />
+
+        <!-- Información: Quién la propuso y cuándo -->
+        <TextView
+            android:id="@+id/tv_proposal_info"
+            style="@style/TextAppearance.Material3.BodyMedium"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            app:layout_constraintTop_toBottomOf="@id/tv_task_title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="Propuesto por Carlos Villa el 22/10/2025" />
+
+        <!-- Campos para Puntos (Solo visibles para el admin) -->
+        <LinearLayout
+            android:id="@+id/points_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/tv_proposal_info"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!-- Puntos de Recompensa -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layout_reward_points"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusTopStart="12dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:hint="@string/hint_goodpoint">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/input_reward_points"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:text="0"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Puntos de Penalidad -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layout_penalty_points"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusTopStart="12dp"
+                android:layout_marginStart="8dp"
+                android:hint="@string/hint_badpoint">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/input_penalty_points"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:text="0"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </LinearLayout>
+
+        <!-- Botones de Acción -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_approve"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/approve"
+            app:layout_constraintTop_toBottomOf="@id/points_container"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_deny"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="@string/denied"
+            android:textColor="?attr/colorError"
+            app:layout_constraintTop_toTopOf="@id/btn_approve"
+            app:layout_constraintBottom_toBottomOf="@id/btn_approve"
+            app:layout_constraintEnd_toStartOf="@id/btn_approve"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

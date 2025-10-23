@@ -65,6 +65,7 @@
     <string name="state_pending">Pendiente</string>
     <string name="state_inprogress">En progreso</string>
     <string name="state_done">Completado</string>
+    <string name="state_revision">En Revisión</string>
     <string name="ex_summary_description">tareas</string>
     <string name="ex_task_title">Titulo</string>
     <string name="ex_task_description">Descripcion</string>
@@ -73,6 +74,7 @@
     <string name="btn_change">Cambiar Estado</string>
     <string name="btn_open">Abrir Tarea</string>
     <string name="empty_task_title">No hay tareas en este tablero</string>
+    <string name="empty_state_title">No hay tareas en este estado</string>
     <string name="empty_task_description">¡Crea una nueva tarea para empezar a organizarte!</string>
 
     <!-- Create Task -->
@@ -82,6 +84,7 @@
     <string name="new_task_manual">Manual</string>
 
     <string name="new_task">Nueva Tarea</string>
+    <string name="edit_task">Editar Tarea</string>
     <string name="btn_save">Guardar</string>
     <string name="task_title">Título Tarea</string>
     <string name="task_description">Detalle Tarea</string>
@@ -95,6 +98,8 @@
     <string name="high_priority">Alto</string>
     <string name="subtasks">Subtareas</string>
     <string name="hint_subtask_new">Nueva Subtarea</string>
+    <string name="hint_goodpoint">Puntos Recompensa</string>
+    <string name="hint_badpoint">Puntos Penalidad</string>
     <string name="hint_subtask_delete">Eliminar subtarea</string>
     <string name="btn_add_subtask">Agregar Subtarea</string>
 
@@ -142,6 +147,7 @@
 
 
     <!-- Approve Tasks -->
+    <string name="empty_approve_task">No hay nuevas propuestas de tareas para aprobar.</string>
 
 
     <!-- Redeem Points -->
@@ -228,6 +234,4 @@
     <string name="cloudinary_cloud_name">djuqnewtm</string>
     <string name="cloudinary_api_key">126563687271491</string>
     <string name="cloudinary_api_secret">ypLQYKO6kSuPkhlicy71HfzjRJk</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

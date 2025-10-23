@@ -4,7 +4,11 @@ import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.appbar.MaterialToolbar;
@@ -28,6 +32,7 @@ public class EditProfileActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_edit_profile);
 
         // Inicializa el ViewModel
@@ -44,6 +49,11 @@ public class EditProfileActivity extends AppCompatActivity {
         MaterialToolbar toolbar = findViewById(R.id.top_app_bar);
         // El menú se infla automáticamente por app:menu en el XML
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_container), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
         toolbar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.action_save) {
                 saveChanges();

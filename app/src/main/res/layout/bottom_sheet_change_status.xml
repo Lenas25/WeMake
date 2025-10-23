@@ -38,7 +38,20 @@
             android:layoutDirection="rtl"
             android:textAlignment="textStart"/>
 
-        <!-- Opción 3: Hecho -->
+
+        <!-- Opción 3: En Progreso -->
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/radio_in_review"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/state_revision"
+            android:textSize="18sp"
+            android:layout_marginBottom="12dp"
+            android:paddingStart="8dp"
+            android:layoutDirection="rtl"
+            android:textAlignment="textStart"/>
+
+        <!-- Opción 4: Hecho -->
         <com.google.android.material.radiobutton.MaterialRadioButton
             android:id="@+id/radio_done"
             android:layout_width="match_parent"

@@ -43,6 +43,7 @@ public class AddTaskBottomSheet extends BottomSheetDialogFragment {
             Toast.makeText(getContext(), "Iniciando creación manual...", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(requireContext(), CreateTaskActivity.class);
             startActivity(intent);
+            dismiss();
         });
     }
 }

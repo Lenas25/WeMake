@@ -46,19 +46,90 @@
             android:layout_height="wrap_content"
             android:paddingHorizontal="24dp">
 
+            <!-- =================================================== -->
+            <!-- ======== SECCIÓN EXCLUSIVA PARA ADMINISTRADORES ======== -->
+            <!-- =================================================== -->
+
+            <!-- Campo: Puntos de Recompensa -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/reward_points_layout"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                android:hint="@string/hint_goodpoint"
+                app:layout_constraintEnd_toStartOf="@+id/penalty_points_layout"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/input_reward_points"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:text="0" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Campo: Puntos de Penalidad -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/penalty_points_layout"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                android:hint="@string/hint_badpoint"
+                app:layout_constraintTop_toTopOf="@id/reward_points_layout"
+                app:layout_constraintStart_toEndOf="@id/reward_points_layout"
+                app:layout_constraintEnd_toEndOf="parent">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/input_penalty_points"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:text="0"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Campo: Asignar Revisor -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/reviewer_layout"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                android:hint="@string/reviewed_by"
+                app:layout_constraintTop_toBottomOf="@id/reward_points_layout">
+                <AutoCompleteTextView
+                    android:id="@+id/input_reviewer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
             <!-- Campo: Título -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/title_input_layout"
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="16dp"
                 android:hint="@string/task_title"
                 app:boxCornerRadiusTopStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusBottomEnd="12dp"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/reviewer_layout"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
 

@@ -41,11 +41,13 @@ public class BoardSettingsActivity extends AppCompatActivity {
     private TextView tvBoardName;
     private TextView tvBoardDescription;
     private TextView tvMembersLabel;
+    private TextView tvCodeText;
     private LinearLayout membersAvatarContainer;
     private TextView membersOverflowCount;
     private View optionManageUsers, optionManageCoupons, optionApproveTasks, optionEditBoard, optionApproveRequests;
     private TextView tvInvitationCode;
     private MaterialButton btnCopyInviteCode;
+    private ImageView icShare;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,8 +94,10 @@ public class BoardSettingsActivity extends AppCompatActivity {
         membersAvatarContainer = findViewById(R.id.members_avatar_container);
         membersOverflowCount = findViewById(R.id.members_overflow_count);
 
+        tvCodeText = findViewById(R.id.tvCodeText);
         tvInvitationCode = findViewById(R.id.tvInvitationCode);
         btnCopyInviteCode = findViewById(R.id.btnCopyInviteCode);
+        icShare = findViewById(R.id.ic_share);
 
         optionEditBoard = findViewById(R.id.option_edit_board);
         optionManageUsers = findViewById(R.id.option_manage_users);
@@ -186,16 +190,20 @@ public class BoardSettingsActivity extends AppCompatActivity {
             double luminance = ColorUtils.calculateLuminance(boardColor);
             // Si el color es claro (luminancia > 0.5), usa texto oscuro.
             // Si no, usa texto claro.
-            int textColor;
+            int contrastColor;
             if (luminance > 0.5) {
-                textColor = Color.BLACK; // Fondo claro -> Texto negro
+                contrastColor = Color.BLACK; // Fondo claro -> Texto negro
             } else {
-                textColor = Color.WHITE; // Fondo oscuro -> Texto blanco
+                contrastColor = Color.WHITE; // Fondo oscuro -> Texto blanco
             }
 
-            tvBoardName.setTextColor(textColor);
-            tvBoardDescription.setTextColor(textColor);
-            tvMembersLabel.setTextColor(textColor);
+            tvBoardName.setTextColor(contrastColor);
+            tvBoardDescription.setTextColor(contrastColor);
+            tvMembersLabel.setTextColor(contrastColor);
+            tvInvitationCode.setTextColor(contrastColor);
+            tvCodeText.setTextColor(contrastColor);
+            icShare.setImageTintList(ColorStateList.valueOf(contrastColor));
+            btnCopyInviteCode.setIconTint(ColorStateList.valueOf(contrastColor));
         } catch (IllegalArgumentException e) {
         }
     }
@@ -328,9 +336,10 @@ public class BoardSettingsActivity extends AppCompatActivity {
         });
 
         optionApproveTasks.setOnClickListener(v -> {
-            Toast.makeText(this, "Funcionalidad en Produccion", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, ApproveTaskRequestsActivity.class);
+            intent.putExtra("boardId", boardId);
+            startActivity(intent);
         });
-
 
         optionApproveRequests.setOnClickListener(v -> {
             Intent intent = new Intent(this, ApproveRequestsActivity.class);

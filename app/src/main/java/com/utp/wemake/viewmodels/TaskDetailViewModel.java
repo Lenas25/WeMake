@@ -18,6 +18,7 @@ public class TaskDetailViewModel extends ViewModel {
     private final UserRepository userRepository;
     private final MutableLiveData<TaskModel> task = new MutableLiveData<>();
     private final MutableLiveData<List<User>> assignedUsers = new MutableLiveData<>();
+    private final MutableLiveData<User> reviewer = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>();
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
     private final MutableLiveData<Boolean> taskUpdated = new MutableLiveData<>();
@@ -30,6 +31,7 @@ public class TaskDetailViewModel extends ViewModel {
 
     public LiveData<TaskModel> getTask() { return task; }
     public LiveData<List<User>> getAssignedUsers() { return assignedUsers; }
+    public LiveData<User> getReviewer() { return reviewer; }
     public LiveData<Boolean> getIsLoading() { return isLoading; }
     public LiveData<String> getErrorMessage() { return errorMessage; }
     public LiveData<Boolean> getTaskUpdated() { return taskUpdated; }
@@ -37,71 +39,71 @@ public class TaskDetailViewModel extends ViewModel {
 
     public void loadTask(String taskId) {
         isLoading.setValue(true);
-        
-        // Cargar tarea con subtareas
-        taskRepository.getTaskWithSubtasks(taskId).addOnCompleteListener(taskResult -> {
-            if (taskResult.isSuccessful() && taskResult.getResult() != null) {
-                TaskModel loadedTask = taskResult.getResult();
-                task.setValue(loadedTask);
-                
-                // Cargar usuarios asignados
-                loadAssignedUsers(loadedTask.getAssignedMembers());
-            } else {
-                errorMessage.setValue("Error al cargar la tarea");
-            }
+        taskRepository.getTaskById(taskId).addOnCompleteListener(taskResult -> {
             isLoading.setValue(false);
+            if (taskResult.isSuccessful() && taskResult.getResult() != null) {
+                TaskModel loadedTask = taskResult.getResult().toObject(TaskModel.class);
+                if (loadedTask != null) {
+                    loadedTask.setId(taskResult.getResult().getId()); // Asignar el ID
+                    task.setValue(loadedTask);
+
+                    loadAssignedUsers(loadedTask.getAssignedMembers());
+                    loadReviewer(loadedTask.getReviewerId());
+                }
+            } else {
+                errorMessage.setValue("Error al cargar la tarea.");
+            }
         });
     }
 
-    private void loadAssignedUsers(List<String> assignedMemberIds) {
-        if (assignedMemberIds == null || assignedMemberIds.isEmpty()) {
+    private void loadAssignedUsers(List<String> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
             assignedUsers.setValue(new ArrayList<>());
             return;
         }
-
-        userRepository.getUsersByIds(assignedMemberIds).addOnCompleteListener(task -> {
+        userRepository.getUsersByIds(userIds).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 assignedUsers.setValue(task.getResult());
             } else {
-                assignedUsers.setValue(new ArrayList<>());
+                errorMessage.setValue("Error al cargar miembros asignados.");
             }
         });
     }
-
-    public void updateTask(TaskModel task) {
-        isLoading.setValue(true);
-        taskRepository.updateTaskWithSubtasks(task).addOnCompleteListener(taskResult -> {
-            isLoading.setValue(false);
-            if (taskResult.isSuccessful()) {
-                taskUpdated.setValue(true);
-                // Recargar la tarea para obtener los datos actualizados
-                loadTask(task.getId());
+    
+    private void loadReviewer(String reviewerId) {
+        if (reviewerId == null || reviewerId.isEmpty()) {
+            reviewer.setValue(null);
+            return;
+        }
+        userRepository.getUserData(reviewerId).addOnCompleteListener(task -> {
+            if (task.isSuccessful() && task.getResult() != null) {
+                reviewer.setValue(task.getResult().toObject(User.class));
             } else {
-                errorMessage.setValue("Error al actualizar la tarea");
+                errorMessage.setValue("Error al cargar el revisor.");
             }
         });
     }
 
     public void deleteTask(String taskId) {
         isLoading.setValue(true);
-        taskRepository.deleteTask(taskId).addOnCompleteListener(taskResult -> {
+        taskRepository.deleteTask(taskId).addOnCompleteListener(task -> {
             isLoading.setValue(false);
-            if (taskResult.isSuccessful()) {
+            if (task.isSuccessful()) {
                 taskDeleted.setValue(true);
             } else {
-                errorMessage.setValue("Error al eliminar la tarea");
+                errorMessage.setValue("Error al eliminar la tarea.");
             }
         });
     }
 
-    public void updateSubtask(String taskId, String subtaskId, boolean completed) {
-        taskRepository.updateSubtask(taskId, subtaskId, completed).addOnCompleteListener(taskResult -> {
-            if (taskResult.isSuccessful()) {
-                // Recargar la tarea para obtener los datos actualizados
-                loadTask(taskId);
-            } else {
-                errorMessage.setValue("Error al actualizar la subtarea");
-            }
-        });
+    public void updateSubtask(String taskId, String subtaskId, boolean isCompleted) {
+        taskRepository.updateSubtaskStatus(taskId, subtaskId, isCompleted)
+                .addOnSuccessListener(aVoid -> {
+                    taskUpdated.setValue(true);
+                    taskUpdated.setValue(false); 
+                })
+                .addOnFailureListener(e -> {
+                    errorMessage.setValue("Error al actualizar la subtarea.");
+                });
     }
 }

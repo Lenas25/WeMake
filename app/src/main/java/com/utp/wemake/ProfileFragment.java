@@ -207,12 +207,23 @@
                 }
             });
 
-            mainViewModel.getJoinBoardSuccess().observe(getViewLifecycleOwner(), success -> {
-                if (success != null) {
-                    if (success) {
-                        Toast.makeText(getContext(), "¡Te has unido al tablero con éxito!", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(getContext(), "No se pudo unir al tablero. Verifica el código.", Toast.LENGTH_LONG).show();
+            mainViewModel.getJoinBoardResult().observe(getViewLifecycleOwner(), event -> {
+                MainViewModel.JoinBoardResult result = event.getContentIfNotHandled();
+
+                if (result != null) {
+                    switch (result) {
+                        case SUCCESS:
+                            Toast.makeText(getContext(), "¡Te has unido al tablero con éxito!", Toast.LENGTH_SHORT).show();
+                            break;
+                        case ALREADY_MEMBER:
+                            Toast.makeText(getContext(), "Ya eres miembro de este tablero.", Toast.LENGTH_SHORT).show();
+                            break;
+                        case BOARD_NOT_FOUND:
+                            Toast.makeText(getContext(), "No se encontró ningún tablero con ese código.", Toast.LENGTH_LONG).show();
+                            break;
+                        case ERROR:
+                            Toast.makeText(getContext(), "Ocurrió un error. Inténtalo de nuevo.", Toast.LENGTH_LONG).show();
+                            break;
                     }
                 }
             });

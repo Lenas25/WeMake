@@ -10,17 +10,21 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.utp.wemake.models.Board;
-import com.utp.wemake.models.Member;
 import com.utp.wemake.models.User;
 import com.utp.wemake.repository.BoardRepository;
-import com.utp.wemake.repository.MemberRepository;
 import com.utp.wemake.utils.BoardSelectionPrefs;
 import com.utp.wemake.repository.UserRepository;
+import com.utp.wemake.utils.Event;
 
 import java.util.List;
 
 public class MainViewModel extends AndroidViewModel {
-
+    public enum JoinBoardResult {
+        SUCCESS,
+        ALREADY_MEMBER,
+        BOARD_NOT_FOUND,
+        ERROR
+    }
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
     private final BoardSelectionPrefs boardSelectionRepo;
@@ -29,10 +33,13 @@ public class MainViewModel extends AndroidViewModel {
     private final MutableLiveData<User> currentUserData = new MutableLiveData<>();
     private final MutableLiveData<List<Board>> userBoards = new MutableLiveData<>();
     private final MutableLiveData<Board> selectedBoard = new MutableLiveData<>();
-    private final MutableLiveData<Boolean> joinBoardSuccess = new MutableLiveData<>();
+    private final MutableLiveData<Event<JoinBoardResult>> joinBoardResult = new MutableLiveData<>();
 
     // Getter para que el Fragment lo observe
-    public LiveData<Boolean> getJoinBoardSuccess() { return joinBoardSuccess; }
+    public LiveData<Event<JoinBoardResult>> getJoinBoardResult() {
+        return joinBoardResult;
+    }
+
 
     public MainViewModel(@NonNull Application application) {
         super(application);
@@ -120,19 +127,20 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     /**
-     * Intenta unir al usuario actual a un tablero usando un código de invitación.
+     * Intenta unir al usuario actual a un tablero usando un código de invitación,
+     * verificando primero si ya es miembro.
      * @param code El código de 6 caracteres.
      */
     public void joinBoardWithCode(String code) {
         if (code == null || code.trim().length() != 6) {
-            joinBoardSuccess.setValue(false);
+            joinBoardResult.setValue(new Event<>(JoinBoardResult.ERROR));
             return;
         }
 
         String upperCaseCode = code.trim().toUpperCase();
         String currentUserId = auth.getUid();
         if (currentUserId == null) {
-            joinBoardSuccess.setValue(false);
+            joinBoardResult.setValue(new Event<>(JoinBoardResult.ERROR));
             return;
         }
 
@@ -140,22 +148,32 @@ public class MainViewModel extends AndroidViewModel {
             if (findTask.isSuccessful() && findTask.getResult() != null && !findTask.getResult().isEmpty()) {
                 String boardId = findTask.getResult().getDocuments().get(0).getId();
 
+                List<Board> currentBoards = userBoards.getValue();
+                boolean isAlreadyMember = false;
+                if (currentBoards != null) {
+                    isAlreadyMember = currentBoards.stream().anyMatch(board -> board.getId().equals(boardId));
+                }
+
+                if (isAlreadyMember) {
+                    joinBoardResult.setValue(new Event<>(JoinBoardResult.ALREADY_MEMBER));
+                    return;
+                }
+
                 boardRepository.joinBoard(boardId, currentUserId).addOnCompleteListener(joinTask -> {
                     if (joinTask.isSuccessful()) {
-                        joinBoardSuccess.setValue(true);
                         loadUserBoards();
+                        joinBoardResult.setValue(new Event<>(JoinBoardResult.SUCCESS));
                     } else {
-                        joinBoardSuccess.setValue(false);
+                        joinBoardResult.setValue(new Event<>(JoinBoardResult.ERROR));
                     }
                 });
 
             } else if (findTask.isSuccessful()) {
-                // La búsqueda funcionó, pero el código no existe
-                joinBoardSuccess.setValue(false);
+                joinBoardResult.setValue(new Event<>(JoinBoardResult.BOARD_NOT_FOUND));
             } else {
-                // Ocurrió un error durante la búsqueda
-                joinBoardSuccess.setValue(false);
+                joinBoardResult.setValue(new Event<>(JoinBoardResult.ERROR));
             }
         });
     }
+
 }

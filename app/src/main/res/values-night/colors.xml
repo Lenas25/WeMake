@@ -154,4 +154,10 @@
     <color name="priority_medium_border">#4A452C</color>
     <color name="priority_low_border">#2C4A2C</color>
     <color name="priority_default_border">#2E2E2E</color>
+
+    <color name="status_pending_bg">#3C3C3C</color>
+    <color name="status_inprogress_bg">#4A442A</color>
+    <color name="status_inreview_bg">#2A3B4A</color>
+    <color name="status_completed_bg">#2A4A3A</color>
+    <color name="status_default_bg">#3C3C3C</color>
 </resources>

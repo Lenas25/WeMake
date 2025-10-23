@@ -1,8 +1,12 @@
 package com.utp.wemake;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -26,10 +30,12 @@ public class TaskDetailActivity extends AppCompatActivity {
     private TaskDetailViewModel viewModel;
     private String taskId;
     private SubtaskAdapter subtaskAdapter;
+    private final SimpleDateFormat fullDateFormat = new SimpleDateFormat("dd 'de' MMMM, yyyy", new Locale("es", "ES"));
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_task_detail);
 
         taskId = getIntent().getStringExtra("taskId");
@@ -64,12 +70,11 @@ public class TaskDetailActivity extends AppCompatActivity {
 
     private void setupViewModel() {
         viewModel = new ViewModelProvider(this).get(TaskDetailViewModel.class);
-        
-        viewModel.getTask().observe(this, task -> {
-            if (task != null) {
-                displayTask(task);
-            }
-        });
+
+        viewModel.getTask().observe(this, this::displayTask);
+        viewModel.getAssignedUsers().observe(this, this::displayAssignedUsers);
+
+        viewModel.getReviewer().observe(this, this::displayReviewer);
 
         viewModel.getAssignedUsers().observe(this, users -> {
             displayAssignedUsers(users);
@@ -101,12 +106,13 @@ public class TaskDetailActivity extends AppCompatActivity {
 
     private void setupClickListeners() {
         btnBack.setOnClickListener(v -> finish());
-        
+
         btnEdit.setOnClickListener(v -> {
-            // Implementar edición de tarea
-            Toast.makeText(this, "Funcionalidad de edición en desarrollo", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, CreateTaskActivity.class);
+            intent.putExtra(CreateTaskActivity.EXTRA_TASK_ID, taskId);
+            startActivity(intent);
         });
-        
+
         btnDelete.setOnClickListener(v -> showDeleteConfirmation());
     }
 
@@ -126,29 +132,31 @@ public class TaskDetailActivity extends AppCompatActivity {
     }
 
     private void displayTask(TaskModel task) {
+        if (task == null) return;
+
         title.setText(task.getTitle());
         description.setText(task.getDescription());
-        
-        // Configurar prioridad con colores
+
         setupPriorityChip(task.getPriority());
-        
-        // Mostrar fecha de vencimiento
-        if (task.getDueDate() != null) {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd MMM", Locale.getDefault());
-            dueDate.setText(sdf.format(task.getDueDate()));
+
+        if (task.getDeadline() != null) {
+            dueDate.setText(fullDateFormat.format(task.getDeadline()));
         } else {
-            dueDate.setText("Sin fecha");
+            dueDate.setText("Sin fecha límite");
         }
-        
-        // Mostrar recompensa y penalidad
+
         rewardText.setText(task.getRewardPoints() + " monedas");
         penaltyText.setText(task.getPenaltyPoints() + " monedas");
-        
-        // Mostrar revisor (placeholder por ahora)
-        reviewerText.setText("Josue R.");
-        
-        // Configurar RecyclerView de subtareas
+
         setupSubtasksRecycler(task);
+    }
+
+    private void displayReviewer(User user) {
+        if (user != null && user.getName() != null) {
+            reviewerText.setText(user.getName());
+        } else {
+            reviewerText.setText("Sin asignar");
+        }
     }
 
     private void displayAssignedUsers(List<User> users) {
@@ -166,7 +174,11 @@ public class TaskDetailActivity extends AppCompatActivity {
     }
 
     private void setupPriorityChip(String priorityValue) {
-        // Configurar el chip de prioridad con colores apropiados
+        if (priorityValue == null) {
+            priorityChip.setVisibility(View.GONE);
+            return;
+        }
+        priorityChip.setVisibility(View.VISIBLE);
         switch (priorityValue) {
             case "high":
                 priorityChip.setText("Alta");

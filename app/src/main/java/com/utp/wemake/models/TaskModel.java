@@ -14,106 +14,148 @@ public class TaskModel {
     private String id;
     private String title; // Título de la tarea
     private String description; // Descripción breve de la tarea
-    private String status; // "pendiente", "en progreso", "completado"
-    private String priority; // "Baja", "Media", "Alta"
-    private List<String> assignedMembers; // IDs de usuarios asignados
-    private String boardId; // ID del tablero al que pertenece
-    private String createdBy; // ID del usuario que creó la tarea
 
-    @ServerTimestamp
+    private Date deadline;
+    private String priority;
+    private List<Subtask> subtasks;
+    private String boardId;
+    private String createdBy; // ID del usuario que la propuso originalmente
     private Date createdAt;
 
-    private Date dueDate;
-    private List<Subtask> subtasks;
 
-    // Campos para recompensa y penalidad
+    private String status; // "pending", "in_progress", "in_review", "completed"
     private int rewardPoints;
     private int penaltyPoints;
-    private String reviewerId; // ID del usuario que revisa la tarea
+    private String approvedBy; // ID del admin que la aprobó
+    private Date approvedAt;
+    private String reviewerId; // ID del admin/usuario que debe revisarla
+    private List<String> assignedMembers;
 
-    // Constructor vacío para Firebase
-    public TaskModel() {}
-
-    // Constructor que inicializa los atributos de la tarea
-    public TaskModel(String title, String description, String priority,
-                     List<String> assignedMembers, String boardId, String createdBy) {
-        this.title = title;
-        this.description = description;
-        this.priority = priority;
-        this.assignedMembers = assignedMembers;
-        this.boardId = boardId;
-        this.createdBy = createdBy;
-        this.status = "pending"; // Estado inicial
-        this.subtasks = new ArrayList<>();
+    public String getId() {
+        return id;
     }
 
-    // Getters y Setters
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public void setId(String id) {
+        this.id = id;
+    }
 
-    // Getter para obtener el título de la tarea
     public String getTitle() {
         return title;
     }
-    public void setTitle(String title) { this.title = title; }
 
-    // Getter para obtener la descripción de la tarea
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     public String getDescription() {
         return description;
     }
-    public void setDescription(String description) { this.description = description; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-    public String getPriority() { return priority; }
-    public void setPriority(String priority) { this.priority = priority; }
+    public Date getDeadline() {
+        return deadline;
+    }
 
-    // Getter para obtener el responsable de la tarea
+    public void setDeadline(Date deadline) {
+        this.deadline = deadline;
+    }
+
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
+    }
+
+    public List<Subtask> getSubtasks() {
+        return subtasks;
+    }
+
+    public void setSubtasks(List<Subtask> subtasks) {
+        this.subtasks = subtasks;
+    }
+
+    public String getBoardId() {
+        return boardId;
+    }
+
+    public void setBoardId(String boardId) {
+        this.boardId = boardId;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public int getRewardPoints() {
+        return rewardPoints;
+    }
+
+    public void setRewardPoints(int rewardPoints) {
+        this.rewardPoints = rewardPoints;
+    }
+
+    public int getPenaltyPoints() {
+        return penaltyPoints;
+    }
+
+    public void setPenaltyPoints(int penaltyPoints) {
+        this.penaltyPoints = penaltyPoints;
+    }
+
+    public String getApprovedBy() {
+        return approvedBy;
+    }
+
+    public void setApprovedBy(String approvedBy) {
+        this.approvedBy = approvedBy;
+    }
+
+    public Date getApprovedAt() {
+        return approvedAt;
+    }
+
+    public void setApprovedAt(Date approvedAt) {
+        this.approvedAt = approvedAt;
+    }
+
+    public String getReviewerId() {
+        return reviewerId;
+    }
+
+    public void setReviewerId(String reviewerId) {
+        this.reviewerId = reviewerId;
+    }
+
     public List<String> getAssignedMembers() {
         return assignedMembers;
     }
-    public void setAssignedMembers(List<String> assignedMembers) { this.assignedMembers = assignedMembers; }
 
-    public String getBoardId() { return boardId; }
-    public void setBoardId(String boardId) { this.boardId = boardId; }
-
-    public String getCreatedBy() { return createdBy; }
-    public void setCreatedBy(String createdBy) { this.createdBy = createdBy; }
-
-    public Date getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
-
-    public Date getDueDate() { return dueDate; }
-    public void setDueDate(Date dueDate) { this.dueDate = dueDate; }
-
-    public List<Subtask> getSubtasks() { return subtasks; }
-    public void setSubtasks(List<Subtask> subtasks) { this.subtasks = subtasks; }
-
-    public int getRewardPoints() { return rewardPoints; }
-    public void setRewardPoints(int rewardPoints) { this.rewardPoints = rewardPoints; }
-
-    public int getPenaltyPoints() { return penaltyPoints; }
-    public void setPenaltyPoints(int penaltyPoints) { this.penaltyPoints = penaltyPoints; }
-
-    public String getReviewerId() { return reviewerId; }
-    public void setReviewerId(String reviewerId) { this.reviewerId = reviewerId; }
-
-    // Métodos de utilidad
-    public boolean isPending() { return "pending".equals(status); }
-    public boolean isInProgress() { return "in_progress".equals(status); }
-    public boolean isCompleted() { return "completed".equals(status); }
-
-    public boolean isHighPriority() { return "high".equals(priority); }
-    public boolean isMediumPriority() { return "medium".equals(priority); }
-    public boolean isLowPriority() { return "low".equals(priority); }
-
-    public int getCompletedSubtasksCount() {
-        if (subtasks == null) return 0;
-        return (int) subtasks.stream().filter(Subtask::isCompleted).count();
-    }
-
-    public int getTotalSubtasksCount() {
-        return subtasks != null ? subtasks.size() : 0;
+    public void setAssignedMembers(List<String> assignedMembers) {
+        this.assignedMembers = assignedMembers;
     }
 }

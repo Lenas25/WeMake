@@ -3,158 +3,137 @@ package com.utp.wemake.viewmodels;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import android.util.Log;
 
-import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.auth.FirebaseAuth;
 import com.utp.wemake.constants.TaskConstants;
 import com.utp.wemake.models.KanbanColumn;
 import com.utp.wemake.models.TaskModel;
-import com.utp.wemake.models.User;
-import com.utp.wemake.repository.ImageRepository;
 import com.utp.wemake.repository.TaskRepository;
-import com.utp.wemake.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-import android.util.Log;
 
 public class HomeViewModel extends ViewModel {
     private final TaskRepository taskRepository;
+    private final FirebaseAuth auth;
 
-    private final MutableLiveData<List<KanbanColumn>> kanbanColumns = new MutableLiveData<>();
-    private final MutableLiveData<Integer> totalTasks = new MutableLiveData<>();
-    private final MutableLiveData<Integer> pendingTasks = new MutableLiveData<>();
-    private final MutableLiveData<Integer> expiredTasks = new MutableLiveData<>();
-    private final MutableLiveData<Integer> totalPoints = new MutableLiveData<>();
-    private final UserRepository userRepository = new UserRepository();
-    private final ImageRepository imageRepository = new ImageRepository();
+    // --- Variables LiveData ---
+    private final MutableLiveData<List<KanbanColumn>> _kanbanColumns = new MutableLiveData<>();
+    private final MutableLiveData<Integer> _totalTasks = new MutableLiveData<>();
+    private final MutableLiveData<Integer> _pendingTasks = new MutableLiveData<>();
+    private final MutableLiveData<Integer> _expiredTasks = new MutableLiveData<>();
+    private final MutableLiveData<Integer> _totalPoints = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> _isLoading = new MutableLiveData<>();
+    private final MutableLiveData<String> _errorMessage = new MutableLiveData<>();
 
-    // LiveData para los datos del usuario que la vista observará
-    private final MutableLiveData<User> userData = new MutableLiveData<>();
-    // LiveData para el estado de carga
-    private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>();
-    // LiveData para mensajes de error
-    private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
-
-    private ListenerRegistration tasksListener;
     public HomeViewModel() {
         this.taskRepository = new TaskRepository();
+        this.auth = FirebaseAuth.getInstance();
     }
 
     // --- Getters para que la Vista los observe ---
-    public LiveData<List<KanbanColumn>> getKanbanColumns() { return kanbanColumns; }
-    public LiveData<Integer> getTotalTasks() { return totalTasks; }
-    public LiveData<Integer> getPendingTasks() { return pendingTasks; }
-    public LiveData<Integer> getExpiredTasks() { return expiredTasks; }
-    public LiveData<Integer> getTotalPoints() { return totalPoints; }
-    public LiveData<User> getUserData() { return userData; }
-    public LiveData<Boolean> getIsLoading() { return isLoading; }
-    public LiveData<String> getErrorMessage() { return errorMessage; }
+    public LiveData<List<KanbanColumn>> getKanbanColumns() { return _kanbanColumns; }
+    public LiveData<Integer> getTotalTasks() { return _totalTasks; }
+    public LiveData<Integer> getPendingTasks() { return _pendingTasks; }
+    public LiveData<Integer> getExpiredTasks() { return _expiredTasks; }
+    public LiveData<Integer> getTotalPoints() { return _totalPoints; }
+    public LiveData<Boolean> getIsLoading() { return _isLoading; }
+    public LiveData<String> getErrorMessage() { return _errorMessage; }
 
-    public void loadBoardData(String boardId) {
-        isLoading.setValue(true);
+    /**
+     * Inicia la escucha en tiempo real de los datos del tablero.
+     */
+    public void listenToBoardData(String boardId) {
+        _isLoading.setValue(true);
+        String currentUserId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
 
-        // Cancelar listener anterior si existe
-        if (tasksListener != null) {
-            tasksListener.remove();
+        if (currentUserId == null) {
+            _errorMessage.setValue("Error: Usuario no autenticado.");
+            _isLoading.setValue(false);
+            return;
         }
 
-        // Usar listener en tiempo real
-        tasksListener = taskRepository.listenToTasksByBoard(boardId, new TaskRepository.OnTasksChangedListener() {
+        taskRepository.listenToTasksForUserInBoard(boardId, currentUserId, new TaskRepository.OnTasksUpdatedListener() {
             @Override
-            public void onTasksChanged(List<TaskModel> tasks) {
-                isLoading.setValue(false);
-                Log.d("HomeViewModel", "Tareas actualizadas: " + tasks.size());
-
-                organizeTasksIntoColumns(tasks);
-                calculateSummaryStats(tasks);
+            public void onTasksUpdated(List<TaskModel> tasks) {
+                _isLoading.setValue(false); // La carga inicial ya terminó
+                processTasks(tasks);
             }
 
             @Override
-            public void onError(Exception error) {
-                isLoading.setValue(false);
-                Log.e("HomeViewModel", "Error en listener: " + error.getMessage());
+            public void onError(Exception e) {
+                _isLoading.setValue(false);
+                _errorMessage.setValue("Error al escuchar las tareas: " + e.getMessage());
             }
         });
     }
 
-    private void organizeTasksIntoColumns(List<TaskModel> tasks) {
-        List<TaskModel> pendingTasks = new ArrayList<>();
-        List<TaskModel> inProgressTasks = new ArrayList<>();
-        List<TaskModel> completedTasks = new ArrayList<>();
+    /**
+     * Procesa las tareas y las organiza en columnas.
+     */
+    private void processTasks(List<TaskModel> tasks) {
+        if (tasks == null) {
+            tasks = new ArrayList<>();
+        }
+
+        List<TaskModel> pending = new ArrayList<>();
+        List<TaskModel> inProgress = new ArrayList<>();
+        List<TaskModel> inReview = new ArrayList<>();
+        List<TaskModel> completed = new ArrayList<>();
 
         for (TaskModel task : tasks) {
             switch (task.getStatus()) {
                 case TaskConstants.STATUS_PENDING:
-                    pendingTasks.add(task);
+                    pending.add(task);
                     break;
                 case TaskConstants.STATUS_IN_PROGRESS:
-                    inProgressTasks.add(task);
+                    inProgress.add(task);
+                    break;
+                case TaskConstants.STATUS_IN_REVIEW:
+                    inReview.add(task);
                     break;
                 case TaskConstants.STATUS_COMPLETED:
-                    completedTasks.add(task);
+                    completed.add(task);
                     break;
             }
         }
+        KanbanColumn pendingColumn = new KanbanColumn("Pendiente", pending);
+        KanbanColumn inProgressColumn = new KanbanColumn("En Progreso", inProgress);
+        KanbanColumn inReviewColumn = new KanbanColumn("En Revisión", inReview);
+        KanbanColumn completedColumn = new KanbanColumn("Completado", completed);
 
-        List<KanbanColumn> columns = new ArrayList<>();
-        columns.add(new KanbanColumn("Pendiente", pendingTasks));
-        columns.add(new KanbanColumn("En Progreso", inProgressTasks));
-        columns.add(new KanbanColumn("Completado", completedTasks));
+        List<KanbanColumn> allColumns = new ArrayList<>();
+        allColumns.add(pendingColumn);
+        allColumns.add(inProgressColumn);
+        allColumns.add(inReviewColumn);
+        allColumns.add(completedColumn);
 
-        kanbanColumns.setValue(columns);
+        _kanbanColumns.setValue(allColumns);
+        _totalTasks.setValue(tasks.size());
+        _pendingTasks.setValue(pending.size() + inProgress.size() + inReview.size());
     }
 
-    private void calculateSummaryStats(List<TaskModel> tasks) {
-        int total = tasks.size();
-        int pending = 0;
-        int expired = 0;
-        int points = 0;
-
-        long currentTime = System.currentTimeMillis();
-
-        for (TaskModel task : tasks) {
-            if (TaskConstants.STATUS_PENDING.equals(task.getStatus())) {
-                pending++;
-            }
-
-            if (task.getDueDate() != null && task.getDueDate().getTime() < currentTime
-                    && !TaskConstants.STATUS_COMPLETED.equals(task.getStatus())) {
-                expired++;
-            }
-
-            // Calcular puntos basado en prioridad
-            switch (task.getPriority()) {
-                case TaskConstants.PRIORITY_HIGH:
-                    points += 10;
-                    break;
-                case TaskConstants.PRIORITY_MEDIUM:
-                    points += 5;
-                    break;
-                case TaskConstants.PRIORITY_LOW:
-                    points += 2;
-                    break;
-            }
-        }
-
-        totalTasks.setValue(total);
-        pendingTasks.setValue(pending);
-        expiredTasks.setValue(expired);
-        totalPoints.setValue(points);
-    }
-
-    public void updateTaskStatus(String taskId, String newStatus) {
-        taskRepository.updateTaskStatus(taskId, newStatus).addOnCompleteListener(task -> {
-            if (!task.isSuccessful()) {
-                errorMessage.setValue("Error al actualizar el estado de la tarea");
-            }
-        });
-    }
-
+    /**
+     * Limpia los listeners cuando el ViewModel es destruido.
+     */
     @Override
     protected void onCleared() {
         super.onCleared();
-        if (tasksListener != null) {
-            tasksListener.remove();
-        }
+        taskRepository.detachListeners();
+        Log.d("HomeViewModel", "Listeners de Firestore detenidos.");
+    }
+
+    /**
+     * Pide al repositorio que actualice el estado de una tarea.
+     */
+    public void updateTaskStatus(String taskId, String newStatus) {
+        taskRepository.updateTaskStatus(taskId, newStatus)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("HomeViewModel", "Estado de la tarea actualizado con éxito.");
+                })
+                .addOnFailureListener(e -> {
+                    _errorMessage.setValue("Error al actualizar el estado: " + e.getMessage());
+                });
     }
 }

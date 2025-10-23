@@ -1,43 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Tarjeta de Material Design que contiene la información de una tarea -->
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="250dp"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="10dp"
+    android:layout_marginBottom="12dp"
     app:cardElevation="0dp"
     app:strokeWidth="1dp"
-    app:strokeColor="?attr/colorOnSurface"
     app:cardCornerRadius="16dp">
 
-    <!-- Contenedor interno para organizar los elementos con restricciones -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="16dp"
-        android:paddingHorizontal="16dp">
+        android:padding="16dp">
 
-        <!-- Título de la tarea -->
+        <!-- Fila Superior: Título y Botones (Sin cambios, ya está bien) -->
         <TextView
             android:id="@+id/task_title"
             style="@style/TextAppearance.Material3.TitleMedium"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/ex_task_title"
             android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/button_change"
             android:layout_marginEnd="8dp"
-            app:layout_constraintBottom_toTopOf="@id/task_description" />
+            tools:text="Título de la Tarea de Ejemplo" />
 
-        <!-- Icono de cambio/edición de la tarea
-            - style: Lo hace transparente y circular.
-            - app:icon: Reemplaza a android:src.
-            - contentDescription: Esencial para accesibilidad.
-        -->
         <Button
             android:id="@+id/button_change"
             style="?attr/materialIconButtonStyle"
@@ -46,26 +36,20 @@
             app:icon="@drawable/ic_change"
             app:iconSize="24dp"
             android:contentDescription="@string/btn_change"
-            app:layout_constraintEnd_toStartOf="@id/button_external"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/button_external" />
 
-        <!-- Icono de enlace externo asociado a la tarea -->
         <Button
             android:id="@+id/button_external"
             style="?attr/materialIconButtonStyle"
-            app:icon="@drawable/ic_external_link"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            app:icon="@drawable/ic_external_link"
             app:iconSize="24dp"
             android:contentDescription="@string/btn_open"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-        <!--
-           CAMBIO CLAVE: Barrera
-           Esta línea invisible se coloca automáticamente debajo del elemento MÁS BAJO
-           de la primera fila (en este caso, los botones).
-       -->
         <androidx.constraintlayout.widget.Barrier
             android:id="@+id/header_barrier"
             android:layout_width="wrap_content"
@@ -73,52 +57,67 @@
             app:barrierDirection="bottom"
             app:constraint_referenced_ids="task_title, button_change, button_external" />
 
-
-        <!-- Descripción breve de la tarea -->
+        <!-- Descripción (Sin cambios) -->
         <TextView
             android:id="@+id/task_description"
             style="@style/TextAppearance.Material3.BodyMedium"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="@string/ex_task_description"
+            android:layout_marginTop="8dp"
             android:textColor="?attr/colorOnSurfaceVariant"
+            app:layout_constraintTop_toBottomOf="@id/header_barrier"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/header_barrier" />
+            tools:text="Esta es una descripción breve de lo que se debe hacer en la tarea." />
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <!-- Miembros Asignados con Icono -->
+        <TextView
+            android:id="@+id/task_responsible"
+            style="@style/TextAppearance.Material3.BodyMedium"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="15dp"
+            android:layout_marginTop="16dp"
+            android:drawableStart="@drawable/ic_user_group"
+            android:drawablePadding="8dp"
             android:gravity="center_vertical"
+            app:drawableTint="?attr/colorOnSurfaceVariant"
+            app:layout_constraintTop_toBottomOf="@id/task_description"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/task_description">
+            tools:text="3 miembros asignados" />
 
-            <TextView
-                android:id="@+id/task_responsible"
-                style="@style/TextAppearance.Material3.BodyMedium"
-                android:layout_height="wrap_content"
-                android:layout_width="0dp"
-                android:text="@string/ex_task_responsible"
-                android:layout_weight="1"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintBottom_toBottomOf="@+id/task_description"/>
+        <!-- Fecha de Creación con Icono -->
+        <TextView
+            android:id="@+id/task_created_date"
+            style="@style/TextAppearance.Material3.BodySmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:drawableStart="@drawable/ic_calendar"
+            android:drawablePadding="8dp"
+            android:gravity="center_vertical"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            app:drawableTint="?attr/colorOnSurfaceVariant"
+            app:layout_constraintTop_toBottomOf="@id/task_responsible"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:text="Creado: 22 Oct" />
 
-            <TextView
-                android:id="@+id/task_due_date"
-                style="@style/TextAppearance.Material3.BodySmall"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="@string/ex_task_duedate"
-                android:textColor="?attr/colorOnSurfaceVariant"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
-        </LinearLayout>
-
+        <!-- Fecha Límite (Deadline) con Icono -->
+        <TextView
+            android:id="@+id/task_due_date"
+            style="@style/TextAppearance.Material3.BodySmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawablePadding="8dp"
+            android:gravity="center_vertical"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textStyle="bold"
+            app:drawableTint="?attr/colorOnSurfaceVariant"
+            app:layout_constraintTop_toTopOf="@id/task_created_date"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/task_created_date"
+            tools:text="Vence: 25 Oct" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.imageview.ShapeableImageView;
+import com.google.firebase.auth.FirebaseAuth;
 import com.utp.wemake.models.Board;
 import com.utp.wemake.models.KanbanColumn;
 import com.utp.wemake.models.TaskModel;
@@ -39,7 +40,6 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
     private HomeViewModel homeViewModel;
     private RecyclerView kanbanBoardRecycler;
     private ColumnAdapter columnAdapter;
-    private List<KanbanColumn> columns = new ArrayList<>();
     private ShapeableImageView profileAvatar;
     private TextView profileName;
     private MainViewModel mainViewModel;
@@ -50,8 +50,13 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
     private boolean isLoadingData = false;
     private String currentBoardId = null;
 
+    private enum UserTaskRole {
+        REVIEWER, // Es el revisor de la tarea
+        ASSIGNED_MEMBER, // Es un miembro asignado
+        NONE // No tiene relación con la tarea
+    }
+
     public HomeFragment() {
-        // Required empty public constructor
     }
 
     @Override
@@ -93,14 +98,13 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
      * Carga datos de forma segura evitando múltiples llamadas simultáneas
      */
     private void loadBoardDataSafely(String boardId) {
-        if (isLoadingData) {
-            Log.d("HomeFragment", "Ya se está cargando datos, ignorando llamada duplicada");
+        if (currentBoardId != null && currentBoardId.equals(boardId) && Boolean.TRUE.equals(homeViewModel.getIsLoading().getValue())) {
+            Log.d("HomeFragment", "Ya se está cargando datos para este tablero.");
             return;
         }
 
-        isLoadingData = true;
         currentBoardId = boardId;
-        homeViewModel.loadBoardData(boardId);
+        homeViewModel.listenToBoardData(boardId);
     }
 
     /**
@@ -175,14 +179,8 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
         // Observador para el TABLERO SELECCIONADO (reacciona al cambio)
         mainViewModel.getSelectedBoard().observe(getViewLifecycleOwner(), selectedBoard -> {
             if (selectedBoard != null) {
-                // 1. Actualiza el texto del dropdown para que muestre el tablero activo
-                dropdownText.setText(selectedBoard.getName(), false); // 'false' para no disparar el listener de nuevo
-
-                // 2. MUESTRA EN CONSOLA EL CAMBIO
+                dropdownText.setText(selectedBoard.getName(), false);
                 Log.d("HomeFragment", "Tablero cambiado a: " + selectedBoard.getName() + " (ID: " + selectedBoard.getId() + ")");
-
-                // Llamando al HomeViewModel para cargar los datos del tablero seleccionado
-                //homeViewModel.loadBoardData(selectedBoard.getId());
 
                 // Solo cargar si es un tablero diferente
                 if (!selectedBoard.getId().equals(currentBoardId)) {
@@ -215,24 +213,23 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
             }
         });
 
-        homeViewModel.getPendingTasks().observe(getViewLifecycleOwner(), pending -> {
-            if (pending != null && getView() != null) {
-                TextView valuePendientes = getView().findViewById(R.id.card_pendientes).findViewById(R.id.summary_value);
-                valuePendientes.setText(String.valueOf(pending));
-            }
-        });
+        homeViewModel.getKanbanColumns().observe(getViewLifecycleOwner(), columns -> {
+            if (columns != null) {
+                boolean hasTasks = columns.stream().anyMatch(c -> !c.getTasks().isEmpty());
 
-        homeViewModel.getExpiredTasks().observe(getViewLifecycleOwner(), expired -> {
-            if (expired != null && getView() != null) {
-                TextView valueVencidos = getView().findViewById(R.id.card_vencidos).findViewById(R.id.summary_value);
-                valueVencidos.setText(String.valueOf(expired));
-            }
-        });
+                if (hasTasks) {
+                    // Si hay tareas, muestra el Kanban y oculta el estado vacío
+                    kanbanBoardRecycler.setVisibility(View.VISIBLE);
+                    emptyStateLayout.setVisibility(View.GONE);
+                } else {
+                    // Si no hay tareas, oculta el Kanban y muestra el estado vacío
+                    kanbanBoardRecycler.setVisibility(View.GONE);
+                    emptyStateLayout.setVisibility(View.VISIBLE);
+                }
 
-        homeViewModel.getTotalPoints().observe(getViewLifecycleOwner(), points -> {
-            if (points != null && getView() != null) {
-                TextView valuePuntos = getView().findViewById(R.id.card_puntos).findViewById(R.id.summary_value);
-                valuePuntos.setText(String.valueOf(points));
+                // Actualizar el adaptador de columnas
+                columnAdapter = new ColumnAdapter(columns, this);
+                kanbanBoardRecycler.setAdapter(columnAdapter);
             }
         });
 
@@ -297,12 +294,33 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
     }
 
     /**
-     * Listener que se activa cuando se hace clic en el botón de cambiar estado de una tarea.
+     * Ahora determina el rol del usuario antes de mostrar el BottomSheet.
      */
     @Override
     public void onChangeStatusClicked(TaskModel task) {
+        String currentUserId = FirebaseAuth.getInstance().getUid();
+
+        // 1. Determinar el rol del usuario para esta tarea específica
+        UserTaskRole userRole = UserTaskRole.NONE;
+        if (currentUserId != null) {
+            if (currentUserId.equals(task.getReviewerId())) {
+                userRole = UserTaskRole.REVIEWER;
+            } else if (task.getAssignedMembers() != null && task.getAssignedMembers().contains(currentUserId)) {
+                userRole = UserTaskRole.ASSIGNED_MEMBER;
+            }
+        }
+
+        // 2. Si el usuario no tiene rol, mostrar un mensaje y no abrir el BottomSheet
+        if (userRole == UserTaskRole.NONE) {
+            Toast.makeText(getContext(), "No tienes permisos para cambiar el estado de esta tarea.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // 3. Crear y mostrar el BottomSheet, pasándole el rol del usuario
         ChangeStatusBottomSheet bottomSheet = ChangeStatusBottomSheet.newInstance(
-                task.getId(), task.getStatus()
+                task.getId(),
+                task.getStatus(),
+                userRole.name() // Pasamos el nombre del enum como String (ej. "REVIEWER")
         );
         bottomSheet.show(getChildFragmentManager(), "ChangeStatusBottomSheetTag");
     }

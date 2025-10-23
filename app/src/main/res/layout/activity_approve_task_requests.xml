@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/main"
+    android:background="?attr/colorSurface"
+    tools:context=".ApproveTaskRequestsActivity">
+
+    <!-- 1. Barra de Aplicación Superior (AppBar) -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/top_app_bar"
+            style="@style/Widget.Material3.Toolbar.Surface"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:navigationIcon="@drawable/ic_arrow_back"
+            app:titleCentered="true"
+            app:title="@string/approve_tasks" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- 2. Contenedor de la Lista (RecyclerView) -->
+    <!--
+        Se encarga de mostrar las tarjetas de propuestas.
+        El 'layout_behavior' hace que se desplace correctamente debajo de la AppBar.
+        Inicialmente está oculto hasta que los datos se carguen.
+    -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_requests"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:padding="16dp"
+        android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:listitem="@layout/item_task_proposal"
+        tools:visibility="visible" />
+
+    <!-- 3. Vista de Estado Vacío -->
+    <!--
+        Un simple TextView que se muestra en el centro solo si,
+        después de cargar, la lista de propuestas está vacía.
+    -->
+    <TextView
+        android:id="@+id/tv_empty_state"
+        style="@style/TextAppearance.Material3.BodyLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:paddingHorizontal="40dp"
+        android:text="@string/empty_approve_task"
+        android:textAlignment="center"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:visibility="gone"
+        tools:visibility="gone" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

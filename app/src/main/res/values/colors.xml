@@ -154,4 +154,11 @@
     <color name="priority_medium_border">#FFECB3</color>
     <color name="priority_low_border">#C8E6C9</color>
     <color name="priority_default_border">#E0E0E0</color>
+
+
+    <color name="status_pending_bg">#FFE0E0E0</color>   <!-- Un gris claro y neutro -->
+    <color name="status_inprogress_bg">#FFFFF0C4</color> <!-- Un amarillo/naranja suave -->
+    <color name="status_inreview_bg">#FFD6E3FF</color>   <!-- Un azul/púrpura suave -->
+    <color name="status_completed_bg">#FFD4EDD4</color>  <!-- Un verde suave de éxito -->
+    <color name="status_default_bg">#FFE0E0E0</color>    <!-- Color por defecto si el estado es nulo -->
 </resources>

@@ -15,20 +15,21 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.ClipData;
 import android.content.ClipDescription;
 
+import com.google.android.material.card.MaterialCardView;
 import com.utp.wemake.constants.TaskConstants;
 import com.utp.wemake.models.TaskModel;
 
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 // Adaptador para manejar la lista de tareas en un RecyclerView
 public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
 
-    private List<TaskModel> taskList; // Lista de tareas que se mostrará en el RecyclerView
-
+    private List<TaskModel> taskList;
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM", Locale.getDefault());
     private int columnIndex;
-
     private final OnTaskInteractionListener listener;
 
 
@@ -38,8 +39,8 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
     public TaskAdapter(List<TaskModel> taskList, int columnIndex, OnTaskInteractionListener listener) {
         this.taskList = taskList;
-        this.columnIndex = columnIndex; // Guardamos el índice
-        this.listener = listener; // Guardamos la referencia.
+        this.columnIndex = columnIndex;
+        this.listener = listener;
     }
 
 
@@ -54,108 +55,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     @Override
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
         TaskModel task = taskList.get(position);
-
-        // Asigna los valores de la tarea a los TextViews
-        holder.title.setText(task.getTitle());
-        holder.description.setText(task.getDescription());
-
-        // Mostrar miembros asignados
-        if (task.getAssignedMembers() != null && !task.getAssignedMembers().isEmpty()) {
-            holder.responsible.setText(task.getAssignedMembers().size() + " miembro(s)");
-        } else {
-            holder.responsible.setText("Sin asignar");
-        }
-
-        // Mostrar fecha de vencimiento
-        if (task.getDueDate() != null) {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-            holder.dueDate.setText(sdf.format(task.getDueDate()));
-
-            // Cambiar color si está vencida
-            if (task.getDueDate().getTime() < System.currentTimeMillis() &&
-                    !TaskConstants.STATUS_COMPLETED.equals(task.getStatus())) {
-                holder.dueDate.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.md_theme_error));
-            }
-        } else {
-            holder.dueDate.setText("Sin fecha");
-        }
-
-        // Mostrar indicador de prioridad con colores mejorados
-        int priorityColor = getPriorityColor(task.getPriority(), holder.itemView.getContext());
-        int priorityBorderColor = getPriorityBorderColor(task.getPriority(), holder.itemView.getContext());
-
-        // Aplicar color de fondo sutil
-        holder.itemView.setBackgroundTintList(ColorStateList.valueOf(priorityColor));
-
-        // Aplicar color de borde sutil
-        if (holder.itemView instanceof com.google.android.material.card.MaterialCardView) {
-            ((com.google.android.material.card.MaterialCardView) holder.itemView)
-                .setStrokeColor(priorityBorderColor);
-        }
-
-        holder.externalButton.setOnClickListener(v -> {
-            Context ctx = v.getContext();
-            Intent intent = new Intent(ctx, TaskDetailActivity.class);
-            intent.putExtra("taskId", task.getId());
-            ctx.startActivity(intent);
-        });
-
-        holder.changeButton.setOnClickListener(v -> {
-            // Verificamos que nuestro oyente exista por seguridad.
-            if (listener != null) {
-                // Llamamos al método de la interfaz, "emitiendo la señal" y enviando la tarea actual.
-                listener.onChangeStatusClicked(task);
-            }
-        });
-
-        // Listener de pulsación larga para drag & drop
-        holder.itemView.setOnLongClickListener(view -> {
-
-            // 1. Preparar los datos del drag (esto se queda igual)
-            String dataPayload = columnIndex + "," + holder.getAdapterPosition();
-            ClipData.Item item = new ClipData.Item(dataPayload);
-            String[] mimeTypes = {ClipDescription.MIMETYPE_TEXT_PLAIN};
-            ClipData dragData = new ClipData("task_drag", mimeTypes, item);
-
-            // 2. Crear un DragShadowBuilder personalizado y CORREGIDO
-            View.DragShadowBuilder shadowBuilder = new View.DragShadowBuilder(view) {
-                @Override
-                public void onDrawShadow(android.graphics.Canvas canvas) {
-                    // Obtenemos la vista que se está arrastrando
-                    View shadowView = getView();
-
-                    // Guardamos el estado original de la opacidad de la vista
-                    float originalAlpha = shadowView.getAlpha();
-
-                    // CAMBIO: Aplicamos la transparencia directamente a la VISTA
-                    shadowView.setAlpha(0.7f);
-
-                    // Opcional: Escalar la sombra para que parezca que "se levanta"
-                    canvas.save();
-
-                    // Dejamos que el sistema dibuje la vista (que ahora es semitransparente) en el canvas
-                    super.onDrawShadow(canvas);
-
-                    // Restauramos la opacidad original de la vista para no afectar a nada más
-                    shadowView.setAlpha(originalAlpha);
-
-                    // Restauramos el estado del canvas
-                    canvas.restore();
-                }
-            };
-
-            // 3. Iniciar el drag and drop (esto se queda igual)
-            view.startDragAndDrop(dragData, shadowBuilder, view, 0);
-
-            // 4. Desvanecer la vista original (esto se queda igual)
-            view.animate()
-                    .alpha(0.3f)
-                    .setDuration(200)
-                    .withEndAction(() -> view.setVisibility(View.INVISIBLE))
-                    .start();
-
-            return true;
-        });
+        holder.bind(task);
     }
 
     @Override
@@ -163,20 +63,9 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         return taskList.size();
     }
 
-    private int getPriorityColor(String priority, Context context) {
-        switch (priority) {
-            case TaskConstants.PRIORITY_HIGH:
-                return ContextCompat.getColor(context, R.color.priority_high);
-            case TaskConstants.PRIORITY_MEDIUM:
-                return ContextCompat.getColor(context, R.color.priority_medium);
-            case TaskConstants.PRIORITY_LOW:
-                return ContextCompat.getColor(context, R.color.priority_low);
-            default:
-                return ContextCompat.getColor(context, R.color.priority_default);
-        }
-    }
-
     private int getPriorityBorderColor(String priority, Context context) {
+        if (priority == null) return ContextCompat.getColor(context, R.color.priority_default_border);
+
         switch (priority) {
             case TaskConstants.PRIORITY_HIGH:
                 return ContextCompat.getColor(context, R.color.priority_high_border);
@@ -189,8 +78,25 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         }
     }
 
-    public static class TaskViewHolder extends RecyclerView.ViewHolder {
-        TextView title, description, responsible, dueDate;
+    private int getStatusBackgroundColor(String status, Context context) {
+        if (status == null) return ContextCompat.getColor(context, R.color.status_default_bg);
+
+        switch (status) {
+            case TaskConstants.STATUS_PENDING:
+                return ContextCompat.getColor(context, R.color.status_pending_bg);
+            case TaskConstants.STATUS_IN_PROGRESS:
+                return ContextCompat.getColor(context, R.color.status_inprogress_bg);
+            case TaskConstants.STATUS_IN_REVIEW:
+                return ContextCompat.getColor(context, R.color.status_inreview_bg);
+            case TaskConstants.STATUS_COMPLETED:
+                return ContextCompat.getColor(context, R.color.status_completed_bg);
+            default:
+                return ContextCompat.getColor(context, R.color.status_default_bg);
+        }
+    }
+
+    public class TaskViewHolder extends RecyclerView.ViewHolder {
+        TextView title, description, responsible, createdDate, dueDate;
         Button externalButton, changeButton;
 
         public TaskViewHolder(@NonNull View itemView) {
@@ -198,9 +104,77 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             title = itemView.findViewById(R.id.task_title);
             description = itemView.findViewById(R.id.task_description);
             responsible = itemView.findViewById(R.id.task_responsible);
+            createdDate = itemView.findViewById(R.id.task_created_date);
             dueDate = itemView.findViewById(R.id.task_due_date);
             externalButton = itemView.findViewById(R.id.button_external);
             changeButton = itemView.findViewById(R.id.button_change);
+        }
+
+        public void bind(TaskModel task) {
+            Context context = itemView.getContext();
+
+            title.setText(task.getTitle());
+
+            if (task.getDescription() != null && !task.getDescription().isEmpty()) {
+                description.setText(task.getDescription());
+                description.setVisibility(View.VISIBLE);
+            } else {
+                description.setVisibility(View.GONE);
+            }
+
+            if (task.getAssignedMembers() != null && !task.getAssignedMembers().isEmpty()) {
+                int memberCount = task.getAssignedMembers().size();
+                responsible.setText(memberCount + (memberCount > 1 ? " miembros" : " miembro"));
+                responsible.setVisibility(View.VISIBLE);
+            } else {
+                responsible.setText("Sin asignar");
+                responsible.setVisibility(View.VISIBLE);
+            }
+
+            if (task.getCreatedAt() != null) {
+                createdDate.setText("Creado: " + dateFormat.format(task.getCreatedAt()));
+                createdDate.setVisibility(View.VISIBLE);
+            } else {
+                createdDate.setVisibility(View.GONE);
+            }
+
+            // --- FECHA LÍMITE (DEADLINE) ---
+            if (task.getDeadline() != null) {
+                dueDate.setText("Vence: " + dateFormat.format(task.getDeadline()));
+                dueDate.setVisibility(View.VISIBLE);
+
+                // Lógica para colorear la fecha si está vencida
+                if (task.getDeadline().before(new Date())) {
+                    dueDate.setTextColor(ContextCompat.getColor(context, R.color.priority_high_border)); // Usa un color de error
+                } else {
+                    dueDate.setTextColor(ContextCompat.getColor(context, R.color.md_theme_onSurfaceVariant)); // Color por defecto
+                }
+            } else {
+                dueDate.setVisibility(View.GONE);
+            }
+
+            int statusColor = getStatusBackgroundColor(task.getStatus(), context);
+            int priorityBorderColor = getPriorityBorderColor(task.getPriority(), context);
+
+            if (itemView instanceof com.google.android.material.card.MaterialCardView) {
+                MaterialCardView card = (MaterialCardView) itemView;
+                card.setCardBackgroundColor(statusColor);
+                card.setStrokeColor(priorityBorderColor);
+            }
+
+            externalButton.setOnClickListener(v -> {
+                Context ctx = v.getContext();
+                Intent intent = new Intent(ctx, TaskDetailActivity.class);
+                intent.putExtra("taskId", task.getId());
+                ctx.startActivity(intent);
+            });
+
+            changeButton.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onChangeStatusClicked(task);
+                }
+            });
+
         }
     }
 }

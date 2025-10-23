@@ -9,6 +9,7 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -24,6 +25,7 @@ public class SetupActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_setup);
 
         mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);
@@ -48,18 +50,31 @@ public class SetupActivity extends AppCompatActivity {
             showJoinBoardDialog();
         });
 
-        mainViewModel.getJoinBoardSuccess().observe(this, success -> {
-            if (success != null) {
-                if (success) {
-                    Toast.makeText(this, "¡Te has unido al tablero!", Toast.LENGTH_SHORT).show();
-                    // Navega a la pantalla principal
-                    Intent intent = new Intent(this, MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    // El MainViewModel ahora notifica el fallo, así que podemos mostrar un error
-                    Toast.makeText(this, "No se pudo unir al tablero. Verifica el código.", Toast.LENGTH_LONG).show();
+        mainViewModel.getJoinBoardResult().observe(this, event -> {
+            MainViewModel.JoinBoardResult result = event.getContentIfNotHandled();
+
+            if (result != null) {
+                switch (result) {
+                    case SUCCESS:
+                        Toast.makeText(this, "¡Te has unido al tablero con éxito!", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(this, MainActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                        finish();
+                        break;
+
+                    case ALREADY_MEMBER:
+                        Toast.makeText(this, "Ya eres miembro de este tablero.", Toast.LENGTH_SHORT).show();
+                        break;
+
+                    case BOARD_NOT_FOUND:
+                        Toast.makeText(this, "No se encontró ningún tablero con ese código.", Toast.LENGTH_LONG).show();
+                        break;
+
+                    case ERROR:
+                        // Un error genérico
+                        Toast.makeText(this, "Ocurrió un error. Inténtalo de nuevo.", Toast.LENGTH_LONG).show();
+                        break;
                 }
             }
         });

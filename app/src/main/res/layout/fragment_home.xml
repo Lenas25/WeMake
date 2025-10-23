@@ -290,7 +290,6 @@
                 android:textSize="14sp" />
         </LinearLayout>
 
-        <!-- ===== BLOQUE DE CONTENIDO PRINCIPAL (BLANCO) ===== -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_kanban_board"
             android:layout_width="match_parent"
@@ -303,7 +302,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:itemCount="3"
+            tools:itemCount="4"
             tools:listitem="@layout/item_kanban"
             android:clipChildren="false"
             android:clipToPadding="false"

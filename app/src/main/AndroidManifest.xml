@@ -25,6 +25,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".ApproveTaskRequestsActivity"
+            android:exported="false" />
+        <activity
             android:name=".ApproveRequestsActivity"
             android:exported="false" />
         <activity
@@ -35,7 +38,7 @@
             android:exported="false" />
         <activity
             android:name=".RedeemPointsActivity"
-            android:exported="false" /> <!-- ... Lista de Activities ... -->
+            android:exported="false" />
         <activity
             android:name=".CreateBoardActivity"
             android:exported="false" />

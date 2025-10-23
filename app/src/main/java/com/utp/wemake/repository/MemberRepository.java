@@ -3,6 +3,8 @@ package com.utp.wemake.repository;
 import android.util.Log;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
@@ -26,9 +28,11 @@ public class MemberRepository {
     private static final String TAG = "MemberRepository";
 
     private final FirebaseFirestore db;
+    private final FirebaseAuth auth;
 
     public MemberRepository() {
         this.db = FirebaseFirestore.getInstance();
+        this.auth = FirebaseAuth.getInstance();
     }
 
     public Task<List<Map<String, Object>>> getBoardMembers(String boardId) {
@@ -187,6 +191,41 @@ public class MemberRepository {
 
             return new ArrayList<>(userMap.values());
         });
+    }
+
+    /**
+     * NUEVO MÉTODO: Verifica si el usuario actual tiene el rol de "admin"
+     * en un tablero específico.
+     *
+     * @param boardId El ID del tablero a verificar.
+     * @return Una Tarea que resultará en 'true' si es admin, 'false' en caso contrario.
+     */
+    public Task<Boolean> isCurrentUserAdminOfBoard(String boardId) {
+        FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser == null) {
+            return Tasks.forResult(false);
+        }
+        String currentUserId = currentUser.getUid();
+
+        return db.collection("boards").document(boardId)
+                .collection("members_details").document(currentUserId)
+                .get()
+                .continueWith(task -> {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot document = task.getResult();
+                        if (document != null && document.exists()) {
+                            Log.d("RepoAdminCheck", "Documento de miembro encontrado en members_details. Datos: " + document.getData());
+                            String role = document.getString("role");
+                            Log.d("RepoAdminCheck", "Valor del campo 'role': " + role);
+                            return "admin".equals(role);
+                        } else {
+                            Log.w("RepoAdminCheck", "Documento de miembro NO encontrado en la ruta.");
+                            return false;
+                        }
+                    }
+                    Log.e("RepoAdminCheck", "Error en la tarea al obtener documento de miembro.", task.getException());
+                    return false;
+                });
     }
 
 }
