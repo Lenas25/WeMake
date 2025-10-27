@@ -15,6 +15,7 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField "String", "GEMINI_API_KEY", "\"${GEMINI_API_KEY}\""
     }
 
     buildTypes {
@@ -28,21 +29,31 @@ android {
         targetCompatibility JavaVersion.VERSION_11
     }
     buildFeatures {
-        viewBinding true
+        buildConfig = true
+        viewBinding
     }
 }
 
 dependencies {
     implementation 'com.github.Dhaval2404:ColorPicker:2.3'
+
+    // Firebase
     implementation platform('com.google.firebase:firebase-bom:34.3.0')
     implementation 'com.google.firebase:firebase-auth'
     implementation 'com.google.firebase:firebase-firestore'
     implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.google.firebase:firebase-messaging'
     implementation 'com.google.android.gms:play-services-auth'
+
+    // Material & Navigation
     implementation "com.google.android.material:material:1.13.0"
     implementation "androidx.navigation:navigation-fragment-ktx:2.7.7"
     implementation "androidx.navigation:navigation-ui-ktx:2.7.7"
+
+    // AI Gemini
+    implementation 'com.google.ai.client.generativeai:generativeai:0.9.0'
+    implementation 'com.google.code.gson:gson:2.11.0'
+
     implementation libs.appcompat
     implementation libs.activity
     implementation libs.constraintlayout
@@ -52,6 +63,7 @@ dependencies {
     implementation libs.credentials.play.services.auth
     implementation libs.googleid
 
+    // Imagen y animaciones
     implementation 'com.github.bumptech.glide:glide:4.15.1'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.15.1'
     implementation "com.cloudinary:cloudinary-android:2.4.0"
