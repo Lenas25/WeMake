@@ -2,6 +2,7 @@ package com.utp.wemake.services;
 
 import android.util.Log;
 
+import com.google.ai.client.generativeai.GenerativeModel;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -11,139 +12,76 @@ import com.google.gson.JsonParseException;
 import com.utp.wemake.BuildConfig;
 import com.utp.wemake.models.VoiceTaskResponse;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.lang.reflect.Type;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class VoiceTaskAIService {
     private static final String TAG = "VoiceTaskAIService";
     private static final String GEMINI_API_KEY = BuildConfig.GEMINI_API_KEY;
-    private static final String MODEL_NAME = "gemini-1.5-flash";
+    private static final String MODEL_NAME = "gemini-2.5-flash";
 
+    private GenerativeModel model;
     private Gson gson;
 
     public VoiceTaskAIService() {
+        this.model = new GenerativeModel(MODEL_NAME, GEMINI_API_KEY);
         this.gson = new GsonBuilder()
                 .registerTypeAdapter(Date.class, new DateDeserializer())
                 .create();
     }
 
     public CompletableFuture<VoiceTaskResponse> processVoiceText(String voiceText, String boardId) {
+        Log.d(TAG, "processVoiceText iniciado. Texto: " + voiceText);
         return CompletableFuture.supplyAsync(() -> {
             try {
                 String prompt = buildPrompt(voiceText, boardId);
-                Log.d(TAG, "Enviando prompt a Gemini: " + prompt.substring(0, Math.min(200, prompt.length())));
+                Log.d(TAG, "Enviando prompt a Gemini (primeros 200 chars): " + prompt.substring(0, Math.min(200, prompt.length())));
 
-                // Llamar a la API de Gemini usando HTTP
-                URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/" + MODEL_NAME + ":generateContent?key=" + GEMINI_API_KEY);
+                // Usar el helper de Kotlin para llamar a Gemini
+                String responseText = GeminiHelper.INSTANCE.generateContentSync(model, prompt);
+                Log.d(TAG, "Respuesta de Gemini recibida. Longitud: " + (responseText != null ? responseText.length() : 0));
+                Log.d(TAG, "Respuesta completa: " + responseText);
 
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod("POST");
-                connection.setRequestProperty("Content-Type", "application/json");
-                connection.setDoOutput(true);
-                connection.setConnectTimeout(30000);
-                connection.setReadTimeout(30000);
-
-                // Crear el JSON request
-                JSONObject requestBodyObj = new JSONObject();
-                try {
-                    JSONArray contents = new JSONArray();
-                    JSONObject content = new JSONObject();
-                    JSONArray parts = new JSONArray();
-                    JSONObject textPart = new JSONObject();
-                    textPart.put("text", prompt);
-                    parts.put(textPart);
-                    content.put("parts", parts);
-                    contents.put(content);
-                    requestBodyObj.put("contents", contents);
-
-                    String requestBody = requestBodyObj.toString();
-                    Log.d(TAG, "Request body: " + requestBody);
-
-                    try (OutputStream os = connection.getOutputStream()) {
-                        byte[] input = requestBody.getBytes("utf-8");
-                        os.write(input, 0, input.length);
-                    }
-                } catch (Exception e) {
-                    Log.e(TAG, "Error building request", e);
-                    return createErrorResponse("Error construyendo petición: " + e.getMessage());
+                if (responseText == null || responseText.trim().isEmpty()) {
+                    Log.e(TAG, "Respuesta vacía de Gemini");
+                    return createErrorResponse("La IA no devolvió ninguna respuesta.");
                 }
 
-                int responseCode = connection.getResponseCode();
-                Log.d(TAG, "Response code: " + responseCode);
+                // Limpiar la respuesta de markdown si existe
+                String cleanJson = cleanJsonResponse(responseText);
+                Log.d(TAG, "JSON limpio: " + cleanJson);
 
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), "utf-8"))) {
-                        StringBuilder response = new StringBuilder();
-                        String responseLine;
-                        while ((responseLine = br.readLine()) != null) {
-                            response.append(responseLine.trim());
-                        }
+                // Parsear con Gson
+                VoiceTaskResponse result = gson.fromJson(cleanJson, VoiceTaskResponse.class);
 
-                        // Parsear respuesta
-                        String jsonResponse = response.toString();
-                        Log.d(TAG, "Gemini Response: " + jsonResponse.substring(0, Math.min(500, jsonResponse.length())));
-
-                        // Extraer y limpiar el JSON
-                        String extractedJson = extractJsonFromResponse(jsonResponse);
-                        Log.d(TAG, "Extracted JSON: " + extractedJson);
-
-                        // Parsear con Gson
-                        VoiceTaskResponse result;
-                        try {
-                            result = gson.fromJson(extractedJson, VoiceTaskResponse.class);
-
-                            // Validar que se parseó correctamente
-                            if (result == null) {
-                                Log.e(TAG, "Parsed result is null");
-                                return createErrorResponse("No se pudo parsear la respuesta del asistente.");
-                            }
-
-                            // Validar que tiene los campos mínimos requeridos
-                            if (result.getTitle() == null || result.getTitle().trim().isEmpty()) {
-                                Log.e(TAG, "Parsed result has no title");
-                                return createErrorResponse("La respuesta del asistente no contiene un título válido.");
-                            }
-
-                            Log.d(TAG, "Parsed successfully. Title: " + result.getTitle());
-                            return result;
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error parsing JSON: " + e.getMessage(), e);
-                            return createErrorResponse("Error parseando la respuesta: " + e.getMessage());
-                        }
-                    }
-                } else {
-                    String errorMessage = "HTTP Error: " + responseCode;
-                    try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getErrorStream(), "utf-8"))) {
-                        StringBuilder errorResponse = new StringBuilder();
-                        String responseLine;
-                        while ((responseLine = br.readLine()) != null) {
-                            errorResponse.append(responseLine.trim());
-                        }
-                        Log.e(TAG, "Error response: " + errorResponse.toString());
-                    } catch (Exception e) {
-                        Log.e(TAG, "Could not read error stream", e);
-                    }
-                    return createErrorResponse(errorMessage);
+                // Validar que se parseó correctamente
+                if (result == null) {
+                    Log.e(TAG, "Parsed result is null");
+                    return createErrorResponse("No se pudo parsear la respuesta del asistente.");
                 }
+
+                // Validar que tiene los campos mínimos requeridos
+                if (result.getTitle() == null || result.getTitle().trim().isEmpty()) {
+                    Log.e(TAG, "Parsed result has no title");
+                    return createErrorResponse("La respuesta del asistente no contiene un título válido.");
+                }
+
+                // Establecer success=true por defecto si no hay error
+                if (!result.isSuccess()) {
+                    result.setSuccess(true);
+                }
+
+                Log.d(TAG, "Parsed successfully. Title: " + result.getTitle());
+                return result;
 
             } catch (Exception e) {
-                Log.e(TAG, "Error calling Gemini API: " + e.getMessage(), e);
+                Log.e(TAG, "Error llamando a Gemini API: " + e.getMessage(), e);
                 e.printStackTrace();
-                return createErrorResponse("Error de conexión: " + e.getMessage());
+                return createErrorResponse("Error de conexión con la IA: " + e.getMessage());
             }
         });
     }
@@ -151,47 +89,35 @@ public class VoiceTaskAIService {
     /**
      * Limpia el JSON de cualquier markdown o texto adicional que Gemini pueda devolver
      */
-    private String extractJsonFromResponse(String rawResponse) {
+    private String cleanJsonResponse(String rawResponse) {
         try {
-            // Intentar parsear el JSON completo primero
-            JSONObject jsonObject = new JSONObject(rawResponse);
-            JSONArray candidates = jsonObject.getJSONArray("candidates");
-            JSONObject content = candidates.getJSONObject(0).getJSONObject("content");
-            JSONArray parts = content.getJSONArray("parts");
-            String text = parts.getJSONObject(0).getString("text");
-
-            Log.d(TAG, "Raw text from Gemini: " + text);
+            String cleaned = rawResponse.trim();
 
             // Eliminar markdown code blocks si existen
-            text = text.replaceAll("```json", "").replaceAll("```", "").trim();
+            cleaned = cleaned.replaceAll("```json", "").replaceAll("```", "").trim();
 
             // Buscar el JSON dentro del texto (por si hay texto adicional)
-            Pattern pattern = Pattern.compile("\\{[^\\{]*\"title\"[^}]*\\}", Pattern.DOTALL);
-            Matcher matcher = pattern.matcher(text);
+            int startIndex = cleaned.indexOf("{");
+            int lastIndex = cleaned.lastIndexOf("}");
 
-            if (matcher.find()) {
-                String jsonText = matcher.group(0);
-                Log.d(TAG, "Extracted JSON from text: " + jsonText);
-                return jsonText;
+            if (startIndex != -1 && lastIndex != -1 && lastIndex > startIndex) {
+                cleaned = cleaned.substring(startIndex, lastIndex + 1);
             }
 
-            // Si no hay markdown, devolver el texto completo
-            return text;
-
+            return cleaned;
         } catch (Exception e) {
-            Log.e(TAG, "Error extracting JSON: " + e.getMessage());
+            Log.e(TAG, "Error limpiando JSON: " + e.getMessage());
             return rawResponse;
         }
     }
 
     private String buildPrompt(String voiceText, String boardId) {
         return "Eres un asistente que convierte texto de voz a datos estructurados de tareas.\n\n" +
-                "Texto de voz: \"" + voiceText + "\"\n" +
-                "Board ID: \"" + boardId + "\"\n\n" +
-                "Analiza el texto y extrae la información de la tarea. Responde SOLO con un JSON válido en este formato exacto:\n" +
+                "Texto de voz del usuario: \"" + voiceText + "\"\n\n" +
+                "Analiza el texto y extrae la información de la tarea. Devuelve SOLO un JSON válido en este formato exacto (sin markdown, sin texto adicional):\n" +
                 "{\n" +
                 "    \"title\": \"Título de la tarea\",\n" +
-                "    \"description\": \"Descripción detallada\",\n" +
+                "    \"description\": \"Descripción detallada de la tarea\",\n" +
                 "    \"priority\": \"alta|media|baja\",\n" +
                 "    \"deadline\": null,\n" +
                 "    \"subtasks\": [],\n" +
@@ -200,13 +126,16 @@ public class VoiceTaskAIService {
                 "    \"success\": true,\n" +
                 "    \"error\": null\n" +
                 "}\n\n" +
-                "Reglas importantes:\n" +
-                "- Responde SOLO con JSON válido, sin texto adicional\n" +
-                "- NO uses markdown code blocks\n" +
-                "- Si no hay deadline específico, usa null\n" +
-                "- Si no hay subtareas, usa array vacío\n" +
-                "- Si no hay miembros asignados, usa array vacío\n" +
-                "- Si hay error, pon success: false y error con el mensaje";
+                "INSTRUCCIONES IMPORTANTES:\n" +
+                "1. Responde SOLO con el JSON, sin markdown (sin ```json o ```)\n" +
+                "2. Si el usuario menciona una fecha límite, parséala y ponla en formato ISO: \"yyyy-MM-dd\" en el campo deadline\n" +
+                "3. Si el usuario menciona prioridad, usa \"alta\", \"media\" o \"baja\"\n" +
+                "4. Si no hay deadline, usa null en el campo deadline\n" +
+                "5. Si no hay subtareas, usa array vacío [] en subtasks\n" +
+                "6. Si no hay miembros asignados mencionados, usa array vacío [] en assignedMembers\n" +
+                "7. Siempre incluye success: true y error: null\n" +
+                "8. El título es OBLIGATORIO\n\n" +
+                "IMPORTANTE: Responde SOLO con el JSON, nada más.";
     }
 
     private VoiceTaskResponse createErrorResponse(String errorMessage) {
