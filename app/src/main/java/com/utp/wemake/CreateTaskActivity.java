@@ -16,7 +16,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.appbar.MaterialToolbar;
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
@@ -301,7 +300,6 @@ public class CreateTaskActivity extends AppCompatActivity {
             }
         }
     }
-
 
     /**
      * Recolecta todos los datos del formulario y los envía al ViewModel para guardarlos.

@@ -173,7 +173,6 @@ public class VoiceTaskAIService {
                     try {
                         return new SimpleDateFormat(format, Locale.US).parse(dateString);
                     } catch (Exception e) {
-                        // Continuar con el siguiente formato
                     }
                 }
 

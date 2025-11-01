@@ -1,9 +1,6 @@
 package com.utp.wemake.models;
 
 import com.google.firebase.firestore.DocumentId;
-import com.google.firebase.firestore.ServerTimestamp;
-
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
