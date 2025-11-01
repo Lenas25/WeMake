@@ -64,8 +64,13 @@ public class AddMembersActivity extends AppCompatActivity
 
         this.currentUserId = currentUser.getUid();
 
-        BoardSelectionPrefs prefs = new BoardSelectionPrefs(getApplicationContext());
-        boardId = prefs.getSelectedBoardId();
+        // Primero intentar obtener el boardId del Intent, luego de las preferencias como fallback
+        boardId = getIntent().getStringExtra("boardId");
+        if (boardId == null || boardId.isEmpty()) {
+            // Solo usar preferencias como fallback si no viene en el Intent
+            BoardSelectionPrefs prefs = new BoardSelectionPrefs(getApplicationContext());
+            boardId = prefs.getSelectedBoardId();
+        }
 
         viewModel = new ViewModelProvider(this).get(AddMembersViewModel.class);
 

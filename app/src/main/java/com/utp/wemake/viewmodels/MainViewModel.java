@@ -112,6 +112,8 @@ public class MainViewModel extends AndroidViewModel {
         // Si no hay un tablero guardado, o si el tablero guardado ya no existe, selecciona el primero de la lista.
         if (boardToSelect == null) {
             boardToSelect = boards.get(0);
+            // Guardar automáticamente el boardId seleccionado por defecto
+            boardSelectionRepo.saveSelectedBoardId(boardToSelect.getId());
         }
 
         // Publica el tablero seleccionado
