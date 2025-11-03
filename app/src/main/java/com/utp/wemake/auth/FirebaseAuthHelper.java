@@ -52,8 +52,7 @@ public class FirebaseAuthHelper {
                             if (user != null) {
                                 // Crear documento de usuario en Firestore
                                 createUserDocument(user, name, true); // true indica que es registro
-                                // Llama al callback
-                                callback.onSuccess(name, email, true);
+                                // El callback se llamará solo cuando el documento se haya creado en createUserDocument
                             }
                         } else {
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());

@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -20,10 +21,14 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.utp.wemake.models.Board;
+import com.utp.wemake.viewmodels.MainViewModel;
+import com.utp.wemake.viewmodels.VoiceTaskViewModel;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -37,6 +42,8 @@ public class VoiceTaskActivity extends AppCompatActivity {
 
     private SpeechRecognizer speechRecognizer;
     private Intent speechRecognizerIntent;
+    private MainViewModel mainViewModel;
+    private VoiceTaskViewModel viewModel;
 
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
@@ -53,6 +60,11 @@ public class VoiceTaskActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_voice_task);
+
+        // Obtener el MainViewModel para acceder al board seleccionado
+        mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);
+        viewModel = new ViewModelProvider(this).get(VoiceTaskViewModel.class);
+        observeViewModel();
 
         initializeViews();
         setupToolbar();
@@ -134,10 +146,18 @@ public class VoiceTaskActivity extends AppCompatActivity {
 
             @Override
             public void onResults(Bundle results) {
-                // Resultados finales. El texto ya debería estar en el TextView gracias a onPartialResults.
-                // Aquí podrías añadir una lógica de "guardar".
-                Toast.makeText(VoiceTaskActivity.this, "¡Listo!", Toast.LENGTH_SHORT).show();
-                updateUiToIdleState();
+                ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                if (matches != null && !matches.isEmpty()) {
+                    String finalText = matches.get(0);
+                    tvRecognizedText.setText(finalText);
+
+                    // Procesar con IA
+                    String boardId = getCurrentBoardId();
+                    viewModel.updateRecognizedText(finalText);
+                    viewModel.processVoiceText(finalText, boardId);
+
+                    updateUiToProcessingState();
+                }
             }
 
             @Override
@@ -200,6 +220,58 @@ public class VoiceTaskActivity extends AppCompatActivity {
         fabStartListening.setVisibility(View.VISIBLE);
         btnStop.setVisibility(View.INVISIBLE);
         btnCancel.setVisibility(View.VISIBLE); // Dejamos Cancelar visible
+    }
+
+    private void updateUiToProcessingState() {
+        tvStatusListening.setText("Procesando con IA...");
+        lottieAnimationView.setVisibility(View.VISIBLE);
+        fabStartListening.setVisibility(View.INVISIBLE);
+        btnStop.setVisibility(View.INVISIBLE);
+        btnCancel.setVisibility(View.VISIBLE);
+    }
+
+    private String getCurrentBoardId() {
+        Board selectedBoard = mainViewModel.getSelectedBoard().getValue();
+        if (selectedBoard != null) {
+            Log.d("VoiceTaskActivity", "Using board ID: " + selectedBoard.getId());
+            return selectedBoard.getId();
+        }
+        Log.e("VoiceTaskActivity", "No board selected!");
+        return null;
+    }
+
+    private void observeViewModel() {
+        viewModel.getRecognizedText().observe(this, text -> {
+            tvRecognizedText.setText(text);
+        });
+
+        viewModel.getIsLoading().observe(this, isLoading -> {
+            if (isLoading) {
+                updateUiToProcessingState();
+            } else {
+                updateUiToIdleState();
+            }
+        });
+
+        viewModel.getErrorMessage().observe(this, error -> {
+            if (error != null && !error.isEmpty()) {
+                Toast.makeText(this, "Error: " + error, Toast.LENGTH_LONG).show();
+            }
+        });
+
+        viewModel.getTaskCreated().observe(this, event -> {
+            Boolean created = event.getContentIfNotHandled();
+            if (created != null && created) {
+                Toast.makeText(this, "Tarea creada correctamente", Toast.LENGTH_SHORT).show();
+                finish(); // o navega al listado de tareas
+            }
+        });
+
+        viewModel.getAiResponse().observe(this, response -> {
+            if (response != null && response.isSuccess()) {
+                tvStatusListening.setText("Tarea generada: " + response.getTitle());
+            }
+        });
     }
 
     // Método de ayuda para traducir códigos de error a texto

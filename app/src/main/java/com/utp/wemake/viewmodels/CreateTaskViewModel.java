@@ -1,7 +1,5 @@
 package com.utp.wemake.viewmodels;
 
-import android.util.Log;
-
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -9,11 +7,9 @@ import androidx.lifecycle.ViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.utp.wemake.models.Subtask;
 import com.utp.wemake.models.TaskModel;
-import com.utp.wemake.models.TaskProposal;
-import com.utp.wemake.models.User;
 import com.utp.wemake.repository.MemberRepository;
 import com.utp.wemake.repository.TaskRepository;
-import com.utp.wemake.repository.UserRepository;
+import com.utp.wemake.utils.TaskCreationHelper;
 
 import java.util.Date;
 import java.util.List;
@@ -25,6 +21,7 @@ public class CreateTaskViewModel extends ViewModel {
     private final TaskRepository taskRepository;
     private final MemberRepository memberRepository;
     private final FirebaseAuth auth;
+    private final TaskCreationHelper taskCreationHelper;
 
     // --- Estado de la Interfaz ---
     private final MutableLiveData<Boolean> _isLoading = new MutableLiveData<>(false);
@@ -55,6 +52,7 @@ public class CreateTaskViewModel extends ViewModel {
         this.taskRepository = new TaskRepository();
         this.memberRepository = new MemberRepository();
         this.auth = FirebaseAuth.getInstance();
+        this.taskCreationHelper = new TaskCreationHelper(); // Inicializar helper
     }
 
     /**
@@ -108,16 +106,53 @@ public class CreateTaskViewModel extends ViewModel {
     /**
      * Lógica central para guardar o actualizar una tarea.
      * Ahora maneja los 4 casos: Admin-Crear, Admin-Editar, Usuario-Crear, Usuario-Editar.
+     * REFACTORIZADO: Usa TaskCreationHelper para crear, mantiene lógica propia para editar.
      */
     public void saveTask(String boardId, String title, String description, String priority,
                          List<String> assignedMemberIds, Date deadline, List<Subtask> subtasks,
                          int rewardPoints, int penaltyPoints, String reviewerId) {
 
         _isLoading.setValue(true);
-        String currentUserId = Objects.requireNonNull(auth.getCurrentUser()).getUid();
         boolean isEditing = editingTaskId != null;
 
-        // --- CASO 1: El usuario es Administrador ---
+        // Si es creación (no edición), usar el helper
+        if (!isEditing) {
+            // Asegurar que subtasks tenga IDs antes de pasar al helper
+            if (subtasks != null) {
+                TaskCreationHelper.ensureSubtasksHaveIds(subtasks);
+            }
+            
+            // Usar el helper para crear la tarea (maneja admin/usuario automáticamente)
+            taskCreationHelper.createTask(
+                    boardId,
+                    title,
+                    description,
+                    priority,
+                    assignedMemberIds,
+                    deadline,
+                    subtasks,
+                    rewardPoints,
+                    penaltyPoints,
+                    reviewerId,
+                    new TaskCreationHelper.TaskCreationCallback() {
+                        @Override
+                        public void onResult(boolean success, String errorMessage) {
+                            _isLoading.setValue(false);
+                            if (success) {
+                                _taskSaved.setValue(true);
+                            } else {
+                                _errorMessage.setValue(errorMessage);
+                            }
+                        }
+                    }
+            );
+            return; // Salir temprano, el callback maneja el resultado
+        }
+
+        // Si es edición, usar la lógica existente (no está en el helper)
+        String currentUserId = Objects.requireNonNull(auth.getCurrentUser()).getUid();
+
+        // --- CASO 1: El usuario es Administrador Editando ---
         if (Boolean.TRUE.equals(_isUserAdmin.getValue())) {
             TaskModel task = new TaskModel();
             task.setTitle(title);
@@ -131,38 +166,21 @@ public class CreateTaskViewModel extends ViewModel {
             task.setPenaltyPoints(penaltyPoints);
             task.setReviewerId(reviewerId);
 
-            if (isEditing) {
-                // Admin Editando: Es importante preservar los datos que no están en el formulario.
-                TaskModel originalTask = _taskToEdit.getValue();
-                if (originalTask != null) {
-                    task.setCreatedBy(originalTask.getCreatedBy());
-                    task.setCreatedAt(originalTask.getCreatedAt());
-                    task.setStatus(originalTask.getStatus());
-                    task.setApprovedBy(originalTask.getApprovedBy());
-                    task.setApprovedAt(originalTask.getApprovedAt());
-                }
-                task.setId(editingTaskId);
-                updateExistingTask(task);
-            } else {
-                // Admin Creando: Crea una nueva tarea completa y aprobada.
-                task.setCreatedBy(currentUserId);
-                task.setCreatedAt(new Date());
-                task.setApprovedBy(currentUserId);
-                task.setApprovedAt(new Date());
-                task.setStatus("pending");
-                createNewTask(task);
+            // Preservar los datos originales que no están en el formulario
+            TaskModel originalTask = _taskToEdit.getValue();
+            if (originalTask != null) {
+                task.setCreatedBy(originalTask.getCreatedBy());
+                task.setCreatedAt(originalTask.getCreatedAt());
+                task.setStatus(originalTask.getStatus());
+                task.setApprovedBy(originalTask.getApprovedBy());
+                task.setApprovedAt(originalTask.getApprovedAt());
             }
+            task.setId(editingTaskId);
+            updateExistingTask(task);
         }
-        // --- CASO 2: El usuario es un Miembro Normal ---
+        // --- CASO 2: El usuario es un Miembro Normal Editando ---
         else {
-            if (isEditing) {
-                // Usuario Editando: Actualiza solo los campos permitidos.
-                performNonAdminUpdate(title, description, priority, assignedMemberIds, subtasks);
-            } else {
-                // Usuario Creando: Crea una nueva propuesta de tarea.
-                createTaskProposal(boardId, title, description, priority, deadline, subtasks,
-                        assignedMemberIds, reviewerId, currentUserId);
-            }
+            performNonAdminUpdate(title, description, priority, assignedMemberIds, subtasks);
         }
     }
 
@@ -186,19 +204,7 @@ public class CreateTaskViewModel extends ViewModel {
         originalTask.setAssignedMembers(assignedMemberIds);
         originalTask.setSubtasks(subtasks);
 
-
         updateExistingTask(originalTask);
-    }
-
-    private void createNewTask(TaskModel task) {
-        taskRepository.createTask(task).addOnCompleteListener(taskResult -> {
-            _isLoading.setValue(false);
-            if (taskResult.isSuccessful()) {
-                _taskSaved.setValue(true);
-            } else {
-                _errorMessage.setValue("Error al crear la tarea: " + taskResult.getException().getMessage());
-            }
-        });
     }
 
     private void updateExistingTask(TaskModel task) {
@@ -208,39 +214,6 @@ public class CreateTaskViewModel extends ViewModel {
                 _taskSaved.setValue(true);
             } else {
                 _errorMessage.setValue("Error al actualizar la tarea: " + taskResult.getException().getMessage());
-            }
-        });
-    }
-
-    private void createTaskProposal(String boardId, String title, String description,
-                                    String priority, Date deadline, List<Subtask> subtasks,
-                                    List<String> assignedMemberIds, String reviewerId, String proposerId) {
-
-        String proposerName = "Usuario desconocido";
-        if (auth.getCurrentUser() != null && auth.getCurrentUser().getDisplayName() != null) {
-            proposerName = auth.getCurrentUser().getDisplayName();
-        }
-
-        TaskProposal proposal = new TaskProposal();
-        proposal.setTitle(title);
-        proposal.setDescription(description);
-        proposal.setPriority(priority);
-        proposal.setDeadline(deadline);
-        proposal.setSubtasks(subtasks);
-        proposal.setBoardId(boardId);
-        proposal.setProposedBy(proposerId);
-        proposal.setProposerName(proposerName);
-        proposal.setProposedAt(new Date());
-        proposal.setStatus("awaiting_approval");
-        proposal.setAssignedMembers(assignedMemberIds);
-        proposal.setReviewerId(reviewerId);
-
-        taskRepository.createTaskProposal(proposal).addOnCompleteListener(taskResult -> {
-            _isLoading.setValue(false);
-            if (taskResult.isSuccessful()) {
-                _taskSaved.setValue(true);
-            } else {
-                _errorMessage.setValue("Error al crear la propuesta: " + taskResult.getException().getMessage());
             }
         });
     }

@@ -7,7 +7,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.SetOptions;
 import com.utp.wemake.models.User;
 
@@ -87,7 +86,6 @@ public class UserRepository {
                 .document(firebaseUser.getUid())
                 .set(user, SetOptions.merge());
     }
-
 
     /**
      * Comprueba si el documento del usuario actual existe en Firestore.

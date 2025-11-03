@@ -1,7 +1,6 @@
 package com.utp.wemake;
 
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,11 +11,6 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
-import android.content.ClipData;
-import android.content.ClipDescription;
-
-import com.google.android.material.card.MaterialCardView;
-import com.utp.wemake.constants.TaskConstants;
 import com.utp.wemake.models.TaskModel;
 
 import java.text.SimpleDateFormat;
@@ -61,38 +55,6 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     @Override
     public int getItemCount() {
         return taskList.size();
-    }
-
-    private int getPriorityBorderColor(String priority, Context context) {
-        if (priority == null) return ContextCompat.getColor(context, R.color.priority_default_border);
-
-        switch (priority) {
-            case TaskConstants.PRIORITY_HIGH:
-                return ContextCompat.getColor(context, R.color.priority_high_border);
-            case TaskConstants.PRIORITY_MEDIUM:
-                return ContextCompat.getColor(context, R.color.priority_medium_border);
-            case TaskConstants.PRIORITY_LOW:
-                return ContextCompat.getColor(context, R.color.priority_low_border);
-            default:
-                return ContextCompat.getColor(context, R.color.priority_default_border);
-        }
-    }
-
-    private int getStatusBackgroundColor(String status, Context context) {
-        if (status == null) return ContextCompat.getColor(context, R.color.status_default_bg);
-
-        switch (status) {
-            case TaskConstants.STATUS_PENDING:
-                return ContextCompat.getColor(context, R.color.status_pending_bg);
-            case TaskConstants.STATUS_IN_PROGRESS:
-                return ContextCompat.getColor(context, R.color.status_inprogress_bg);
-            case TaskConstants.STATUS_IN_REVIEW:
-                return ContextCompat.getColor(context, R.color.status_inreview_bg);
-            case TaskConstants.STATUS_COMPLETED:
-                return ContextCompat.getColor(context, R.color.status_completed_bg);
-            default:
-                return ContextCompat.getColor(context, R.color.status_default_bg);
-        }
     }
 
     public class TaskViewHolder extends RecyclerView.ViewHolder {
@@ -151,15 +113,6 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
                 }
             } else {
                 dueDate.setVisibility(View.GONE);
-            }
-
-            int statusColor = getStatusBackgroundColor(task.getStatus(), context);
-            int priorityBorderColor = getPriorityBorderColor(task.getPriority(), context);
-
-            if (itemView instanceof com.google.android.material.card.MaterialCardView) {
-                MaterialCardView card = (MaterialCardView) itemView;
-                card.setCardBackgroundColor(statusColor);
-                card.setStrokeColor(priorityBorderColor);
             }
 
             externalButton.setOnClickListener(v -> {

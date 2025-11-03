@@ -7,7 +7,8 @@
     android:orientation="vertical"
     android:paddingEnd="30dp"
     android:paddingVertical="10dp"
-    tools:ignore="RtlSymmetry">
+    tools:ignore="RtlSymmetry"
+    android:layout_marginHorizontal="4dp">
 
     <TextView
         android:id="@+id/tv_column_title"

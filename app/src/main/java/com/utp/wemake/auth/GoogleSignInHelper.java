@@ -116,12 +116,12 @@ public class GoogleSignInHelper {
                                 String email = user.getEmail() != null ? user.getEmail() : "";
 
                                 if (isNewUser) {
-                                    // Guardar en Firestore sin bloquear el flujo
+                                    // Guardar en Firestore y llamar al callback solo cuando se complete
                                     createNewUser(user);
+                                } else {
+                                    // Usuario existente: llamar al callback inmediatamente
+                                    callback.onSignInSuccess(name, email, false);
                                 }
-
-                                // Llamamos al callback de inmediato
-                                callback.onSignInSuccess(name, email, isNewUser);
                             }
                         } else {
                             Log.w(TAG, "signInWithCredential:failure", task.getException());

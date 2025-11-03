@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
+    android:fitsSystemWindows="true"
     tools:context=".VoiceTaskActivity">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -14,14 +15,14 @@
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/top_app_bar"
+            style="@style/Widget.Material3.Toolbar.Surface"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:titleCentered="true"
             app:navigationIcon="@drawable/ic_arrow_back"
             app:titleTextColor="?attr/colorOnSurface"
             android:letterSpacing="0.01"
-            tools:title="@string/title_voice_creation"
-            style="@style/Widget.Material3.Toolbar.Surface" />
+            tools:title="@string/title_voice_creation" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -182,7 +183,6 @@
                             android:layout_gravity="center"
                             android:src="@drawable/ic_cancel" />
                     </FrameLayout>
-
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- 3. El texto, ahora fuera y debajo de la tarjeta -->
@@ -193,12 +193,7 @@
                     android:text="@string/action_cancel"
                     android:textColor="?attr/colorOnSurface"
                     style="@style/TextAppearance.Material3.LabelLarge" />
-
             </LinearLayout>
-
         </androidx.constraintlayout.widget.ConstraintLayout>
-
-
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

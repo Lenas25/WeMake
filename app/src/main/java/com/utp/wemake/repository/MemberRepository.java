@@ -257,4 +257,11 @@ public class MemberRepository {
         return batch;
     }
 
+    public Task<DocumentSnapshot> getMember(String boardId, String userId) {
+        return db.collection(COLLECTION_BOARDS)
+                .document(boardId)
+                .collection(COLLECTION_MEMBERS_DETAILS)
+                .document(userId)
+                .get();
+    }
 }
