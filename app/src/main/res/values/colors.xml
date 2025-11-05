@@ -161,4 +161,11 @@
     <color name="status_inreview_bg">#FFD6E3FF</color>   <!-- Un azul/púrpura suave -->
     <color name="status_completed_bg">#FFD4EDD4</color>  <!-- Un verde suave de éxito -->
     <color name="status_default_bg">#FFE0E0E0</color>    <!-- Color por defecto si el estado es nulo -->
+
+
+    <!-- Nuevos colores para los gráficos de barras -->
+    <color name="chart_color_1">#FF648DE5</color>
+    <color name="chart_color_2">#FF53D7A8</color>
+    <color name="chart_color_3">#FFFFD661</color>
+    <color name="chart_color_4">#FFFF8FA2</color>
 </resources>

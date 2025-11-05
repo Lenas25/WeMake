@@ -16,6 +16,11 @@
         android:label="fragment_tasks"
         tools:layout="@layout/fragment_tasks" />
     <fragment
+        android:id="@+id/dataFragment"
+        android:name="com.utp.wemake.DataFragment"
+        android:label="fragment_data"
+        tools:layout="@layout/fragment_data" />
+    <fragment
         android:id="@+id/profileFragment"
         android:name="com.utp.wemake.ProfileFragment"
         android:label="fragment_profile"

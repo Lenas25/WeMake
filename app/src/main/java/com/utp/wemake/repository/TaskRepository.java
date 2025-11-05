@@ -16,6 +16,7 @@ import com.utp.wemake.models.TaskProposal;
 import com.utp.wemake.constants.TaskConstants;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -234,6 +235,8 @@ public class TaskRepository {
         batch.update(taskRef, "status", newStatus);
 
         if (TaskConstants.STATUS_COMPLETED.equals(newStatus)) {
+            batch.update(taskRef, "completedAt", new Date());
+
             batch = memberRepository.addPointsToMembersBatch(
                     batch,
                     task.getBoardId(),

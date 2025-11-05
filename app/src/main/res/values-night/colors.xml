@@ -160,4 +160,9 @@
     <color name="status_inreview_bg">#2A3B4A</color>
     <color name="status_completed_bg">#2A4A3A</color>
     <color name="status_default_bg">#3C3C3C</color>
+
+    <color name="chart_color_1">#FF648DE5</color>
+    <color name="chart_color_2">#FF53D7A8</color>
+    <color name="chart_color_3">#FFFFD661</color>
+    <color name="chart_color_4">#FFFF8FA2</color>
 </resources>

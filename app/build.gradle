@@ -41,6 +41,13 @@ android {
 dependencies {
     implementation 'com.github.Dhaval2404:ColorPicker:2.3'
 
+    // Retrofit para llamadas a la API (Networking)
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+
+    // Gráficos - MPAndroidChart
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
+
     // Firebase
     implementation platform('com.google.firebase:firebase-bom:34.3.0')
     implementation 'com.google.firebase:firebase-auth'
