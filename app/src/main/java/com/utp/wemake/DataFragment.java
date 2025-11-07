@@ -54,7 +54,7 @@ public class DataFragment extends Fragment {
     private TextView tvTotalTasks, tvOnTimeRate;
     private BarChart barChart;
     private PieChart pieChart;
-    private RecyclerView rvAtRiskTasks;
+    private RecyclerView rvAtRiskTasks, rvLeaderboard;
 
     public DataFragment() {
         // Required empty public constructor
@@ -91,6 +91,7 @@ public class DataFragment extends Fragment {
         barChart = view.findViewById(R.id.bar_chart_tasks_per_week);
         pieChart = view.findViewById(R.id.pie_chart_priority);
         rvAtRiskTasks = view.findViewById(R.id.rv_at_risk_tasks);
+        rvLeaderboard = view.findViewById(R.id.rv_leaderboard);
     }
 
     private void setupToolbar(View view) {
@@ -139,6 +140,12 @@ public class DataFragment extends Fragment {
                 tvMessage.setVisibility(View.VISIBLE);
                 contentScrollView.setVisibility(View.GONE);
                 progressBar.setVisibility(View.GONE);
+            }
+        });
+
+        dashboardViewModel.getLeaderboard().observe(getViewLifecycleOwner(), leaderboard -> {
+            if (leaderboard != null) {
+                rvLeaderboard.setAdapter(new LeaderboardAdapter(leaderboard));
             }
         });
     }

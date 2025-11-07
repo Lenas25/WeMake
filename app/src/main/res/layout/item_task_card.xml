@@ -3,8 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="250dp"
-    android:layout_height="wrap_content"
+    android:layout_width="400dp"
+    android:layout_height="match_parent"
     android:layout_marginBottom="12dp"
     android:layout_marginHorizontal="4dp"
     app:cardElevation="4dp"
@@ -13,52 +13,27 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:layout_height="match_parent"
+        android:paddingVertical="16dp"
+        android:paddingHorizontal="16dp">
 
-        <!-- Fila Superior: Título y Botones (Sin cambios, ya está bien) -->
+        <!-- === SECCIÓN DE CONTENIDO (ARRIBA) === -->
+
+        <!-- Título de la tarea (Ahora ocupa todo el ancho) -->
         <TextView
             android:id="@+id/task_title"
             style="@style/TextAppearance.Material3.TitleMedium"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/button_change"
-            android:layout_marginEnd="8dp"
-            tools:text="Título de la Tarea" />
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="Este es un título de tarea extremadamente largo que ahora tiene espacio para respirar" />
 
-        <Button
-            android:id="@+id/button_change"
-            style="?attr/materialIconButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:icon="@drawable/ic_change"
-            app:iconSize="24dp"
-            android:contentDescription="@string/btn_change"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/button_external" />
-
-        <Button
-            android:id="@+id/button_external"
-            style="?attr/materialIconButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:icon="@drawable/ic_external_link"
-            app:iconSize="24dp"
-            android:contentDescription="@string/btn_open"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <androidx.constraintlayout.widget.Barrier
-            android:id="@+id/header_barrier"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:barrierDirection="bottom"
-            app:constraint_referenced_ids="task_title, button_change, button_external" />
-
-        <!-- Descripción (Sin cambios) -->
+        <!-- Descripción de la tarea -->
         <TextView
             android:id="@+id/task_description"
             style="@style/TextAppearance.Material3.BodyMedium"
@@ -66,10 +41,12 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:textColor="?attr/colorOnSurfaceVariant"
-            app:layout_constraintTop_toBottomOf="@id/header_barrier"
+            android:maxLines="3"
+            android:ellipsize="end"
+            app:layout_constraintTop_toBottomOf="@id/task_title"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            tools:text="Descripción de la tarea." />
+            tools:text="Esta es una descripción de la tarea que es muy, muy larga para demostrar cómo el atributo ellipsize funciona." />
 
         <!-- Miembros Asignados con Icono -->
         <TextView
@@ -80,33 +57,33 @@
             android:layout_marginTop="16dp"
             android:drawableStart="@drawable/ic_user_group"
             android:drawablePadding="8dp"
+            android:layout_marginBottom="12dp"
             android:gravity="center_vertical"
             app:drawableTint="?attr/colorOnSurfaceVariant"
-            app:layout_constraintTop_toBottomOf="@id/task_description"
+            app:layout_constraintBottom_toTopOf="@id/task_due_date"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             tools:text="3 miembros asignados" />
 
         <!-- Fecha de Creación con Icono -->
         <TextView
-            android:id="@+id/task_created_date"
+            android:id="@+id/task_due_date"
             style="@style/TextAppearance.Material3.BodySmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:drawableStart="@drawable/ic_calendar"
+            android:layout_marginVertical="12dp"
             android:drawablePadding="8dp"
             android:gravity="center_vertical"
             android:textColor="?attr/colorOnSurfaceVariant"
+            app:drawableStartCompat="@drawable/ic_calendar"
             app:drawableTint="?attr/colorOnSurfaceVariant"
-            app:layout_constraintTop_toBottomOf="@id/task_responsible"
+            app:layout_constraintBottom_toTopOf="@id/actions_divider"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            tools:text="Creado: 22 Oct" />
+            tools:text="Vence: 22 Oct" />
 
         <!-- Fecha Límite (Deadline) con Icono -->
         <TextView
-            android:id="@+id/task_due_date"
+            android:id="@+id/task_created_date"
             style="@style/TextAppearance.Material3.BodySmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -115,10 +92,73 @@
             android:textColor="?attr/colorOnSurfaceVariant"
             android:textStyle="bold"
             app:drawableTint="?attr/colorOnSurfaceVariant"
-            app:layout_constraintTop_toTopOf="@id/task_created_date"
+            app:layout_constraintTop_toTopOf="@id/task_due_date"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="@id/task_created_date"
-            tools:text="Vence: 25 Oct" />
+            app:layout_constraintBottom_toBottomOf="@id/task_due_date"
+            tools:text="Creado: 25 Oct" />
+
+        <!-- === SECCIÓN DE ACCIONES (ABAJO) === -->
+
+        <!-- Divisor para separar contenido de acciones -->
+        <View
+            android:id="@+id/actions_divider"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:background="?attr/colorOutlineVariant"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toTopOf="@id/actions_layout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Barra de Acciones -->
+        <LinearLayout
+            android:id="@+id/actions_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!-- Botón de Abrir Detalle -->
+
+            <Button
+                android:id="@+id/button_external"
+                style="@style/Widget.Material3.Button.Icon"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:icon="@drawable/ic_external_link"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                android:padding="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
+                android:tooltipText="Ver detalles"
+                android:contentDescription="@string/btn_open" />
+
+
+
+            <!-- Botón de Cambiar Estado -->
+            <Button
+                android:id="@+id/button_change"
+                style="@style/Widget.Material3.Button.Icon"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:icon="@drawable/ic_change"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                android:layout_marginStart="8dp"
+                android:padding="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
+                android:tooltipText="Cambiar estado"
+                android:contentDescription="@string/btn_change" />
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

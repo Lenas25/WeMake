@@ -1,6 +1,7 @@
 package com.utp.wemake;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -104,15 +105,24 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             if (task.getDeadline() != null) {
                 dueDate.setText("Vence: " + dateFormat.format(task.getDeadline()));
                 dueDate.setVisibility(View.VISIBLE);
+                long diffInMillis = task.getDeadline().getTime() - new Date().getTime();
+                long diffInDays = java.util.concurrent.TimeUnit.MILLISECONDS.toDays(diffInMillis);
 
-                // Lógica para colorear la fecha si está vencida
-                if (task.getDeadline().before(new Date())) {
-                    dueDate.setTextColor(ContextCompat.getColor(context, R.color.priority_high_border)); // Usa un color de error
+                int dateColor;
+                if (diffInDays < 0) {
+                    // Ya se venció
+                    dateColor = ContextCompat.getColor(context, R.color.deadline_overdue_color);
+                } else if (diffInDays <= 3) {
+                    // Vence pronto (en 3 días o menos)
+                    dateColor = ContextCompat.getColor(context, R.color.deadline_soon_color);
                 } else {
-                    dueDate.setTextColor(ContextCompat.getColor(context, R.color.md_theme_onSurfaceVariant)); // Color por defecto
+                    // Todavía falta
+                    dateColor = ContextCompat.getColor(context, R.color.md_theme_onSurfaceVariant);
                 }
+                dueDate.setTextColor(dateColor);
+
             } else {
-                dueDate.setVisibility(View.GONE);
+                dueDate.setText("Sin Deadline");
             }
 
             externalButton.setOnClickListener(v -> {

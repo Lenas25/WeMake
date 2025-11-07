@@ -1,6 +1,7 @@
 package com.utp.wemake;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
+import com.utp.wemake.constants.TaskConstants;
 import com.utp.wemake.models.TaskModel;
 import com.utp.wemake.models.User;
 import com.utp.wemake.viewmodels.TaskDetailViewModel;
@@ -24,7 +26,7 @@ import java.util.Locale;
 
 public class TaskDetailActivity extends AppCompatActivity {
     private TextView title, description, dueDate, assignedMembers, rewardText, penaltyText, reviewerText;
-    private Chip priorityChip;
+    private Chip priorityChip, statusChip;
     private RecyclerView subtasksRecycler;
     private MaterialButton btnBack, btnEdit, btnDelete;
     private TaskDetailViewModel viewModel;
@@ -54,6 +56,7 @@ public class TaskDetailActivity extends AppCompatActivity {
         title = findViewById(R.id.task_detail_title);
         description = findViewById(R.id.task_detail_description);
         priorityChip = findViewById(R.id.task_detail_priority);
+        statusChip = findViewById(R.id.task_detail_status);
         dueDate = findViewById(R.id.task_detail_due_date);
         assignedMembers = findViewById(R.id.task_detail_assigned_members);
         rewardText = findViewById(R.id.tvReward);
@@ -138,6 +141,7 @@ public class TaskDetailActivity extends AppCompatActivity {
         description.setText(task.getDescription());
 
         setupPriorityChip(task.getPriority());
+        setupStatusChip(task.getStatus());
 
         if (task.getDeadline() != null) {
             dueDate.setText(fullDateFormat.format(task.getDeadline()));
@@ -198,15 +202,49 @@ public class TaskDetailActivity extends AppCompatActivity {
         }
     }
 
+    private void setupStatusChip(String statusValue) {
+        if (statusValue == null) {
+            statusChip.setVisibility(View.GONE);
+            return;
+        }
+        statusChip.setVisibility(View.VISIBLE);
+
+        int backgroundColor;
+        String statusText;
+
+        switch (statusValue) {
+            case TaskConstants.STATUS_PENDING:
+                statusText = "Pendiente";
+                backgroundColor = getColor(R.color.status_pending_bg);
+                break;
+            case TaskConstants.STATUS_IN_PROGRESS:
+                statusText = "En Progreso";
+                backgroundColor = getColor(R.color.status_inprogress_bg);
+                break;
+            case TaskConstants.STATUS_IN_REVIEW:
+                statusText = "En Revisión";
+                backgroundColor = getColor(R.color.status_inreview_bg);
+                break;
+            case TaskConstants.STATUS_COMPLETED:
+                statusText = "Completado";
+                backgroundColor = getColor(R.color.status_completed_bg);
+                break;
+            default:
+                statusText = "Desconocido";
+                backgroundColor = getColor(R.color.status_default_bg);
+                break;
+        }
+        statusChip.setText(statusText);
+        statusChip.setChipBackgroundColor(ColorStateList.valueOf(backgroundColor));
+    }
+
     private void setupSubtasksRecycler(TaskModel task) {
         if (task.getSubtasks() != null && !task.getSubtasks().isEmpty()) {
             subtaskAdapter = new SubtaskAdapter(task.getSubtasks(), (subtask, isCompleted) -> {
-                // Callback para cuando se actualiza una subtarea
                 viewModel.updateSubtask(taskId, subtask.getId(), isCompleted);
             });
             subtasksRecycler.setAdapter(subtaskAdapter);
         } else {
-            // Mostrar mensaje cuando no hay subtareas
             subtasksRecycler.setAdapter(null);
         }
     }

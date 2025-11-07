@@ -103,7 +103,6 @@ public class ChangeStatusBottomSheet extends BottomSheetDialogFragment {
             }
 
             if (!newStatus.isEmpty() && !newStatus.equals(currentStatus)) {
-                // --- LLAMAR AL VIEWMODEL PARA ACTUALIZAR EN FIREBASE ---
                 homeViewModel.updateTaskStatus(taskId, newStatus);
                 Toast.makeText(getContext(), "Actualizando estado...", Toast.LENGTH_SHORT).show();
             }

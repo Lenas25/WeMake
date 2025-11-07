@@ -7,8 +7,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.WriteBatch;
@@ -264,4 +266,23 @@ public class MemberRepository {
                 .document(userId)
                 .get();
     }
+
+    /**
+     * Inicia una escucha en tiempo real para los detalles de un miembro (rol, puntos).
+     *
+     * @param boardId El ID del tablero.
+     * @param userId El ID del usuario a escuchar.
+     * @param listener El callback que se activará con cada cambio.
+     * @return El registro del listener para poder cancelarlo después.
+     */
+    public ListenerRegistration listenToMemberDetails(String boardId, String userId, EventListener<DocumentSnapshot> listener) {
+        if (boardId == null || userId == null) {
+            // Devuelve null si los IDs son inválidos para evitar crasheos
+            return null;
+        }
+        return db.collection(COLLECTION_BOARDS).document(boardId)
+                .collection(COLLECTION_MEMBERS_DETAILS).document(userId)
+                .addSnapshotListener(listener);
+    }
+
 }

@@ -134,23 +134,17 @@ public class CreateTaskViewModel extends ViewModel {
                     rewardPoints,
                     penaltyPoints,
                     reviewerId,
-                    new TaskCreationHelper.TaskCreationCallback() {
-                        @Override
-                        public void onResult(boolean success, String errorMessage) {
-                            _isLoading.setValue(false);
-                            if (success) {
-                                _taskSaved.setValue(true);
-                            } else {
-                                _errorMessage.setValue(errorMessage);
-                            }
+                    (success, errorMessage) -> {
+                        _isLoading.setValue(false);
+                        if (success) {
+                            _taskSaved.setValue(true);
+                        } else {
+                            _errorMessage.setValue(errorMessage);
                         }
                     }
             );
             return; // Salir temprano, el callback maneja el resultado
         }
-
-        // Si es edición, usar la lógica existente (no está en el helper)
-        String currentUserId = Objects.requireNonNull(auth.getCurrentUser()).getUid();
 
         // --- CASO 1: El usuario es Administrador Editando ---
         if (Boolean.TRUE.equals(_isUserAdmin.getValue())) {
@@ -164,6 +158,7 @@ public class CreateTaskViewModel extends ViewModel {
             task.setBoardId(boardId);
             task.setRewardPoints(rewardPoints);
             task.setPenaltyPoints(penaltyPoints);
+            task.setPenaltyApplied(false);
             task.setReviewerId(reviewerId);
 
             // Preservar los datos originales que no están en el formulario
@@ -180,7 +175,7 @@ public class CreateTaskViewModel extends ViewModel {
         }
         // --- CASO 2: El usuario es un Miembro Normal Editando ---
         else {
-            performNonAdminUpdate(title, description, priority, assignedMemberIds, subtasks);
+            performNonAdminUpdate(title, description, priority, assignedMemberIds, subtasks, deadline, reviewerId);
         }
     }
 
@@ -189,7 +184,8 @@ public class CreateTaskViewModel extends ViewModel {
      * Carga la tarea original y solo modifica los campos que un usuario normal puede cambiar.
      */
     private void performNonAdminUpdate(String title, String description, String priority,
-                                       List<String> assignedMemberIds, List<Subtask> subtasks) {
+                                       List<String> assignedMemberIds, List<Subtask> subtasks,
+                                       Date deadline, String reviewerId) {
         TaskModel originalTask = _taskToEdit.getValue();
 
         if (originalTask == null) {
@@ -203,6 +199,9 @@ public class CreateTaskViewModel extends ViewModel {
         originalTask.setPriority(priority);
         originalTask.setAssignedMembers(assignedMemberIds);
         originalTask.setSubtasks(subtasks);
+        originalTask.setDeadline(deadline);
+        originalTask.setReviewerId(reviewerId);
+        originalTask.setPenaltyApplied(false);
 
         updateExistingTask(originalTask);
     }

@@ -258,10 +258,11 @@
             android:orientation="vertical"
             android:paddingTop="120dp"
             android:paddingBottom="120dp"
-            android:visibility="visible"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/card_vencidos">
+            app:layout_constraintTop_toBottomOf="@id/card_vencidos"
+            >
 
             <ImageView
                 android:layout_width="100dp"
@@ -300,6 +301,7 @@
             android:paddingTop="24dp"
             android:background="@drawable/content_background"
             android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false"
             android:orientation="vertical"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:itemCount="4"
@@ -309,7 +311,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/empty_state_layout"
-            android:visibility="gone"/>
+            android:visibility="visible"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.core.widget.NestedScrollView>

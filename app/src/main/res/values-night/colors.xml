@@ -155,6 +155,10 @@
     <color name="priority_low_border">#2C4A2C</color>
     <color name="priority_default_border">#2E2E2E</color>
 
+    <color name="deadline_overdue_color">@color/red_300</color> <!-- Rojo -->
+    <color name="deadline_soon_color">@color/orange_300</color> <!-- Naranja -->
+    <color name="deadline_good_color">@color/green_300</color>  <!-- Verde -->
+
     <color name="status_pending_bg">#3C3C3C</color>
     <color name="status_inprogress_bg">#4A442A</color>
     <color name="status_inreview_bg">#2A3B4A</color>

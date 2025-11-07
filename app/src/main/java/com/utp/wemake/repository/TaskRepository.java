@@ -227,39 +227,63 @@ public class TaskRepository {
      * @param newStatus El nuevo estado.
      * @return Una Tarea que se completa cuando la operación termina.
      */
-    public Task<Void> updateStatusAndApplyPoints(TaskModel task, String newStatus) {
-        DocumentReference taskRef = tasksCollection.document(task.getId());
+    public Task<Void> updateStatusAndApplyPoints(String taskId, String newStatus) {
+        DocumentReference taskRef = tasksCollection.document(taskId);
 
+        return taskRef.get().onSuccessTask(documentSnapshot -> {
+            if (!documentSnapshot.exists()) {
+                throw new Exception("La tarea con ID " + taskId + " no existe.");
+            }
+            TaskModel task = documentSnapshot.toObject(TaskModel.class);
+            if (task == null) {
+                throw new Exception("No se pudo deserializar la tarea.");
+            }
+
+            WriteBatch batch = db.batch();
+
+            batch.update(taskRef, "status", newStatus);
+
+            if (TaskConstants.STATUS_COMPLETED.equals(newStatus)) {
+                batch.update(taskRef, "completedAt", new Date());
+
+                if (task.getRewardPoints() > 0 && task.getAssignedMembers() != null && !task.getAssignedMembers().isEmpty()) {
+                    batch = memberRepository.addPointsToMembersBatch(
+                            batch,
+                            task.getBoardId(),
+                            task.getAssignedMembers(),
+                            task.getRewardPoints()
+                    );
+                }
+            }
+
+            // 3. Ejecutar todas las operaciones en el batch
+            return batch.commit();
+        });
+    }
+
+    public Task<Void> processOverdueTask(TaskModel task) {
+        DocumentReference taskRef = tasksCollection.document(task.getId());
         WriteBatch batch = db.batch();
 
-        batch.update(taskRef, "status", newStatus);
-
-        if (TaskConstants.STATUS_COMPLETED.equals(newStatus)) {
-            batch.update(taskRef, "completedAt", new Date());
-
+        if (task.getPenaltyPoints() > 0 && task.getAssignedMembers() != null && !task.getAssignedMembers().isEmpty()) {
             batch = memberRepository.addPointsToMembersBatch(
                     batch,
                     task.getBoardId(),
                     task.getAssignedMembers(),
-                    task.getRewardPoints()
+                    -task.getPenaltyPoints()
             );
         }
 
-        return batch.commit();
-    }
+        // 2. Actualizar la tarea en la base de datos
+        Map<String, Object> updates = new HashMap<>();
 
-    public Task<Void> applyPenaltyAndMarkTask(TaskModel task) {
-        DocumentReference taskRef = tasksCollection.document(task.getId());
-        WriteBatch batch = db.batch();
+        updates.put("status", TaskConstants.STATUS_PENDING);
 
-        batch.update(taskRef, "penaltyApplied", true);
+        updates.put("assignedMembers", new ArrayList<>());
+        updates.put("reviewerId", null);
+        updates.put("penaltyApplied", true);
 
-        batch = memberRepository.addPointsToMembersBatch(
-                batch,
-                task.getBoardId(),
-                task.getAssignedMembers(),
-                -task.getPenaltyPoints()
-        );
+        batch.update(taskRef, updates);
 
         return batch.commit();
     }
