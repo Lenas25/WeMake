@@ -7,32 +7,32 @@
     android:layout_height="match_parent"
     tools:context=".TasksFragment">
 
-    <!-- AppBarLayout contiene la Toolbar y los Tabs para que se comporten juntos al hacer scroll -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorSurface">
+        android:background="?attr/colorSurface"
+        android:fitsSystemWindows="true">
 
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/top_app_bar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            style="@style/Widget.Material3.Toolbar.Surface"
+            app:titleCentered="true"
+            app:navigationIcon="@drawable/ic_arrow_back"
+            app:title="@string/item_tasks"
+            app:titleTextColor="?attr/colorOnSurface"
+            app:menu="@menu/menu_tasks_toolbar" />
 
-            <com.google.android.material.appbar.MaterialToolbar
-                android:id="@+id/top_app_bar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                app:titleCentered="true"
-                app:navigationIcon="@drawable/ic_arrow_back"
-                app:titleTextColor="?attr/colorOnSurface"
-                android:letterSpacing="0.01"
-                app:title="@string/item_tasks"
-                style="@style/Widget.Material3.Toolbar.Surface"
-                />
-
+        <!-- Tabs de estado del ciclo -->
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:tabMode="fixed"
-            app:tabGravity="fill">
+            app:tabMode="scrollable"
+            app:tabIndicatorFullWidth="false"
+            app:tabInlineLabel="true">
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
@@ -47,48 +47,212 @@
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/state_done" />
+                android:text="@string/state_revision" />
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/state_revision" />
-
+                android:text="@string/state_done" />
         </com.google.android.material.tabs.TabLayout>
 
+        <!-- MotionLayout para animar expansión/colapso del área de búsqueda/filtros -->
+        <androidx.constraintlayout.motion.widget.MotionLayout
+            android:id="@+id/motion_filters"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            app:layoutDescription="@xml/scene_tasks_filters">
+
+            <!-- Búsqueda -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/til_search"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:hint="@string/tasks_search_hint"
+                app:startIconDrawable="@drawable/ic_search"
+                app:endIconMode="clear_text"
+                app:boxBackgroundMode="outline"
+                app:boxCornerRadiusTopStart="16dp"
+                app:boxCornerRadiusTopEnd="16dp"
+                app:boxCornerRadiusBottomStart="16dp"
+                app:boxCornerRadiusBottomEnd="16dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/btn_view_toggle"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintWidth_percent="0.78">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_search"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    tools:text="Buscar tareas" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Botón icono: cambio de vista (lista/tarjeta/calendario) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_view_toggle"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:icon="@drawable/ic_view_list"
+                app:layout_constraintTop_toTopOf="@id/til_search"
+                app:layout_constraintBottom_toBottomOf="@id/til_search"
+                app:layout_constraintEnd_toStartOf="@id/btn_filters"
+                app:layout_constraintHorizontal_bias="1.0"
+                android:contentDescription="@string/tasks_toggle_view" />
+
+            <!-- Botón icono: filtros (abre BottomSheet) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_filters"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:icon="@drawable/ic_filter_list"
+                app:layout_constraintTop_toTopOf="@id/til_search"
+                app:layout_constraintBottom_toBottomOf="@id/til_search"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:contentDescription="@string/tasks_open_filters" />
+
+            <!-- Chips de filtros aplicados (scroll horizontal) -->
+            <HorizontalScrollView
+                android:id="@+id/filters_scroll"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:overScrollMode="never"
+                android:scrollbars="none"
+                android:fillViewport="false"
+                android:scrollbarStyle="insideOverlay"
+                android:visibility="gone"
+                app:layout_constraintTop_toBottomOf="@id/til_search"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="8dp"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chip_group_filters"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    app:singleLine="false"
+                    app:singleSelection="false"
+                    app:selectionRequired="false"
+                    app:chipSpacingHorizontal="8dp"
+                    app:chipSpacingVertical="4dp">
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_board"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:text="@string/filter_board_any"
+                        app:closeIconEnabled="true"
+                        tools:visibility="visible" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_priority"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:text="@string/filter_priority_any"
+                        app:closeIconEnabled="true"
+                        tools:visibility="visible" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_assignee"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:text="@string/filter_assignee_me"
+                        app:closeIconEnabled="true"
+                        tools:visibility="visible" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_due"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.Material3.Chip.Filter"
+                        android:text="@string/filter_due_any"
+                        app:closeIconEnabled="true"
+                        tools:visibility="visible" />
+                </com.google.android.material.chip.ChipGroup>
+            </HorizontalScrollView>
+        </androidx.constraintlayout.motion.widget.MotionLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <FrameLayout
+    <!-- Contenido con Swipe-to-Refresh -->
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_view_tasks"
+
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="8dp"
-            android:clipToPadding="false"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/item_task_card" />
+            android:layout_height="match_parent">
 
-        <ProgressBar
-            android:id="@+id/progress_bar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:visibility="gone"
-            tools:visibility="visible"/>
+            <!-- Lista unificada de tareas -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_view_tasks"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingStart="10dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="88dp"
+                android:clipToPadding="false"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_task_card" />
 
-        <TextView
-            android:id="@+id/empty_state_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/empty_state_title"
-            android:textAppearance="?attr/textAppearanceBodyLarge"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:visibility="gone" />
+            <ProgressBar
+                android:id="@+id/progress_bar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:visibility="visible"
+                android:layout_gravity="center" />
 
-    </FrameLayout>
+            <!-- Empty state -->
+            <LinearLayout
+                android:id="@+id/empty_state_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="24dp"
+                android:visibility="gone">
 
+                <ImageView
+                    android:layout_width="96dp"
+                    android:layout_height="96dp"
+                    android:src="@drawable/ic_empty_inbox"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <TextView
+                    android:id="@+id/empty_state_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/empty_state_title"
+                    android:textAppearance="?attr/textAppearanceBodyLarge"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+                <TextView
+                    android:id="@+id/empty_state_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/tasks_empty_suggestion"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
+        </FrameLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

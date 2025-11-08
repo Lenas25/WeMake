@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/title_filters"
+        android:textAlignment="center"
+        android:textAppearance="?attr/textAppearanceTitleLarge"
+        android:paddingBottom="8dp" />
+
+    <!-- Filtro por Tablero -->
+    <com.google.android.material.textview.MaterialTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/filter_board"
+        android:textAppearance="?attr/textAppearanceTitleMedium"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chip_group_boards"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:singleLine="false"
+        app:chipSpacingHorizontal="8dp"
+        app:chipSpacingVertical="8dp" />
+
+    <!-- Filtro por Prioridad -->
+    <com.google.android.material.textview.MaterialTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/filter_priority"
+        android:textAppearance="?attr/textAppearanceTitleMedium"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chip_group_priority"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:singleSelection="true"
+        app:chipSpacingHorizontal="8dp" />
+
+    <!-- Filtro por Asignado -->
+    <com.google.android.material.textview.MaterialTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/filter_assignee"
+        android:textAppearance="?attr/textAppearanceTitleMedium"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chip_group_assignee"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:singleSelection="true"
+        app:chipSpacingHorizontal="8dp" />
+
+    <!-- Filtro por Fecha de Vencimiento -->
+    <com.google.android.material.textview.MaterialTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/filter_due"
+        android:textAppearance="?attr/textAppearanceTitleMedium"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chip_group_due"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:singleSelection="true"
+        app:chipSpacingHorizontal="8dp" />
+
+    <!-- Botones de acción -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="24dp"
+        android:paddingBottom="8dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_clear_filters"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/action_clear_filters"
+            android:layout_marginEnd="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_apply_filters"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/action_apply_filters"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+</LinearLayout>

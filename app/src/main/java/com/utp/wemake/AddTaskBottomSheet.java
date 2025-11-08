@@ -19,7 +19,7 @@ public class AddTaskBottomSheet extends BottomSheetDialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Infla el layout que creaste para añadir tareas
+        // Infla el layout para añadir tareas
         return inflater.inflate(R.layout.bottom_sheet_add_task, container, false);
     }
 

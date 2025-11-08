@@ -229,6 +229,41 @@
     <string name="approve">Aprobar</string>
     <string name="loading">Cargando ...</string>
 
+    <!--  -->
+    <string name="tasks_search_hint">Buscar en todas las tareas…</string>
+    <string name="tasks_open_filters">Abrir filtros</string>
+    <string name="tasks_toggle_view">Cambiar vista</string>
+    <string name="tasks_empty_suggestion">Usa filtros o crea una tarea nueva.</string>
+    <string name="task_quick_actions">Acciones rápidas</string>
+
+    <!-- Filtros -->
+    <string name="title_filters">Filtros</string>
+    <string name="filter_board">Tableros</string>
+    <string name="filter_priority">Prioridad</string>
+    <string name="filter_assignee">Asignado</string>
+    <string name="filter_due">Fecha de Vencimiento</string>
+
+    <string name="filter_board_any">Tablero: Todos</string>
+    <string name="filter_priority_any">Prioridad: Todas</string>
+    <string name="filter_assignee_me">Asignado: Yo</string>
+    <string name="filter_due_any">Vencimiento: Cualquiera</string>
+
+    <!-- Acciones -->
+    <string name="action_apply_filters">Aplicar</string>
+    <string name="action_clear_filters">Limpiar</string>
+    <string name="action_mark_done">Marcar como hecho</string>
+    <string name="action_edit_quick">Edición rápida</string>
+    <string name="action_reassign">Re-asignar</string>
+    <string name="action_comment">Comentar</string>
+    <string name="action_checklist">Añadir checklist</string>
+    <string name="action_attach">Subir adjuntos</string>
+    <string name="action_snooze">Posponer</string>
+    <string name="action_share">Compartir</string>
+
+    <!-- Vistas -->
+    <string name="view_list">Lista</string>
+    <string name="view_cards">Tarjetas</string>
+    <string name="view_calendar">Calendario</string>
 
     <string name="default_web_client_id">480368312007-p5m8b0hi0k3e6a7ubqvjrqrd823fpvhg.apps.googleusercontent.com</string>
     <string name="cloudinary_cloud_name">djuqnewtm</string>

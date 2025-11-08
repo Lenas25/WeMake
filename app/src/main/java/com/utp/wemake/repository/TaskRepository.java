@@ -166,6 +166,65 @@ public class TaskRepository {
         activeListeners.add(reviewerListener);
     }
 
+    public void listenToTasksForUserInBoards(List<String> boardIds, String userId, final OnTasksUpdatedListener listener) {
+        detachListeners(); // resetea listeners previos de cualquier pantalla
+
+        // Map combinado por taskId
+        Map<String, TaskModel> combined = new ConcurrentHashMap<>();
+
+        for (String boardId : boardIds) {
+            // 1) Tareas asignadas al usuario en el board
+            Query assignedQuery = tasksCollection
+                    .whereEqualTo("boardId", boardId)
+                    .whereArrayContains("assignedMembers", userId);
+
+            ListenerRegistration assignedListener = assignedQuery.addSnapshotListener((snapshots, e) -> {
+                if (e != null) {
+                    listener.onError(e);
+                    return;
+                }
+                if (snapshots != null) {
+                    // Limpiar solo las tareas de este board para este “scope” y reponer
+                    // En lugar de limpiar, actualizamos entradas específicas
+                    for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                        TaskModel task = doc.toObject(TaskModel.class);
+                        if (task != null) {
+                            task.setId(doc.getId());
+                            if (task.getBoardId() == null) task.setBoardId(boardId);
+                            combined.put(doc.getId(), task);
+                        }
+                    }
+                    listener.onTasksUpdated(new ArrayList<>(combined.values()));
+                }
+            });
+            activeListeners.add(assignedListener);
+
+            // 2) Tareas donde el usuario es revisor en el board
+            Query reviewerQuery = tasksCollection
+                    .whereEqualTo("boardId", boardId)
+                    .whereEqualTo("reviewerId", userId);
+
+            ListenerRegistration reviewerListener = reviewerQuery.addSnapshotListener((snapshots, e) -> {
+                if (e != null) {
+                    listener.onError(e);
+                    return;
+                }
+                if (snapshots != null) {
+                    for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                        TaskModel task = doc.toObject(TaskModel.class);
+                        if (task != null) {
+                            task.setId(doc.getId());
+                            if (task.getBoardId() == null) task.setBoardId(boardId);
+                            combined.put(doc.getId(), task);
+                        }
+                    }
+                    listener.onTasksUpdated(new ArrayList<>(combined.values()));
+                }
+            });
+            activeListeners.add(reviewerListener);
+        }
+    }
+
     /**
      * Método auxiliar para combinar los resultados de ambos listeners y eliminar duplicados.
      */

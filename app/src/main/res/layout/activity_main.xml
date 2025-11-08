@@ -39,7 +39,10 @@
         android:fitsSystemWindows="true"
         app:fabAnchorMode="cradle"
         app:fabCradleMargin="8dp"
-        app:fabCradleRoundedCornerRadius="20dp">
+        app:fabCradleRoundedCornerRadius="20dp"
+        app:paddingBottomSystemWindowInsets="false"
+        app:paddingLeftSystemWindowInsets="false"
+        app:paddingRightSystemWindowInsets="false">
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottom_navigation"
@@ -47,12 +50,11 @@
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             app:labelVisibilityMode="labeled"
-            app:layout_anchor="@+id/bottom_app_bar"
-            app:menu="@menu/bottom_nav_menu" />
-
-
+            app:menu="@menu/bottom_nav_menu"
+            app:paddingBottomSystemWindowInsets="false"
+            app:paddingLeftSystemWindowInsets="false"
+            app:paddingRightSystemWindowInsets="false"/>
     </com.google.android.material.bottomappbar.BottomAppBar>
-
 
     <!--
         FloatingActionButton (FAB): El botón flotante con el ícono de '+'.
@@ -68,5 +70,4 @@
         android:src="@drawable/ic_add"
         app:layout_anchor="@id/bottom_app_bar"
         app:shapeAppearanceOverlay="@style/ShapeAppearance.App.Circle" />
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

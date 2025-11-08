@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.utp.wemake.models.TaskModel;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -36,7 +37,6 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         this.columnIndex = columnIndex;
         this.listener = listener;
     }
-
 
     @NonNull
     @Override
@@ -129,5 +129,17 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             });
 
         }
+    }
+
+    public void updateTaskList(List<TaskModel> newTaskList) {
+        this.taskList = newTaskList != null ? newTaskList : new ArrayList<>();
+        notifyDataSetChanged();
+    }
+
+    public TaskModel getTaskAt(int position) {
+        if (position >= 0 && position < taskList.size()) {
+            return taskList.get(position);
+        }
+        return null;
     }
 }
