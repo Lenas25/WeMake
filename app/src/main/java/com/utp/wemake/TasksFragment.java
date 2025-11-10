@@ -4,19 +4,17 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.motion.widget.MotionLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -25,17 +23,14 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
-import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
 import com.utp.wemake.constants.TaskConstants;
 import com.utp.wemake.models.TaskModel;
 import com.utp.wemake.viewmodels.TasksViewModel;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class TasksFragment extends Fragment implements TaskAdapter.OnTaskInteractionListener {
 
@@ -43,17 +38,16 @@ public class TasksFragment extends Fragment implements TaskAdapter.OnTaskInterac
     private RecyclerView recyclerViewTasks;
     private TaskAdapter taskAdapter;
     private ProgressBar progressBar;
-    private TextView emptyStateText;
-    private TextView emptyStateSubtitle;
     private View emptyStateContainer;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private MotionLayout motionFilters;
 
     // Búsqueda y filtros
-    private TextInputLayout tilSearch;
     private TextInputEditText etSearch;
     private MaterialButton btnViewToggle;
     private MaterialButton btnFilters;
-    private ChipGroup chipGroupFilters;
+
+    // Chips de filtros
     private Chip chipBoard;
     private Chip chipPriority;
     private Chip chipAssignee;
@@ -71,7 +65,7 @@ public class TasksFragment extends Fragment implements TaskAdapter.OnTaskInterac
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
+
         viewModel = new ViewModelProvider(this).get(TasksViewModel.class);
     }
 
@@ -101,18 +95,16 @@ public class TasksFragment extends Fragment implements TaskAdapter.OnTaskInterac
         recyclerViewTasks = view.findViewById(R.id.recycler_view_tasks);
         progressBar = view.findViewById(R.id.progress_bar);
         emptyStateContainer = view.findViewById(R.id.empty_state_container);
-        emptyStateText = view.findViewById(R.id.empty_state_text);
-        emptyStateSubtitle = view.findViewById(R.id.empty_state_subtitle);
 
         // SwipeRefresh
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh);
+        motionFilters = view.findViewById(R.id.motion_filters);
 
         // Búsqueda y filtros
-        tilSearch = view.findViewById(R.id.til_search);
         etSearch = view.findViewById(R.id.et_search);
         btnViewToggle = view.findViewById(R.id.btn_view_toggle);
         btnFilters = view.findViewById(R.id.btn_filters);
-        chipGroupFilters = view.findViewById(R.id.chip_group_filters);
+
         chipBoard = view.findViewById(R.id.chip_board);
         chipPriority = view.findViewById(R.id.chip_priority);
         chipAssignee = view.findViewById(R.id.chip_assignee);
@@ -124,7 +116,6 @@ public class TasksFragment extends Fragment implements TaskAdapter.OnTaskInterac
 
     private void setupToolbar(View view) {
         MaterialToolbar toolbar = view.findViewById(R.id.top_app_bar);
-        toolbar.setTitle(R.string.item_tasks);
         toolbar.setNavigationOnClickListener(v -> {
             if (getActivity() != null) {
                 getActivity().onBackPressed();
@@ -135,23 +126,10 @@ public class TasksFragment extends Fragment implements TaskAdapter.OnTaskInterac
             if (item.getItemId() == R.id.action_clear_filters) {
                 viewModel.clearFilters();
                 etSearch.setText(""); // Limpiar también el campo de búsqueda
-                updateFilterChips();
                 return true;
             }
             return false;
         });
-    }
-
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_tasks_toolbar, menu);
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        // El toolbar ya maneja el menú con setOnMenuItemClickListener
-        return super.onOptionsItemSelected(item);
     }
 
     private void setupRecyclerView() {
@@ -181,26 +159,11 @@ public class TasksFragment extends Fragment implements TaskAdapter.OnTaskInterac
         // Botón de filtros
         btnFilters.setOnClickListener(v -> openFiltersBottomSheet());
 
-        // Chips de filtros
-        chipBoard.setOnCloseIconClickListener(v -> {
-            viewModel.setSelectedBoards(new ArrayList<>());
-            updateFilterChips();
-        });
-
-        chipPriority.setOnCloseIconClickListener(v -> {
-            viewModel.setSelectedPriority(null);
-            updateFilterChips();
-        });
-
-        chipAssignee.setOnCloseIconClickListener(v -> {
-            viewModel.setSelectedAssignee(null);
-            updateFilterChips();
-        });
-
-        chipDue.setOnCloseIconClickListener(v -> {
-            viewModel.setSelectedDueFilter(null);
-            updateFilterChips();
-        });
+        // Chips - Close icons
+        setupChipCloseListener(chipBoard, () -> viewModel.setSelectedBoards(new ArrayList<>()));
+        setupChipCloseListener(chipPriority, () -> viewModel.setSelectedPriority(null));
+        setupChipCloseListener(chipAssignee, () -> viewModel.setSelectedAssignee(null));
+        setupChipCloseListener(chipDue, () -> viewModel.setSelectedDueFilter(null));
 
         // Tabs
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -224,6 +187,127 @@ public class TasksFragment extends Fragment implements TaskAdapter.OnTaskInterac
         });
     }
 
+    private void setupChipCloseListener(Chip chip, Runnable action) {
+        if (chip != null) {
+            chip.setOnCloseIconClickListener(v -> action.run());
+        }
+    }
+
+    private void setupObservers() {
+        // Observar tareas filtradas
+        viewModel.getFilteredTasks().observe(getViewLifecycleOwner(), tasks -> {
+            progressBar.setVisibility(View.GONE);
+            if (tasks != null) {
+                taskAdapter.updateTaskList(tasks);
+                updateEmptyState(tasks.isEmpty());
+            }
+            // Actualizar chips cuando cambien las tareas
+            updateFilterChips();
+        });
+
+        // Observar estado de carga
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            if (isLoading != null) {
+                progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+                if (isLoading) {
+                    emptyStateContainer.setVisibility(View.GONE);
+                }
+            }
+        });
+
+        // Observar errores
+        viewModel.getErrorMessage().observe(getViewLifecycleOwner(), error -> {
+            if (error != null && !error.isEmpty()) {
+                Snackbar.make(requireView(), error, Snackbar.LENGTH_LONG).show();
+            }
+        });
+
+        // Observar tableros
+        viewModel.getUserBoards().observe(getViewLifecycleOwner(), boards -> {
+            // Actualizar chips cuando cambien los tableros
+            updateFilterChips();
+        });
+    }
+
+    private void updateFilterChips() {
+        if (viewModel == null) return;
+
+        // Tablero
+        updateChip(chipBoard, viewModel.getSelectedBoardIds(),
+                list -> !list.isEmpty(),
+                list -> "Tableros: " + list.size());
+
+        // Prioridad
+        updateChip(chipPriority, viewModel.getSelectedPriority(),
+                p -> p != null,
+                p -> "Prioridad: " + getPriorityText(p));
+
+        // Asignado
+        updateChip(chipAssignee, viewModel.getSelectedAssignee(),
+                a -> a != null,
+                a -> "Asignado: " + getAssigneeText(a));
+
+        // Vencimiento
+        updateChip(chipDue, viewModel.getSelectedDueFilter(),
+                d -> d != null,
+                d -> "Vence: " + getDueText(d));
+
+        // Controlar visibilidad del MotionLayout
+        boolean hasAnyFilter = isChipVisible(chipBoard) || isChipVisible(chipPriority) ||
+                isChipVisible(chipAssignee) || isChipVisible(chipDue);
+
+        // Controlar el MotionLayout
+        if (motionFilters != null) {
+            if (hasAnyFilter) {
+                // Animar a estado "end" (visible)
+                motionFilters.transitionToEnd();
+            } else {
+                // Animar a estado "start" (gone)
+                motionFilters.transitionToStart();
+            }
+        }
+    }
+
+    private <T> void updateChip(Chip chip, T value, FilterPredicate<T> predicate, FilterTextProvider<T> textProvider) {
+        if (chip == null) return;
+        boolean hasFilter = predicate.test(value);
+        chip.setVisibility(hasFilter ? View.VISIBLE : View.GONE);
+        if (hasFilter) {
+            chip.setText(textProvider.getText(value));
+        }
+    }
+
+    private boolean isChipVisible(Chip chip) {
+        return chip != null && chip.getVisibility() == View.VISIBLE;
+    }
+
+    private String getPriorityText(String priority) {
+        switch (priority) {
+            case TaskConstants.PRIORITY_HIGH: return "Alta";
+            case TaskConstants.PRIORITY_MEDIUM: return "Media";
+            case TaskConstants.PRIORITY_LOW: return "Baja";
+            default: return priority;
+        }
+    }
+
+    private String getAssigneeText(String assignee) {
+        switch (assignee) {
+            case "me": return "Yo";
+            case "unassigned": return "Ninguno";
+            default: return assignee;
+        }
+    }
+
+    private String getDueText(String due) {
+        switch (due) {
+            case "overdue": return "Vencidas";
+            case "today": return "Hoy";
+            case "tomorrow": return "Mañana";
+            case "this_week": return "Esta semana";
+            default: return due;
+        }
+    }
+
     private String getStatusForTab(int position) {
         switch (position) {
             case 0: return TaskConstants.STATUS_PENDING;
@@ -236,20 +320,18 @@ public class TasksFragment extends Fragment implements TaskAdapter.OnTaskInterac
 
     private void toggleViewMode() {
         currentViewMode = (currentViewMode + 1) % 3;
-
         switch (currentViewMode) {
             case VIEW_MODE_LIST:
                 recyclerViewTasks.setLayoutManager(new LinearLayoutManager(getContext()));
-                btnViewToggle.setIcon(ContextCompat.getDrawable(getContext(), R.drawable.ic_view_list));
+                btnViewToggle.setIcon(ContextCompat.getDrawable(requireContext(), R.drawable.ic_view_list));
                 break;
             case VIEW_MODE_CARDS:
-                recyclerViewTasks.setLayoutManager(new androidx.recyclerview.widget.GridLayoutManager(getContext(), 2));
-                btnViewToggle.setIcon(ContextCompat.getDrawable(getContext(), R.drawable.ic_view_module));
+                recyclerViewTasks.setLayoutManager(new GridLayoutManager(getContext(), 2));
+                btnViewToggle.setIcon(ContextCompat.getDrawable(requireContext(), R.drawable.ic_view_module));
                 break;
             case VIEW_MODE_CALENDAR:
-                // TODO: Implementar vista de calendario
-                Snackbar.make(getView(), "Vista de calendario próximamente", Snackbar.LENGTH_SHORT).show();
-                currentViewMode = VIEW_MODE_LIST; // Volver a lista por ahora
+                Snackbar.make(requireView(), "Vista de calendario próximamente", Snackbar.LENGTH_SHORT).show();
+                currentViewMode = VIEW_MODE_LIST;
                 break;
         }
     }
@@ -260,103 +342,9 @@ public class TasksFragment extends Fragment implements TaskAdapter.OnTaskInterac
         bottomSheet.show(getChildFragmentManager(), "TasksFiltersBottomSheet");
     }
 
-    private void setupObservers() {
-        viewModel.getFilteredTasks().observe(getViewLifecycleOwner(), tasks -> {
-            progressBar.setVisibility(View.GONE); // oculta el loader cuando llegan datos
-            if (tasks != null) {
-                taskAdapter.updateTaskList(tasks);
-                updateEmptyState(tasks.isEmpty());
-            }
-            // Actualizar chips cuando cambien los filtros
-            updateFilterChips();
-        });
-
-        viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
-            if (isLoading != null) {
-                progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-                if (isLoading) {
-                    emptyStateContainer.setVisibility(View.GONE);
-                }
-            }
-        });
-
-        viewModel.getErrorMessage().observe(getViewLifecycleOwner(), error -> {
-            if (error != null && !error.isEmpty()) {
-                Snackbar.make(getView(), error, Snackbar.LENGTH_LONG).show();
-            }
-        });
-
-        viewModel.getUserBoards().observe(getViewLifecycleOwner(), boards -> {
-            // Actualizar chips cuando cambien los tableros
-            updateFilterChips();
-        });
-    }
-
-    private void updateEmptyState(boolean isEmpty) {
-        if (isEmpty) {
-            recyclerViewTasks.setVisibility(View.GONE);
-            emptyStateContainer.setVisibility(View.VISIBLE);
-        } else {
-            recyclerViewTasks.setVisibility(View.VISIBLE);
-            emptyStateContainer.setVisibility(View.GONE);
-        }
-    }
-
-    private void updateFilterChips() {
-        // Actualizar visibilidad de chips según filtros activos
-        List<String> selectedBoards = viewModel.getSelectedBoardIds();
-        boolean hasBoardFilter = selectedBoards != null && !selectedBoards.isEmpty();
-        chipBoard.setVisibility(hasBoardFilter ? View.VISIBLE : View.GONE);
-
-        String priority = viewModel.getSelectedPriority();
-        boolean hasPriorityFilter = priority != null;
-        chipPriority.setVisibility(hasPriorityFilter ? View.VISIBLE : View.GONE);
-
-        String assignee = viewModel.getSelectedAssignee();
-        boolean hasAssigneeFilter = assignee != null;
-        chipAssignee.setVisibility(hasAssigneeFilter ? View.VISIBLE : View.GONE);
-
-        String due = viewModel.getSelectedDueFilter();
-        boolean hasDueFilter = due != null;
-        chipDue.setVisibility(hasDueFilter ? View.VISIBLE : View.GONE);
-
-        // Actualizar textos de los chips
-        if (hasBoardFilter) {
-            chipBoard.setText("Tableros: " + selectedBoards.size());
-        }
-        if (hasPriorityFilter) {
-            String p = priority.equals(TaskConstants.PRIORITY_HIGH) ? "Alta" :
-                    priority.equals(TaskConstants.PRIORITY_MEDIUM) ? "Media" : "Baja";
-            chipPriority.setText("Prioridad: " + p);
-        }
-        if (hasAssigneeFilter) {
-            if ("me".equals(assignee)) {
-                chipAssignee.setText("Asignado: Yo");
-            } else if ("unassigned".equals(assignee)) {
-                chipAssignee.setText("Asignado: Ninguno");
-            } else {
-                chipAssignee.setText("Asignado: " + assignee);
-            }
-        }
-        if (hasDueFilter) {
-            String d = due.equals("overdue") ? "Vencidas" :
-                    due.equals("today") ? "Hoy" :
-                            due.equals("tomorrow") ? "Mañana" : "Esta semana";
-            chipDue.setText("Vence: " + d);
-        }
-
-        // Mostrar el HorizontalScrollView solo si hay al menos un filtro activo
-        View filtersScroll = getView() != null ? getView().findViewById(R.id.filters_scroll) : null;
-        if (filtersScroll != null) {
-            boolean hasAnyFilter = hasBoardFilter || hasPriorityFilter || hasAssigneeFilter || hasDueFilter;
-            filtersScroll.setVisibility(hasAnyFilter ? View.VISIBLE : View.GONE);
-        }
-    }
-
     private void setupSwipeActions() {
         ItemTouchHelper.SimpleCallback swipeCallback = new ItemTouchHelper.SimpleCallback(
                 0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
-
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView,
                                   @NonNull RecyclerView.ViewHolder viewHolder,
@@ -373,15 +361,10 @@ public class TasksFragment extends Fragment implements TaskAdapter.OnTaskInterac
                     // Swipe izquierda: marcar como completado
                     if (!TaskConstants.STATUS_COMPLETED.equals(task.getStatus())) {
                         viewModel.updateTaskStatus(task.getId(), TaskConstants.STATUS_COMPLETED);
-                        Snackbar.make(getView(), "Tarea completada", Snackbar.LENGTH_SHORT)
-                                .setAction("Deshacer", v -> {
-                                    // TODO: Restaurar estado anterior
-                                })
-                                .show();
+                        Snackbar.make(requireView(), "Tarea completada", Snackbar.LENGTH_SHORT).show();
                     }
                 } else if (direction == ItemTouchHelper.RIGHT) {
-                    // Swipe derecha: posponer (snooze)
-                    openSnoozeDialog(task);
+                    Snackbar.make(requireView(), "Posponer: " + task.getTitle(), Snackbar.LENGTH_SHORT).show();
                 }
 
                 // Restaurar la vista después del swipe
@@ -393,23 +376,35 @@ public class TasksFragment extends Fragment implements TaskAdapter.OnTaskInterac
         itemTouchHelper.attachToRecyclerView(recyclerViewTasks);
     }
 
-    private void openSnoozeDialog(TaskModel task) {
-        // TODO: Implementar diálogo de posponer
-        Snackbar.make(getView(), "Posponer tarea: " + task.getTitle(), Snackbar.LENGTH_SHORT).show();
+    private void updateEmptyState(boolean isEmpty) {
+        recyclerViewTasks.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+        emptyStateContainer.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
     }
 
     @Override
     public void onChangeStatusClicked(TaskModel task) {
         // Abrir BottomSheet de acciones rápidas
-        TaskQuickActionsBottomSheet bottomSheet =
-                TaskQuickActionsBottomSheet.newInstance(task.getId());
+        TaskQuickActionsBottomSheet bottomSheet = TaskQuickActionsBottomSheet.newInstance(task.getId());
         bottomSheet.show(getChildFragmentManager(), "TaskQuickActionsBottomSheet");
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        // Recargar datos cuando el fragment vuelve a estar visible
-        viewModel.loadAllUserTasks();
+        // Solo recarga si no hay datos o si fueron limpiados
+        if (viewModel.getAllTasks().getValue() == null || viewModel.getAllTasks().getValue().isEmpty()) {
+            viewModel.loadAllUserTasks();
+        }
+    }
+
+    // Interfaces funcionales para reducir duplicación
+    @FunctionalInterface
+    private interface FilterPredicate<T> {
+        boolean test(T value);
+    }
+
+    @FunctionalInterface
+    private interface FilterTextProvider<T> {
+        String getText(T value);
     }
 }
