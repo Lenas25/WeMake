@@ -16,7 +16,6 @@
         android:layout_height="wrap_content"
         android:text="@string/task_quick_actions"
         android:textAppearance="?attr/textAppearanceTitleMedium"
-        android:paddingTop="8dp"
         android:paddingBottom="8dp"/>
 
     <com.google.android.material.chip.ChipGroup
@@ -29,48 +28,64 @@
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_mark_done"
             style="@style/Widget.Material3.Chip.Assist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="@string/action_mark_done"
             app:chipIcon="@drawable/ic_check" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_edit"
             style="@style/Widget.Material3.Chip.Assist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="@string/action_edit_quick"
             app:chipIcon="@drawable/ic_edit" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_reassign"
             style="@style/Widget.Material3.Chip.Assist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="@string/action_reassign"
             app:chipIcon="@drawable/ic_person_add" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_comment"
             style="@style/Widget.Material3.Chip.Assist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="@string/action_comment"
             app:chipIcon="@drawable/ic_comment" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_checklist"
             style="@style/Widget.Material3.Chip.Assist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="@string/action_checklist"
             app:chipIcon="@drawable/ic_checklist" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_attach"
             style="@style/Widget.Material3.Chip.Assist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="@string/action_attach"
             app:chipIcon="@drawable/ic_attachment" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_snooze"
             style="@style/Widget.Material3.Chip.Assist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="@string/action_snooze"
             app:chipIcon="@drawable/ic_snooze" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_share"
             style="@style/Widget.Material3.Chip.Assist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="@string/action_share"
             app:chipIcon="@drawable/ic_share" />
     </com.google.android.material.chip.ChipGroup>

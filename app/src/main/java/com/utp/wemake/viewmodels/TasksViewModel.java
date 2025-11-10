@@ -231,9 +231,10 @@ public class TasksViewModel extends ViewModel {
                     }
 
                     // Filtro por fecha de vencimiento
-                    if (selectedDueFilter != null && task.getDeadline() != null) {
+                    if (selectedDueFilter != null) {
                         Date now = new Date();
                         Date taskDeadline = task.getDeadline();
+                        if (taskDeadline == null) return false;
 
                         switch (selectedDueFilter) {
                             case "overdue":
