@@ -41,7 +41,7 @@
         android:layout_height="wrap_content"
         android:text="@string/filter_priority"
         android:textAppearance="?attr/textAppearanceTitleMedium"
-        android:paddingTop="16dp"
+        android:paddingTop="8dp"
         android:paddingBottom="8dp" />
 
     <com.google.android.material.chip.ChipGroup
@@ -57,7 +57,7 @@
         android:layout_height="wrap_content"
         android:text="@string/filter_assignee"
         android:textAppearance="?attr/textAppearanceTitleMedium"
-        android:paddingTop="16dp"
+        android:paddingTop="8dp"
         android:paddingBottom="8dp" />
 
     <com.google.android.material.chip.ChipGroup
@@ -73,7 +73,7 @@
         android:layout_height="wrap_content"
         android:text="@string/filter_due"
         android:textAppearance="?attr/textAppearanceTitleMedium"
-        android:paddingTop="16dp"
+        android:paddingTop="8dp"
         android:paddingBottom="8dp" />
 
     <com.google.android.material.chip.ChipGroup
@@ -105,6 +105,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            style="@style/Widget.Material3.Button"
             android:text="@string/action_apply_filters"
             android:layout_marginStart="8dp" />
     </LinearLayout>
