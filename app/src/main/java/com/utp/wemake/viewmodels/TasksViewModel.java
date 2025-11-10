@@ -291,7 +291,7 @@ public class TasksViewModel extends ViewModel {
             return;
         }
 
-        taskRepository.updateStatusAndApplyPoints(taskToUpdate, newStatus)
+        taskRepository.updateStatusAndApplyPoints(taskToUpdate.getId(), newStatus)
                 .addOnSuccessListener(aVoid -> {
                     Log.d("TasksViewModel", "Estado actualizado: " + newStatus);
                 })

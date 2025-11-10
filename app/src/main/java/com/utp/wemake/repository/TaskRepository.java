@@ -282,7 +282,7 @@ public class TaskRepository {
 
     /**
      * Actualiza el estado de una tarea y, si se completa, aplica los puntos de recompensa.
-     * @param task La tarea que se está actualizando.
+     * @param taskId La tarea que se está actualizando.
      * @param newStatus El nuevo estado.
      * @return Una Tarea que se completa cuando la operación termina.
      */

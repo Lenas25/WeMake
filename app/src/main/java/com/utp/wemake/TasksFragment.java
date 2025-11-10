@@ -60,7 +60,6 @@ public class TasksFragment extends Fragment implements TaskAdapter.OnTaskInterac
     private int currentViewMode = VIEW_MODE_LIST;
     private static final int VIEW_MODE_LIST = 0;
     private static final int VIEW_MODE_CARDS = 1;
-    private static final int VIEW_MODE_CALENDAR = 2;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -319,7 +318,7 @@ public class TasksFragment extends Fragment implements TaskAdapter.OnTaskInterac
     }
 
     private void toggleViewMode() {
-        currentViewMode = (currentViewMode + 1) % 3;
+        currentViewMode = (currentViewMode + 1) % 2;
         switch (currentViewMode) {
             case VIEW_MODE_LIST:
                 recyclerViewTasks.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -328,10 +327,6 @@ public class TasksFragment extends Fragment implements TaskAdapter.OnTaskInterac
             case VIEW_MODE_CARDS:
                 recyclerViewTasks.setLayoutManager(new GridLayoutManager(getContext(), 2));
                 btnViewToggle.setIcon(ContextCompat.getDrawable(requireContext(), R.drawable.ic_view_module));
-                break;
-            case VIEW_MODE_CALENDAR:
-                Snackbar.make(requireView(), "Vista de calendario próximamente", Snackbar.LENGTH_SHORT).show();
-                currentViewMode = VIEW_MODE_LIST;
                 break;
         }
     }
