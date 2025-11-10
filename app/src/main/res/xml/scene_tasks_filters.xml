@@ -2,22 +2,38 @@
 <MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:motion="http://schemas.android.com/apk/res-auto">
 
+    <!-- Estado inicial: filtros ocultos -->
     <ConstraintSet android:id="@+id/start">
         <Constraint android:id="@id/filters_scroll">
-            <Layout android:visibility="gone"/>
+            <Layout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                motion:layout_constraintTop_toBottomOf="@id/til_search"
+                motion:layout_constraintStart_toStartOf="parent"
+                motion:layout_constraintEnd_toEndOf="parent"
+                motion:layout_constraintBottom_toBottomOf="parent"
+                android:alpha="0" />
         </Constraint>
     </ConstraintSet>
 
+    <!-- Estado final: filtros visibles -->
     <ConstraintSet android:id="@+id/end">
         <Constraint android:id="@id/filters_scroll">
-            <Layout android:visibility="visible"/>
+            <Layout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                motion:layout_constraintTop_toBottomOf="@id/til_search"
+                motion:layout_constraintStart_toStartOf="parent"
+                motion:layout_constraintEnd_toEndOf="parent"
+                motion:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginTop="8dp"
+                android:alpha="1" />
         </Constraint>
     </ConstraintSet>
 
+    <!-- Transición suave -->
     <Transition
         motion:constraintSetStart="@id/start"
         motion:constraintSetEnd="@id/end"
-        motion:duration="220">
-        <OnClick motion:targetId="@id/til_search" />
-    </Transition>
+        motion:duration="220" />
 </MotionScene>
