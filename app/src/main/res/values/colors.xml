@@ -155,10 +155,19 @@
     <color name="priority_low_border">#C8E6C9</color>
     <color name="priority_default_border">#E0E0E0</color>
 
+    <color name="deadline_overdue_color">@color/red_300</color> <!-- Rojo -->
+    <color name="deadline_soon_color">@color/orange_300</color> <!-- Naranja -->
+    <color name="deadline_good_color">@color/green_300</color>  <!-- Verde -->
 
     <color name="status_pending_bg">#FFE0E0E0</color>   <!-- Un gris claro y neutro -->
     <color name="status_inprogress_bg">#FFFFF0C4</color> <!-- Un amarillo/naranja suave -->
     <color name="status_inreview_bg">#FFD6E3FF</color>   <!-- Un azul/púrpura suave -->
     <color name="status_completed_bg">#FFD4EDD4</color>  <!-- Un verde suave de éxito -->
     <color name="status_default_bg">#FFE0E0E0</color>    <!-- Color por defecto si el estado es nulo -->
+
+    <!-- Nuevos colores para los gráficos de barras -->
+    <color name="chart_color_1">#FF648DE5</color>
+    <color name="chart_color_2">#FF53D7A8</color>
+    <color name="chart_color_3">#FFFFD661</color>
+    <color name="chart_color_4">#FFFF8FA2</color>
 </resources>

@@ -49,7 +49,7 @@
     <!-- AppBar -->
     <string name="item_home">Inicio</string>
     <string name="item_tasks">Tareas</string>
-    <string name="item_stats">Datos</string>
+    <string name="item_stats">Estadísticas</string>
     <string name="item_profile">Perfil</string>
     <string name="floating_add">Agregar</string>
     <string name="settings">Configuración</string>
@@ -269,4 +269,6 @@
     <string name="cloudinary_cloud_name">djuqnewtm</string>
     <string name="cloudinary_api_key">126563687271491</string>
     <string name="cloudinary_api_secret">ypLQYKO6kSuPkhlicy71HfzjRJk</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

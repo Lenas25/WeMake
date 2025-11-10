@@ -18,13 +18,14 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="@drawable/circle_background"
-            android:backgroundTint="?attr/colorSurfaceContainerHighest"
+            android:src="@drawable/ic_award"
+            android:backgroundTint="@color/md_theme_primary"
             android:contentDescription="Cupón canjeado"
             android:padding="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:tint="?attr/colorOnSurfaceVariant" />
+            app:tint="@color/md_theme_onPrimary" />
 
         <!-- Título principal del cupón -->
         <TextView

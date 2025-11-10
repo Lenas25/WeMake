@@ -30,6 +30,7 @@ public class TaskModel {
     private Date approvedAt;
     private String reviewerId; // ID del admin/usuario que debe revisarla
     private List<String> assignedMembers;
+    private Date completedAt;
 
 
     public boolean isPenaltyApplied() { return penaltyApplied; }
@@ -158,6 +159,8 @@ public class TaskModel {
     public List<String> getAssignedMembers() {
         return assignedMembers;
     }
+    public Date getCompletedAt() { return completedAt; }
+    public void setCompletedAt(Date completedAt) { this.completedAt = completedAt; }
 
     public void setAssignedMembers(List<String> assignedMembers) {
         this.assignedMembers = assignedMembers;

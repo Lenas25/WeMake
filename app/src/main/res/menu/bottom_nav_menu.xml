@@ -17,7 +17,7 @@
         android:title="" />
 
     <item
-        android:id="@+id/statsFragment"
+        android:id="@+id/dataFragment"
         android:icon="@drawable/ic_stats"
         android:title="@string/item_stats" />
 

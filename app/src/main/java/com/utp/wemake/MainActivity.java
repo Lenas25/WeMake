@@ -100,7 +100,6 @@ public class MainActivity extends AppCompatActivity {
     private void setupFab() {
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> {
-            // ¡AQUÍ ESTÁ LA LÓGICA PARA ABRIR EL BOTTOMSHEET!
             showAddTaskBottomSheet();
         });
     }
@@ -121,7 +120,6 @@ public class MainActivity extends AppCompatActivity {
                 // Si no se pudo navegar hacia atrás y no estamos en la pantalla de inicio...
                 if (navController.getCurrentDestination() != null &&
                         navController.getCurrentDestination().getId() != R.id.homeFragment) {
-                    // ...entonces navegamos a la pantalla de inicio.
                     navController.popBackStack(R.id.homeFragment, false);
                 } else {
                     // Si ya estamos en la pantalla de inicio, cerramos la app.

@@ -80,38 +80,52 @@
             android:divider="?android:attr/dividerVertical"
             android:showDividers="middle">
 
-            <!-- Título + Prioridad -->
+            <!-- Título + Estado + Prioridad -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:orientation="vertical">
 
                 <!-- Título de la tarea -->
                 <TextView
                     android:id="@+id/task_detail_title"
                     style="@style/TextAppearance.Material3.TitleLarge"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:text="@string/sample_task_title"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"
                     android:lineSpacingExtra="4dp"
                     android:letterSpacing="0.01"/>
 
-                <!-- Chip de prioridad -->
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/task_detail_priority"
-                    style="@style/Widget.Material3.Chip.Suggestion"
-                    android:layout_width="wrap_content"
+                <!-- Contenedor para los Chips de Estado y Prioridad -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/high_priority"
-                    app:chipBackgroundColor="?attr/colorErrorContainer"
-                    app:chipStrokeWidth="0dp"
-                    app:chipIcon="@drawable/ic_priority_high"
-                    app:chipIconTint="?attr/colorOnErrorContainer"
-                    app:chipIconSize="18dp"/>
+                    android:orientation="horizontal"
+                    android:layout_marginTop="12dp">
+
+                    <!-- NUEVO: Chip de Estado -->
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/task_detail_status"
+                        style="@style/Widget.Material3.Chip.Suggestion"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:chipStrokeWidth="0dp"
+                        tools:text="En Progreso"
+                        tools:chipBackgroundColor="?attr/colorSecondaryContainer"/>
+
+                    <!-- Chip de prioridad -->
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/task_detail_priority"
+                        style="@style/Widget.Material3.Chip.Suggestion"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        app:chipStrokeWidth="0dp"
+                        tools:text="Alta"
+                        tools:chipBackgroundColor="?attr/colorErrorContainer"/>
+                </LinearLayout>
             </LinearLayout>
 
 

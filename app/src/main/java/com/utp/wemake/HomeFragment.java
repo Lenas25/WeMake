@@ -118,7 +118,12 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
 
         // Inicializar el RecyclerView del Kanban
         kanbanBoardRecycler = view.findViewById(R.id.recycler_kanban_board);
-        kanbanBoardRecycler.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        kanbanBoardRecycler.setLayoutManager(
+                new LinearLayoutManager(getContext())
+        );
+
+        columnAdapter = new ColumnAdapter(new ArrayList<>(), this);
+        kanbanBoardRecycler.setAdapter(columnAdapter);
 
         setupSummaryCards(view);
     }
@@ -189,47 +194,24 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
             }
         });
 
-        // Observadores del HomeViewModel
-        homeViewModel.getKanbanColumns().observe(getViewLifecycleOwner(), columns -> {
-            if (columns != null && kanbanBoardRecycler != null) {
-                columnAdapter = new ColumnAdapter(columns, this);
-                kanbanBoardRecycler.setAdapter(columnAdapter);
-            }
-        });
-
         homeViewModel.getTotalTasks().observe(getViewLifecycleOwner(), total -> {
             if (total != null && getView() != null) {
                 TextView valueTareas = getView().findViewById(R.id.card_tareas).findViewById(R.id.summary_value);
                 valueTareas.setText(String.valueOf(total));
-                if (total == 0) {
-                    // Si no hay tareas, oculta el RecyclerView y muestra el layout de estado vacío.
-                    kanbanBoardRecycler.setVisibility(View.GONE);
-                    emptyStateLayout.setVisibility(View.VISIBLE);
-                } else {
-                    // Si hay una o más tareas, muestra el RecyclerView y oculta el estado vacío.
-                    kanbanBoardRecycler.setVisibility(View.VISIBLE);
-                    emptyStateLayout.setVisibility(View.GONE);
-                }
             }
         });
 
         homeViewModel.getKanbanColumns().observe(getViewLifecycleOwner(), columns -> {
             if (columns != null) {
                 boolean hasTasks = columns.stream().anyMatch(c -> !c.getTasks().isEmpty());
-
                 if (hasTasks) {
-                    // Si hay tareas, muestra el Kanban y oculta el estado vacío
                     kanbanBoardRecycler.setVisibility(View.VISIBLE);
                     emptyStateLayout.setVisibility(View.GONE);
                 } else {
-                    // Si no hay tareas, oculta el Kanban y muestra el estado vacío
                     kanbanBoardRecycler.setVisibility(View.GONE);
                     emptyStateLayout.setVisibility(View.VISIBLE);
                 }
-
-                // Actualizar el adaptador de columnas
-                columnAdapter = new ColumnAdapter(columns, this);
-                kanbanBoardRecycler.setAdapter(columnAdapter);
+                columnAdapter.updateData(columns);
             }
         });
 
@@ -247,6 +229,30 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
                 // Cuando termina de cargar, resetear el flag
                 isLoadingData = false;
                 Log.d("HomeFragment", "Carga de datos completada");
+            }
+        });
+
+        // --- OBSERVADOR: Tareas Pendientes ---
+        homeViewModel.getPendingTasks().observe(getViewLifecycleOwner(), pending -> {
+            if (pending != null && getView() != null) {
+                TextView valuePendientes = getView().findViewById(R.id.card_pendientes).findViewById(R.id.summary_value);
+                valuePendientes.setText(String.valueOf(pending));
+            }
+        });
+
+        // --- OBSERVADOR: Tareas Vencidas ---
+        homeViewModel.getExpiredTasks().observe(getViewLifecycleOwner(), expired -> {
+            if (expired != null && getView() != null) {
+                TextView valueVencidos = getView().findViewById(R.id.card_vencidos).findViewById(R.id.summary_value);
+                valueVencidos.setText(String.valueOf(expired));
+            }
+        });
+
+        // --- OBSERVADOR: Puntos Personales ---
+        homeViewModel.getTotalPoints().observe(getViewLifecycleOwner(), points -> {
+            if (points != null && getView() != null) {
+                TextView valuePuntos = getView().findViewById(R.id.card_puntos).findViewById(R.id.summary_value);
+                valuePuntos.setText(String.valueOf(points));
             }
         });
     }
