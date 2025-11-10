@@ -38,7 +38,7 @@ public class VoiceTaskViewModel extends AndroidViewModel {
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
     private final MutableLiveData<String> recognizedText = new MutableLiveData<>("");
     private final MutableLiveData<VoiceTaskResponse> aiResponse = new MutableLiveData<>();
-    private final MutableLiveData<Event<Boolean>> taskCreated = new MutableLiveData<>();
+    private final MutableLiveData<Event<CreationResult>> taskCreated = new MutableLiveData<>();
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
 
     public VoiceTaskViewModel(@NonNull Application application) {
@@ -52,7 +52,7 @@ public class VoiceTaskViewModel extends AndroidViewModel {
     public LiveData<Boolean> getIsLoading() { return isLoading; }
     public LiveData<String> getRecognizedText() { return recognizedText; }
     public LiveData<VoiceTaskResponse> getAiResponse() { return aiResponse; }
-    public LiveData<Event<Boolean>> getTaskCreated() { return taskCreated; }
+    public LiveData<Event<CreationResult>> getTaskCreated() { return taskCreated; }
     public LiveData<String> getErrorMessage() { return errorMessage; }
 
     public void processVoiceText(String voiceText, String boardId) {
@@ -213,10 +213,11 @@ public class VoiceTaskViewModel extends AndroidViewModel {
     }
 
     /**
-     * Crea la tarea con los IDs ya mapeados
+     * Crea la tarea con los IDs ya mapeados.
+     * TaskCreationHelper se encarga de verificar si el usuario es admin o no.
      */
-    private void createTaskFromAIResponse(VoiceTaskResponse response, String boardId, 
-                                         List<String> assignedMemberIds, String reviewerId) {
+    private void createTaskFromAIResponse(VoiceTaskResponse response, String boardId,
+                                          List<String> assignedMemberIds, String reviewerId) {
         Log.d(TAG, "createTaskFromAIResponse called. Title: " + response.getTitle() + ", boardId: " + boardId);
 
         if (response.getTitle() == null || response.getTitle().isEmpty()) {
@@ -225,49 +226,84 @@ public class VoiceTaskViewModel extends AndroidViewModel {
             return;
         }
 
-        // Preparar los datos para crear la tarea
-        String title = response.getTitle();
-        String description = response.getDescription() != null ? response.getDescription() : "";
-        String priority = response.getPriority() != null ? response.getPriority() : "media";
-        java.util.Date deadline = response.getDeadline();
-
-        // Preparar subtasks
-        List<com.utp.wemake.models.Subtask> subtasks = response.getSubtasks();
-        if (subtasks == null) {
-            subtasks = new ArrayList<>();
+        // Verificar primero si el usuario es admin para saber qué mensaje mostrar
+        String currentUserId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
+        if (currentUserId == null) {
+            isLoading.postValue(false);
+            errorMessage.postValue("Usuario no autenticado");
+            return;
         }
 
-        int rewardPoints = TaskCreationHelper.calculateRewardPoints(priority);
-        int penaltyPoints = TaskCreationHelper.calculatePenaltyPoints(priority);
+        memberRepository.isCurrentUserAdminOfBoard(boardId).addOnCompleteListener(adminTask -> {
+            final boolean isAdmin = adminTask.isSuccessful() && Boolean.TRUE.equals(adminTask.getResult());
 
-        taskCreationHelper.createTask(
-                boardId,
-                title,
-                description,
-                priority,
-                assignedMemberIds,
-                deadline,
-                subtasks,
-                rewardPoints,
-                penaltyPoints,
-                reviewerId,
-                new TaskCreationHelper.TaskCreationCallback() {
-                    @Override
-                    public void onResult(boolean success, String errorMessage) {
-                        isLoading.postValue(false);
-                        if (success) {
-                            Log.d(TAG, "Task created successfully");
-                            taskCreated.postValue(new Event<>(true));
-                        } else {
-                            Log.e(TAG, "Error creating task: " + errorMessage);
-                            VoiceTaskViewModel.this.errorMessage.postValue(errorMessage);
+            // Preparar los datos para crear la tarea
+            String title = response.getTitle();
+            String description = response.getDescription() != null ? response.getDescription() : "";
+            String priority = response.getPriority() != null ? response.getPriority() : "media";
+            java.util.Date deadline = response.getDeadline();
+
+            // Preparar subtasks
+            List<com.utp.wemake.models.Subtask> subtasks = response.getSubtasks();
+            if (subtasks == null) {
+                subtasks = new ArrayList<>();
+            }
+
+            int rewardPoints = TaskCreationHelper.calculateRewardPoints(priority);
+            int penaltyPoints = TaskCreationHelper.calculatePenaltyPoints(priority);
+
+            taskCreationHelper.createTask(
+                    boardId,
+                    title,
+                    description,
+                    priority,
+                    assignedMemberIds,
+                    deadline,
+                    subtasks,
+                    rewardPoints,
+                    penaltyPoints,
+                    reviewerId,
+                    new TaskCreationHelper.TaskCreationCallback() {
+                        @Override
+                        public void onResult(boolean success, String errorMsg) {
+                            isLoading.postValue(false);
+                            if (success) {
+                                Log.d(TAG, "Task/Proposal created successfully. IsAdmin: " + isAdmin);
+                                // Crear resultado con información de si fue tarea o propuesta
+                                CreationResult result = new CreationResult(true, isAdmin);
+                                taskCreated.postValue(new Event<>(result));
+                            } else {
+                                Log.e(TAG, "Error creating task/proposal: " + errorMsg);
+                                VoiceTaskViewModel.this.errorMessage.postValue(errorMsg);
+                            }
                         }
                     }
-                }
-        );
+            );
+        });
     }
 
     public void updateRecognizedText(String text) {
         recognizedText.postValue(text);
+    }
+
+    /**
+     * Clase para encapsular el resultado de la creación
+     */
+    public static class CreationResult {
+        private final boolean success;
+        private final boolean isAdmin;
+
+        public CreationResult(boolean success, boolean isAdmin) {
+            this.success = success;
+            this.isAdmin = isAdmin;
+        }
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public boolean isAdmin() {
+            return isAdmin;
+        }
     }
 }

@@ -16,6 +16,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
@@ -260,10 +261,16 @@ public class VoiceTaskActivity extends AppCompatActivity {
         });
 
         viewModel.getTaskCreated().observe(this, event -> {
-            Boolean created = event.getContentIfNotHandled();
-            if (created != null && created) {
-                Toast.makeText(this, "Tarea creada correctamente", Toast.LENGTH_SHORT).show();
-                finish(); // o navega al listado de tareas
+            VoiceTaskViewModel.CreationResult result = event.getContentIfNotHandled();
+            if (result != null && result.isSuccess()) {
+                // Mostrar mensaje diferente según si es admin o no
+                if (result.isAdmin()) {
+                    Toast.makeText(this, "Tarea creada correctamente", Toast.LENGTH_LONG).show();
+                    finish(); // Volver al tablero
+                } else {
+                    // Usuario no-admin: mostrar diálogo con opción de ver propuestas
+                    showProposalSubmittedDialog();
+                }
             }
         });
 
@@ -272,6 +279,20 @@ public class VoiceTaskActivity extends AppCompatActivity {
                 tvStatusListening.setText("Tarea generada: " + response.getTitle());
             }
         });
+    }
+
+    /**
+     * Muestra un diálogo informando que la propuesta fue enviada
+     */
+    private void showProposalSubmittedDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Propuesta enviada")
+                .setMessage("Tu propuesta de tarea ha sido enviada al administrador del tablero para su aprobación.")
+                .setPositiveButton("Entendido", (dialog, which) -> {
+                    finish(); // Volver al tablero
+                })
+                .setCancelable(false)
+                .show();
     }
 
     // Método de ayuda para traducir códigos de error a texto
