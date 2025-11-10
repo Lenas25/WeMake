@@ -47,12 +47,12 @@
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/state_revision" />
+                android:text="@string/state_done" />
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/state_done" />
+                android:text="@string/state_revision" />
         </com.google.android.material.tabs.TabLayout>
 
         <!-- MotionLayout para animar expansión/colapso del área de búsqueda/filtros -->
@@ -62,8 +62,7 @@
             android:layout_height="wrap_content"
             android:paddingStart="10dp"
             android:paddingEnd="10dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
+            android:layout_marginTop="5dp"
             app:layoutDescription="@xml/scene_tasks_filters">
 
             <!-- Búsqueda -->
@@ -83,8 +82,8 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/btn_view_toggle"
-                app:layout_constraintHorizontal_bias="0"
-                app:layout_constraintWidth_percent="0.78">
+                app:layout_constraintHorizontal_chainStyle="spread_inside"
+                android:layout_marginEnd="4dp">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_search"
@@ -92,8 +91,7 @@
                     android:layout_height="wrap_content"
                     android:imeOptions="actionSearch"
                     android:inputType="text"
-                    android:maxLines="1"
-                    tools:text="Buscar tareas" />
+                    android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Botón icono: cambio de vista (lista/tarjeta/calendario) -->
@@ -105,8 +103,8 @@
                 app:icon="@drawable/ic_view_list"
                 app:layout_constraintTop_toTopOf="@id/til_search"
                 app:layout_constraintBottom_toBottomOf="@id/til_search"
+                app:layout_constraintStart_toEndOf="@id/til_search"
                 app:layout_constraintEnd_toStartOf="@id/btn_filters"
-                app:layout_constraintHorizontal_bias="1.0"
                 android:contentDescription="@string/tasks_toggle_view" />
 
             <!-- Botón icono: filtros (abre BottomSheet) -->
@@ -118,6 +116,7 @@
                 app:icon="@drawable/ic_filter_list"
                 app:layout_constraintTop_toTopOf="@id/til_search"
                 app:layout_constraintBottom_toBottomOf="@id/til_search"
+                app:layout_constraintStart_toEndOf="@id/btn_view_toggle"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:contentDescription="@string/tasks_open_filters" />
 
@@ -126,64 +125,58 @@
                 android:id="@+id/filters_scroll"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:minHeight="48dp"
                 android:overScrollMode="never"
                 android:scrollbars="none"
-                android:fillViewport="false"
-                android:scrollbarStyle="insideOverlay"
-                android:visibility="gone"
+                android:clipToPadding="false"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
                 app:layout_constraintTop_toBottomOf="@id/til_search"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="8dp"
-                android:paddingStart="4dp"
-                android:paddingEnd="4dp">
+                app:layout_constraintBottom_toBottomOf="parent">
 
                 <com.google.android.material.chip.ChipGroup
                     android:id="@+id/chip_group_filters"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    app:singleLine="false"
+                    app:singleLine="true"
                     app:singleSelection="false"
-                    app:selectionRequired="false"
-                    app:chipSpacingHorizontal="8dp"
-                    app:chipSpacingVertical="4dp">
+                    app:chipSpacingHorizontal="8dp">
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip_board"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         style="@style/Widget.Material3.Chip.Filter"
-                        android:text="@string/filter_board_any"
-                        app:closeIconEnabled="true"
-                        tools:visibility="visible" />
+                        android:visibility="gone"
+                        app:closeIconEnabled="true" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip_priority"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         style="@style/Widget.Material3.Chip.Filter"
-                        android:text="@string/filter_priority_any"
-                        app:closeIconEnabled="true"
-                        tools:visibility="visible" />
+                        android:visibility="gone"
+                        app:closeIconEnabled="true" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip_assignee"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         style="@style/Widget.Material3.Chip.Filter"
-                        android:text="@string/filter_assignee_me"
-                        app:closeIconEnabled="true"
-                        tools:visibility="visible" />
+                        android:visibility="gone"
+                        app:closeIconEnabled="true" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chip_due"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         style="@style/Widget.Material3.Chip.Filter"
-                        android:text="@string/filter_due_any"
-                        app:closeIconEnabled="true"
-                        tools:visibility="visible" />
+                        android:visibility="gone"
+                        app:closeIconEnabled="true" />
                 </com.google.android.material.chip.ChipGroup>
             </HorizontalScrollView>
         </androidx.constraintlayout.motion.widget.MotionLayout>
@@ -200,12 +193,13 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <!-- Lista unificada de tareas -->
+            <!-- Lista de tareas -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_view_tasks"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:paddingStart="10dp"
+                android:paddingEnd="10dp"
                 android:paddingTop="8dp"
                 android:paddingBottom="88dp"
                 android:clipToPadding="false"
@@ -216,7 +210,7 @@
                 android:id="@+id/progress_bar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:visibility="visible"
+                tools:visibility="gone"
                 android:layout_gravity="center" />
 
             <!-- Empty state -->
@@ -233,6 +227,7 @@
                     android:layout_width="96dp"
                     android:layout_height="96dp"
                     android:src="@drawable/ic_empty_inbox"
+                    android:contentDescription="@string/empty_state_title"
                     app:tint="?attr/colorOnSurfaceVariant" />
 
                 <TextView
