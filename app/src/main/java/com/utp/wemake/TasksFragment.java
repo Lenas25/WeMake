@@ -57,9 +57,7 @@ public class TasksFragment extends Fragment implements TaskAdapter.OnTaskInterac
     private TabLayout tabLayout;
 
     // Estado de vista (lista/tarjetas/calendario)
-    private int currentViewMode = VIEW_MODE_LIST;
-    private static final int VIEW_MODE_LIST = 0;
-    private static final int VIEW_MODE_CARDS = 1;
+    private int currentViewMode = TaskAdapter.VIEW_MODE_LIST;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -133,6 +131,7 @@ public class TasksFragment extends Fragment implements TaskAdapter.OnTaskInterac
 
     private void setupRecyclerView() {
         taskAdapter = new TaskAdapter(new ArrayList<>(), 0, this);
+        taskAdapter.setViewMode(currentViewMode);
         recyclerViewTasks.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerViewTasks.setAdapter(taskAdapter);
     }
@@ -318,17 +317,21 @@ public class TasksFragment extends Fragment implements TaskAdapter.OnTaskInterac
     }
 
     private void toggleViewMode() {
+
         currentViewMode = (currentViewMode + 1) % 2;
         switch (currentViewMode) {
-            case VIEW_MODE_LIST:
+            case TaskAdapter.VIEW_MODE_LIST:
                 recyclerViewTasks.setLayoutManager(new LinearLayoutManager(getContext()));
                 btnViewToggle.setIcon(ContextCompat.getDrawable(requireContext(), R.drawable.ic_view_list));
                 break;
-            case VIEW_MODE_CARDS:
+            case TaskAdapter.VIEW_MODE_CARDS:
                 recyclerViewTasks.setLayoutManager(new GridLayoutManager(getContext(), 2));
                 btnViewToggle.setIcon(ContextCompat.getDrawable(requireContext(), R.drawable.ic_view_module));
                 break;
         }
+
+        // Informa al adapter sobre el cambio
+        taskAdapter.setViewMode(currentViewMode);
     }
 
     private void openFiltersBottomSheet() {
