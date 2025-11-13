@@ -320,6 +320,25 @@ public class TaskRepository {
         });
     }
 
+    /**
+     * Actualiza únicamente el campo de prioridad de una tarea.
+     * @param taskId La tarea que se está actualizando.
+     * @param newPriority El nuevo valor de prioridad como TaskConstants.PRIORITY_HIGH
+     * @return Una Tarea que se completa cuando la operación termina.
+     */
+    public Task<Void> updatePriority(String taskId, String newPriority) {
+        if (taskId == null || taskId.isEmpty()) {
+            return Tasks.forException(new IllegalArgumentException("Task ID cannot be null for priority update."));
+        }
+
+        DocumentReference taskRef = tasksCollection.document(taskId);
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("priority", newPriority);
+
+        // Actualizar la base de datos
+        return taskRef.update(updates);
+    }
+
     public Task<Void> processOverdueTask(TaskModel task) {
         DocumentReference taskRef = tasksCollection.document(task.getId());
         WriteBatch batch = db.batch();

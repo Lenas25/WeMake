@@ -47,12 +47,12 @@
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/state_done" />
+                android:text="@string/state_revision" />
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/state_revision" />
+                android:text="@string/state_done" />
         </com.google.android.material.tabs.TabLayout>
 
         <!-- MotionLayout para animar expansión/colapso del área de búsqueda/filtros -->

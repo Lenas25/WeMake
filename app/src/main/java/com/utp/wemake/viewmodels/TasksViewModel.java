@@ -301,6 +301,32 @@ public class TasksViewModel extends ViewModel {
     }
 
     /**
+     * Actualiza la prioridad de una tarea.
+     */
+    public void updateTaskPriority(String taskId, String newPriority) {
+        List<TaskModel> allTasks = _allTasks.getValue();
+        if (allTasks == null) return;
+
+        TaskModel taskToUpdate = allTasks.stream()
+                .filter(t -> t.getId().equals(taskId))
+                .findFirst()
+                .orElse(null);
+
+        if (taskToUpdate == null) {
+            _errorMessage.setValue("Tarea no encontrada para actualizar prioridad");
+            return;
+        }
+
+        taskRepository.updatePriority(taskToUpdate.getId(), newPriority)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("TasksViewModel", "Prioridad actualizada a: " + newPriority);
+                })
+                .addOnFailureListener(e -> {
+                    _errorMessage.setValue("Error al actualizar la prioridad: " + e.getMessage());
+                });
+    }
+
+    /**
      * Getters para los filtros actuales
      */
     public List<String> getSelectedBoardIds() {
@@ -317,6 +343,13 @@ public class TasksViewModel extends ViewModel {
 
     public String getSelectedDueFilter() {
         return selectedDueFilter;
+    }
+
+    /**
+     * Obtiene el ID del usuario actualmente autenticado desde FirebaseAuth.
+     */
+    public String getCurrentUserId() {
+        return auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
     }
 
     /**
