@@ -343,96 +343,120 @@ public class TasksFragment extends Fragment implements TaskAdapter.OnTaskInterac
     private void setupSwipeActions() {
         ItemTouchHelper.SimpleCallback swipeCallback = new ItemTouchHelper.SimpleCallback(
                 0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+
             @Override
-            public boolean onMove(@NonNull RecyclerView recyclerView,
-                                  @NonNull RecyclerView.ViewHolder viewHolder,
-                                  @NonNull RecyclerView.ViewHolder target) {
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
                 return false;
             }
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 int position = viewHolder.getAdapterPosition();
-                TaskModel task = taskAdapter.getTaskAt(position);
+                final TaskModel task = taskAdapter.getTaskAt(position);
 
-                // Asegurando de que la tarea exista
-                if (task == null) {
-                    taskAdapter.notifyItemChanged(position);
-                    return;
-                }
-
-                // 1. Obtener ID del usuario actual
-                String currentUserId = viewModel.getCurrentUserId();
-                String currentStatus = task.getStatus();
-
-                String newStatus = null;
-                String snackbarMessage = null;
+                if (task == null) return;
 
                 if (direction == ItemTouchHelper.LEFT) {
-                    if (TaskConstants.STATUS_PENDING.equals(currentStatus)) {
-                        // PENDING -> IN_PROGRESS (Permitido para miembros)
-                        newStatus = TaskConstants.STATUS_IN_PROGRESS;
-                        snackbarMessage = "Tarea iniciada (En Progreso)";
-
-                    } else if (TaskConstants.STATUS_IN_PROGRESS.equals(currentStatus)) {
-                        // IN_PROGRESS -> IN_REVIEW (Permitido para miembros)
-                        newStatus = TaskConstants.STATUS_IN_REVIEW;
-                        snackbarMessage = "Enviada a Revisión";
-
-                    } else if (TaskConstants.STATUS_IN_REVIEW.equals(currentStatus)) {
-                        // IN_REVIEW -> COMPLETED
-                        String reviewerId = task.getReviewerId();
-
-                        if (currentUserId != null && currentUserId.equals(reviewerId)) {
-                            // El usuario actual es el revisor/administrador. PERMITIDO.
-                            newStatus = TaskConstants.STATUS_COMPLETED;
-                            snackbarMessage = "Tarea Completada";
-                        } else {
-                            // El usuario actual NO es el revisor. BLOQUEADO.
-                            snackbarMessage = "Solo el revisor (" + (reviewerId != null ? reviewerId : "sin asignar") + ") puede completar la tarea.";
-                        }
-
-                    } else if (TaskConstants.STATUS_COMPLETED.equals(currentStatus)) {
-                        snackbarMessage = "La tarea ya está completada.";
-                    }
-
-                    if (newStatus != null) {
-                        viewModel.updateTaskStatus(task.getId(), newStatus);
-                        Snackbar.make(requireView(), snackbarMessage, Snackbar.LENGTH_SHORT).show();
-                    } else if (snackbarMessage != null) {
-                        // Mostrar mensaje de bloqueo si newStatus es null
-                        Snackbar.make(requireView(), snackbarMessage, Snackbar.LENGTH_LONG).show();
-                    }
+                    handleSwipeLeft(task);
                 } else if (direction == ItemTouchHelper.RIGHT) {
-                    // 2. Lógica para alternar prioridad (Swipe Derecha)
-                    String currentPriority = task.getPriority();
-                    String newPriority;
-
-                    // Si la prioridad es ALTA, la bajamos a MEDIA.
-                    if (TaskConstants.PRIORITY_HIGH.equals(currentPriority)) {
-                        newPriority = TaskConstants.PRIORITY_MEDIUM;
-                        snackbarMessage = "Prioridad reducida a Media";
-                    }
-                    // Si la prioridad no es ALTA (es Media, Baja o nula), la subimos a ALTA.
-                    else {
-                        newPriority = TaskConstants.PRIORITY_HIGH;
-                        snackbarMessage = "¡Prioridad Alta Aplicada!";
-                    }
-
-                    // Llama al nuevo método del ViewModel
-                    viewModel.updateTaskPriority(task.getId(), newPriority);
-
-                    // Muestra la notificación
-                    Snackbar.make(requireView(), snackbarMessage, Snackbar.LENGTH_SHORT).show();
+                    handleSwipeRight(task);
                 }
 
-                // Restaurar la vista después del swipe
                 taskAdapter.notifyItemChanged(position);
             }
         };
 
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(swipeCallback);
         itemTouchHelper.attachToRecyclerView(recyclerViewTasks);
+    }
+
+    private void handleSwipeLeft(final TaskModel task) {
+        String currentUserId = viewModel.getCurrentUserId();
+        final String originalStatus = task.getStatus();
+
+        String newStatus = null;
+        String successMessage = null;
+        String errorMessage = null;
+
+        switch (originalStatus) {
+            case TaskConstants.STATUS_PENDING:
+                newStatus = TaskConstants.STATUS_IN_PROGRESS;
+                successMessage = "Tarea movida a 'En Progreso'";
+                break;
+            case TaskConstants.STATUS_IN_PROGRESS:
+                newStatus = TaskConstants.STATUS_IN_REVIEW;
+                successMessage = "Tarea enviada a 'En Revisión'";
+                break;
+            case TaskConstants.STATUS_IN_REVIEW:
+                if (currentUserId != null && currentUserId.equals(task.getReviewerId())) {
+                    newStatus = TaskConstants.STATUS_COMPLETED;
+                    successMessage = "¡Tarea completada!";
+                } else {
+                    errorMessage = "Solo el revisor puede completar la tarea.";
+                }
+                break;
+            case TaskConstants.STATUS_COMPLETED:
+                errorMessage = "La tarea ya está completada.";
+                break;
+        }
+
+        if (newStatus != null) {
+            viewModel.updateTaskStatus(task.getId(), newStatus);
+            View anchorView = requireActivity().findViewById(R.id.fab);
+            if (anchorView == null) {
+                anchorView = requireView();
+            }
+
+            View finalAnchorView = anchorView;
+            Snackbar.make(requireView(), successMessage, Snackbar.LENGTH_LONG)
+                    .setAnchorView(anchorView)
+                    .setAction("Deshacer", v -> {
+                        viewModel.updateTaskStatus(task.getId(), originalStatus);
+                        Snackbar.make(requireView(), "Cambio de estado deshecho.", Snackbar.LENGTH_SHORT)
+                                .setAnchorView(finalAnchorView)
+                                .show();
+                    })
+                    .show();
+        } else if (errorMessage != null) {
+            View anchorView = requireActivity().findViewById(R.id.fab);
+            if (anchorView == null) {
+                anchorView = requireView();
+            }
+            Snackbar.make(requireView(), errorMessage, Snackbar.LENGTH_LONG)
+                    .setAnchorView(anchorView)
+                    .show();        }
+    }
+
+    private void handleSwipeRight(final TaskModel task) {
+        final String originalPriority = task.getPriority(); // Guardar para deshacer
+        String newPriority;
+        String message;
+
+        if (TaskConstants.PRIORITY_HIGH.equals(originalPriority)) {
+            newPriority = TaskConstants.PRIORITY_MEDIUM;
+            message = "Prioridad cambiada a Media";
+        } else {
+            newPriority = TaskConstants.PRIORITY_HIGH;
+            message = "Prioridad cambiada a Alta";
+        }
+
+        viewModel.updateTaskPriority(task.getId(), newPriority);
+
+        View anchorView = requireActivity().findViewById(R.id.fab);
+        if (anchorView == null) {
+            anchorView = requireView();
+        }
+
+        View finalAnchorView = anchorView;
+        Snackbar.make(requireView(), message, Snackbar.LENGTH_LONG)
+                .setAnchorView(anchorView)
+                .setAction("Deshacer", v -> {
+                    viewModel.updateTaskPriority(task.getId(), originalPriority);
+                    Snackbar.make(requireView(), "Cambio de prioridad deshecho.", Snackbar.LENGTH_SHORT)
+                            .setAnchorView(finalAnchorView)
+                            .show();
+                })
+                .show();
     }
 
     private void updateEmptyState(boolean isEmpty) {

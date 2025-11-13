@@ -9,6 +9,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
+    android:clipChildren="false"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
@@ -16,12 +17,24 @@
         FragmentContainerView: Aquí es donde se mostrarán tus pantallas.
         Ocupa todo el espacio, y la barra de navegación se superpondrá abajo.
     -->
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/nav_host_fragment"
-        android:name="androidx.navigation.fragment.NavHostFragment"
+
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:navGraph="@navigation/nav_graph" />
+        android:background="?attr/colorSurface"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <!-- El FragmentContainerView va dentro del AppBarLayout -->
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/nav_host_fragment"
+            android:name="androidx.navigation.fragment.NavHostFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:defaultNavHost="true"
+            app:navGraph="@navigation/nav_graph" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
 
     <!--
         BottomAppBar: Este es el componente CORRECTO.
@@ -34,15 +47,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
+        app:hideOnScroll="true"
         app:backgroundTint="@color/bottomAppBarColor"
         app:fabAlignmentMode="center"
-        android:fitsSystemWindows="true"
-        app:fabAnchorMode="cradle"
         app:fabCradleMargin="8dp"
         app:fabCradleRoundedCornerRadius="20dp"
-        app:paddingBottomSystemWindowInsets="false"
-        app:paddingLeftSystemWindowInsets="false"
-        app:paddingRightSystemWindowInsets="false">
+        app:fabAnchorMode="cradle">
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottom_navigation"
@@ -50,10 +60,8 @@
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             app:labelVisibilityMode="labeled"
-            app:menu="@menu/bottom_nav_menu"
-            app:paddingBottomSystemWindowInsets="false"
-            app:paddingLeftSystemWindowInsets="false"
-            app:paddingRightSystemWindowInsets="false"/>
+            app:menu="@menu/bottom_nav_menu" />
+
     </com.google.android.material.bottomappbar.BottomAppBar>
 
     <!--
@@ -68,6 +76,8 @@
         android:contentDescription="@string/floating_add"
         app:tint="@color/md_theme_onTertiaryFixed"
         android:src="@drawable/ic_add"
+        app:layout_behavior="com.google.android.material.floatingactionbutton.FloatingActionButton$Behavior"
         app:layout_anchor="@id/bottom_app_bar"
         app:shapeAppearanceOverlay="@style/ShapeAppearance.App.Circle" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
