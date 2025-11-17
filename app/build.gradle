@@ -69,6 +69,15 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2'
 
+    // Room Database
+    def room_version = "2.8.3"
+    implementation "androidx.room:room-runtime:$room_version"
+    annotationProcessor "androidx.room:room-compiler:$room_version"
+    implementation "androidx.room:room-rxjava3:$room_version"
+
+    // Para convertir Date a Long y viceversa
+    implementation "androidx.room:room-common:$room_version"
+
     implementation libs.appcompat
     implementation libs.activity
     implementation libs.constraintlayout
