@@ -72,7 +72,9 @@ public class TaskDetailActivity extends AppCompatActivity {
     }
 
     private void setupViewModel() {
-        viewModel = new ViewModelProvider(this).get(TaskDetailViewModel.class);
+        viewModel = new ViewModelProvider(this,
+                new TaskDetailViewModel.Factory(getApplication()))
+                .get(TaskDetailViewModel.class);
 
         viewModel.getTask().observe(this, this::displayTask);
         viewModel.getAssignedUsers().observe(this, this::displayAssignedUsers);

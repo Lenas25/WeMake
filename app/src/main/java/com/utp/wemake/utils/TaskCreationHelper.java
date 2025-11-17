@@ -1,8 +1,8 @@
 package com.utp.wemake.utils;
 
+import android.content.Context;
 import android.util.Log;
 
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.utp.wemake.models.Subtask;
 import com.utp.wemake.models.TaskModel;
@@ -13,7 +13,6 @@ import com.utp.wemake.repository.TaskRepository;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Clase helper que centraliza la lógica de creación de tareas
@@ -26,8 +25,8 @@ public class TaskCreationHelper {
     private final MemberRepository memberRepository;
     private final FirebaseAuth auth;
 
-    public TaskCreationHelper() {
-        this.taskRepository = new TaskRepository();
+    public TaskCreationHelper(Context context) {
+        this.taskRepository = new TaskRepository(context);
         this.memberRepository = new MemberRepository();
         this.auth = FirebaseAuth.getInstance();
     }

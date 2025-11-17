@@ -1,6 +1,5 @@
 package com.utp.wemake;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -26,7 +25,6 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.utp.wemake.models.Board;
-import com.utp.wemake.models.KanbanColumn;
 import com.utp.wemake.models.TaskModel;
 import com.utp.wemake.viewmodels.HomeViewModel;
 import com.utp.wemake.viewmodels.MainViewModel;
@@ -63,7 +61,9 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
-        homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
+        homeViewModel = new ViewModelProvider(this,
+                new HomeViewModel.Factory(requireActivity().getApplication()))
+                .get(HomeViewModel.class);
     }
 
     @Override
@@ -83,12 +83,12 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
     @Override
     public void onResume() {
         super.onResume();
-
-        // Solo recargar si hay un tablero seleccionado y no estamos cargando
         Board selectedBoard = mainViewModel.getSelectedBoard().getValue();
-        if (selectedBoard != null && !isLoadingData) {
-            String boardId = selectedBoard.getId();
-            // Siempre recargar datos en onResume para capturar nuevas tareas
+        if (selectedBoard == null) return;
+
+        String boardId = selectedBoard.getId();
+        // Sólo recargar si no hay tablero cargado aún o si cambió
+        if (!boardId.equals(currentBoardId) && !isLoadingData) {
             Log.d("HomeFragment", "Recargando datos para tablero: " + selectedBoard.getName());
             loadBoardDataSafely(boardId);
         }

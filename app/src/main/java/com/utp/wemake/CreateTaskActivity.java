@@ -83,7 +83,9 @@ public class CreateTaskActivity extends AppCompatActivity {
         setupToolbar();
         setupListeners();
 
-        viewModel = new ViewModelProvider(this).get(CreateTaskViewModel.class);
+        viewModel = new ViewModelProvider(this,
+                new CreateTaskViewModel.Factory(getApplication()))
+                .get(CreateTaskViewModel.class);
         observeViewModel();
 
         // Cargar datos iniciales (miembros y la tarea si se está editando)

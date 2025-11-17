@@ -63,7 +63,9 @@ public class TasksFragment extends Fragment implements TaskAdapter.OnTaskInterac
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        viewModel = new ViewModelProvider(this).get(TasksViewModel.class);
+        viewModel = new ViewModelProvider(this,
+                new TasksViewModel.Factory(requireActivity().getApplication()))
+                .get(TasksViewModel.class);
     }
 
     @Override
