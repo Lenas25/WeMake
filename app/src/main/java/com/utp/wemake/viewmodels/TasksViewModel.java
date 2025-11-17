@@ -1,8 +1,12 @@
 package com.utp.wemake.viewmodels;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
+
+import android.app.Application;
 import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -42,8 +46,11 @@ public class TasksViewModel extends ViewModel {
     private String selectedAssignee = null;
     private String selectedDueFilter = null;
 
-    public TasksViewModel() {
-        this.taskRepository = new TaskRepository();
+    // Observer para limpiar cuando el ViewModel se destruya
+    private androidx.lifecycle.Observer<List<TaskModel>> tasksObserver;
+
+    public TasksViewModel(@NonNull Application application) {
+        this.taskRepository = new TaskRepository(application);
         this.boardRepository = new BoardRepository();
         this.auth = FirebaseAuth.getInstance();
     }
@@ -72,40 +79,41 @@ public class TasksViewModel extends ViewModel {
         boardRepository.getBoardsForCurrentUser().addOnCompleteListener(task -> {
             if (task.isSuccessful() && task.getResult() != null) {
                 List<Board> boards = task.getResult().toObjects(Board.class);
+                List<String> boardIds = boards.stream()
+                        .map(Board::getId)
+                        .collect(Collectors.toList());
+
                 _userBoards.setValue(boards);
 
-                if (boards.isEmpty()) {
-                    _allTasks.setValue(new ArrayList<>());
-                    _filteredTasks.setValue(new ArrayList<>());
-                    _isLoading.setValue(false);
-                    return;
+                // Observar tareas desde SQLite (LiveData) - se actualiza automáticamente
+                LiveData<List<TaskModel>> tasksLiveData = taskRepository.getTasksForUserInBoards(boardIds, currentUserId);
+
+                // Remover observer anterior si existe
+                if (tasksObserver != null) {
+                    tasksLiveData.removeObserver(tasksObserver);
                 }
 
-                // Cargar tareas de todos los tableros (en tiempo real)
-                List<String> boardIds = boards.stream().map(Board::getId).collect(java.util.stream.Collectors.toList());
-                taskRepository.listenToTasksForUserInBoards(boardIds, currentUserId, new TaskRepository.OnTasksUpdatedListener() {
-                    private boolean firstEmissionHandled = false;
-
-                    @Override
-                    public void onTasksUpdated(List<TaskModel> tasks) {
-                        _allTasks.setValue(tasks != null ? tasks : new ArrayList<>());
+                // Crear nuevo observer
+                tasksObserver = tasks -> {
+                    if (tasks != null) {
+                        _allTasks.setValue(tasks);
                         applyFilters();
-                        if (!firstEmissionHandled) {
-                            _isLoading.setValue(false);
-                            firstEmissionHandled = true;
-                        }
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        _errorMessage.setValue("Error al escuchar tareas: " + e.getMessage());
                         _isLoading.setValue(false);
                     }
-                });
+                };
+
+                tasksLiveData.observeForever(tasksObserver);
+
+                // Sincronizar con Firebase en segundo plano (si hay conexión)
+                for (String boardId : boardIds) {
+                    taskRepository.syncTasksFromFirebase(boardId, currentUserId);
+                }
+
+                // Sincronizar cambios pendientes (tareas creadas offline)
+                taskRepository.syncPendingChangesToFirebase();
             } else {
                 _isLoading.setValue(false);
-                _errorMessage.setValue("Error al cargar tableros: " +
-                        (task.getException() != null ? task.getException().getMessage() : "Desconocido"));
+                _errorMessage.setValue("Error al cargar los tableros");
             }
         });
     }
@@ -220,7 +228,6 @@ public class TasksViewModel extends ViewModel {
                                 return false;
                             }
                         } else if (selectedAssignee.equals("unassigned")) {
-                            // Filtrar tareas sin asignar
                             if (task.getAssignedMembers() != null && !task.getAssignedMembers().isEmpty()) {
                                 return false;
                             }
@@ -241,7 +248,6 @@ public class TasksViewModel extends ViewModel {
                                 if (!taskDeadline.before(now)) return false;
                                 break;
                             case "today":
-                                // Comparar solo fecha, no hora
                                 if (!isSameDay(taskDeadline, now)) return false;
                                 break;
                             case "tomorrow":
@@ -294,6 +300,7 @@ public class TasksViewModel extends ViewModel {
         taskRepository.updateStatusAndApplyPoints(taskToUpdate.getId(), newStatus)
                 .addOnSuccessListener(aVoid -> {
                     Log.d("TasksViewModel", "Estado actualizado: " + newStatus);
+                    // La actualización se reflejará automáticamente en LiveData
                 })
                 .addOnFailureListener(e -> {
                     _errorMessage.setValue("Error al actualizar: " + e.getMessage());
@@ -359,6 +366,27 @@ public class TasksViewModel extends ViewModel {
     protected void onCleared() {
         super.onCleared();
         taskRepository.detachListeners();
-        Log.d("TasksViewModel", "Listeners detenidos");
+        Log.d("TasksViewModel", "ViewModel limpiado");
+    }
+
+    /**
+     * Factory para crear TasksViewModel con Application
+     */
+    public static class Factory implements ViewModelProvider.Factory {
+        private final Application application;
+
+        public Factory(Application application) {
+            this.application = application;
+        }
+
+        @NonNull
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+            if (modelClass.isAssignableFrom(TasksViewModel.class)) {
+                return (T) new TasksViewModel(application);
+            }
+            throw new IllegalArgumentException("Unknown ViewModel class");
+        }
     }
 }

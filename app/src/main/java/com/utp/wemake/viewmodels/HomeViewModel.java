@@ -1,9 +1,12 @@
 package com.utp.wemake.viewmodels;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 
+import android.app.Application;
 import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -34,8 +37,8 @@ public class HomeViewModel extends ViewModel {
     private final MemberRepository memberRepository;
 
     // --- Listeners para gestionar el ciclo de vida ---
-    private ListenerRegistration tasksListener;
     private ListenerRegistration memberListener;
+    private androidx.lifecycle.Observer<List<TaskModel>> tasksObserver;
 
     // --- Variables LiveData ---
     private final MutableLiveData<List<KanbanColumn>> _kanbanColumns = new MutableLiveData<>();
@@ -45,8 +48,13 @@ public class HomeViewModel extends ViewModel {
     private final MutableLiveData<Integer> _totalPoints = new MutableLiveData<>();
     private final MutableLiveData<Boolean> _isLoading = new MutableLiveData<>();
     private final MutableLiveData<String> _errorMessage = new MutableLiveData<>();
-    public HomeViewModel() {
-        this.taskRepository = new TaskRepository();
+
+    // Agregar variable para rastrear el boardId actual
+    private String currentBoardId = null;
+    private LiveData<List<TaskModel>> currentTasksLiveData = null;
+
+    public HomeViewModel(@NonNull Application application) {
+        this.taskRepository = new TaskRepository(application);
         this.auth = FirebaseAuth.getInstance();
         this.apiService = RetrofitClient.getApiService();
         this.memberRepository = new MemberRepository();
@@ -63,9 +71,15 @@ public class HomeViewModel extends ViewModel {
 
     /**
      * Inicia la escucha en tiempo real de los datos del tablero.
+     * Ahora usa Room como fuente principal y sincroniza con Firebase.
      */
     public void listenToBoardData(String boardId) {
-        detachAllListeners(); // Detener escuchas anteriores
+        // Si es el mismo tablero, no hacer nada
+        if (boardId.equals(currentBoardId)) {
+            return;
+        }
+
+        detachAllListeners();
 
         _isLoading.setValue(true);
         String currentUserId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
@@ -76,22 +90,55 @@ public class HomeViewModel extends ViewModel {
             return;
         }
 
+        // Limpiar el MediatorLiveData anterior si existe
+        if (currentBoardId != null && currentTasksLiveData != null) {
+            taskRepository.clearMediatorForBoard(currentBoardId, currentUserId);
+            if (tasksObserver != null) {
+                try {
+                    currentTasksLiveData.removeObserver(tasksObserver);
+                } catch (Exception e) {
+                    // Ignorar
+                }
+            }
+        }
+
+        // Actualizar el boardId actual
+        currentBoardId = boardId;
+
+        // Limpiar datos anteriores primero
+        _kanbanColumns.setValue(new ArrayList<>());
+        _totalTasks.setValue(0);
+        _pendingTasks.setValue(0);
+
         loadSummaryCardsData(boardId, currentUserId);
         listenToMemberPoints(boardId, currentUserId);
 
-        taskRepository.listenToTasksForUserInBoard(boardId, currentUserId, new TaskRepository.OnTasksUpdatedListener() {
-            @Override
-            public void onTasksUpdated(List<TaskModel> tasks) {
-                _isLoading.setValue(false);
-                processTasks(tasks);
+        // Usar SOLO LiveData desde Room (inmediato y reactivo)
+        currentTasksLiveData = taskRepository.getTasksForUserInBoard(boardId, currentUserId);
+
+        // Crear nuevo observer
+        tasksObserver = tasks -> {
+            // Verificar que el boardId sigue siendo el mismo
+            if (!boardId.equals(currentBoardId)) {
+                return;
             }
 
-            @Override
-            public void onError(Exception e) {
+            if (tasks != null) {
+                // Filtrar estrictamente por boardId (doble verificación)
+                List<TaskModel> filteredTasks = new ArrayList<>();
+                for (TaskModel task : tasks) {
+                    if (boardId.equals(task.getBoardId())) {
+                        filteredTasks.add(task);
+                    }
+                }
+
                 _isLoading.setValue(false);
-                _errorMessage.setValue("Error al escuchar las tareas: " + e.getMessage());
+                processTasks(filteredTasks);
+                checkForOverdueTasks(filteredTasks);
             }
-        });
+        };
+
+        currentTasksLiveData.observeForever(tasksObserver);
     }
 
     /**
@@ -178,16 +225,15 @@ public class HomeViewModel extends ViewModel {
         allColumns.add(inReviewColumn);
         allColumns.add(completedColumn);
 
-        _kanbanColumns.setValue(allColumns);
-        _totalTasks.setValue(tasks.size());
-        _pendingTasks.setValue(pending.size() + inProgress.size() + inReview.size());
+        _kanbanColumns.postValue(allColumns);
+        _totalTasks.postValue(tasks.size());
+        _pendingTasks.postValue(pending.size() + inProgress.size() + inReview.size());
     }
 
     /**
      * Pide al repositorio que actualice el estado de una tarea.
      */
     public void updateTaskStatus(String taskId, String newStatus) {
-
         if (taskId == null || taskId.isEmpty()) {
             _errorMessage.setValue("Error: ID de tarea inválido.");
             return;
@@ -195,30 +241,27 @@ public class HomeViewModel extends ViewModel {
 
         taskRepository.updateStatusAndApplyPoints(taskId, newStatus)
                 .addOnSuccessListener(aVoid -> {
-                    Log.d("TaskUpdateDebug", "3. ÉXITO en la escritura de Firebase para la tarea " + taskId);
+                    Log.d("TaskUpdateDebug", "Estado actualizado: " + newStatus);
+                    // La actualización se reflejará automáticamente en LiveData
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("TaskUpdateDebug", "3. FALLO en la escritura de Firebase para la tarea " + taskId, e);
+                    Log.e("TaskUpdateDebug", "Error al actualizar: " + taskId, e);
                     _errorMessage.setValue("Error al actualizar la tarea: " + e.getMessage());
                 });
     }
 
     /**
-     * comprueba la lista de tareas y aplica penalidades si es necesario.
+     * Comprueba la lista de tareas y aplica penalidades si es necesario.
      */
     private void checkForOverdueTasks(List<TaskModel> tasks) {
         Date now = new Date();
         for (TaskModel task : tasks) {
-            // Si una tarea reseteada vuelve a vencer, 'penaltyApplied' será 'false'
-            // y la condición se cumplirá de nuevo.
             if (task.getDeadline() != null &&
                     task.getDeadline().before(now) &&
                     !TaskConstants.STATUS_COMPLETED.equals(task.getStatus()) &&
-                    !task.isPenaltyApplied())
-            {
+                    !task.isPenaltyApplied()) {
                 Log.d("HomeViewModel", "Tarea vencida encontrada: " + task.getTitle() + ". Procesando reseteo...");
 
-                // Llamar al método del repositorio que la devuelve a 'pending'
                 taskRepository.processOverdueTask(task)
                         .addOnFailureListener(e -> {
                             _errorMessage.setValue("No se pudo procesar la tarea vencida: " + task.getTitle());
@@ -230,14 +273,61 @@ public class HomeViewModel extends ViewModel {
     private void detachAllListeners() {
         if (memberListener != null) {
             memberListener.remove();
+            memberListener = null;
         }
-        // Asegúrate de que taskRepository también tenga una forma de detener sus listeners
+        // Detener listeners de Firebase
         taskRepository.detachListeners();
+
+        // Limpiar el observer de LiveData
+        if (tasksObserver != null && currentTasksLiveData != null) {
+            try {
+                currentTasksLiveData.removeObserver(tasksObserver);
+            } catch (Exception e) {
+                // Ignorar
+            }
+            tasksObserver = null;
+        }
+
+        // Limpiar datos visuales
+        _kanbanColumns.setValue(new ArrayList<>());
+        _totalTasks.setValue(0);
+        _pendingTasks.setValue(0);
+
+        // Limpiar referencia al boardId actual
+        if (currentBoardId != null) {
+            String currentUserId = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
+            if (currentUserId != null) {
+                taskRepository.clearMediatorForBoard(currentBoardId, currentUserId);
+            }
+            currentBoardId = null;
+        }
+        currentTasksLiveData = null;
     }
 
     @Override
     protected void onCleared() {
         super.onCleared();
         detachAllListeners();
+    }
+
+    /**
+     * Factory para crear HomeViewModel con Application
+     */
+    public static class Factory implements ViewModelProvider.Factory {
+        private final Application application;
+
+        public Factory(Application application) {
+            this.application = application;
+        }
+
+        @NonNull
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+            if (modelClass.isAssignableFrom(HomeViewModel.class)) {
+                return (T) new HomeViewModel(application);
+            }
+            throw new IllegalArgumentException("Unknown ViewModel class");
+        }
     }
 }

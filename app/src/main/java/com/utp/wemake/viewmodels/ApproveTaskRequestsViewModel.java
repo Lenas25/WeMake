@@ -1,8 +1,11 @@
 package com.utp.wemake.viewmodels;
 
+import android.app.Application;
+
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.utp.wemake.models.TaskModel;
@@ -15,7 +18,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
-public class ApproveTaskRequestsViewModel extends ViewModel {
+public class ApproveTaskRequestsViewModel extends AndroidViewModel {
 
     private final TaskRepository taskRepository;
 
@@ -28,8 +31,9 @@ public class ApproveTaskRequestsViewModel extends ViewModel {
     private final MutableLiveData<Boolean> _isLoading = new MutableLiveData<>();
     public LiveData<Boolean> isLoading = _isLoading;
 
-    public ApproveTaskRequestsViewModel() {
-        this.taskRepository = new TaskRepository();
+    public ApproveTaskRequestsViewModel(@NonNull Application application) {
+        super(application);
+        this.taskRepository = new TaskRepository(application);
         loadTaskProposals();
     }
 

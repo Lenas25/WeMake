@@ -1,14 +1,17 @@
 package com.utp.wemake.viewmodels;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
+
+import android.app.Application;
+
 import com.utp.wemake.models.TaskModel;
 import com.utp.wemake.models.User;
 import com.utp.wemake.repository.TaskRepository;
 import com.utp.wemake.repository.UserRepository;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,8 +27,11 @@ public class TaskDetailViewModel extends ViewModel {
     private final MutableLiveData<Boolean> taskUpdated = new MutableLiveData<>();
     private final MutableLiveData<Boolean> taskDeleted = new MutableLiveData<>();
 
-    public TaskDetailViewModel() {
-        this.taskRepository = new TaskRepository();
+    // Observer para limpiar cuando el ViewModel se destruya
+    private androidx.lifecycle.Observer<TaskModel> taskObserver;
+
+    public TaskDetailViewModel(@NonNull Application application) {
+        this.taskRepository = new TaskRepository(application);
         this.userRepository = new UserRepository();
     }
 
@@ -39,21 +45,29 @@ public class TaskDetailViewModel extends ViewModel {
 
     public void loadTask(String taskId) {
         isLoading.setValue(true);
-        taskRepository.getTaskById(taskId).addOnCompleteListener(taskResult -> {
-            isLoading.setValue(false);
-            if (taskResult.isSuccessful() && taskResult.getResult() != null) {
-                TaskModel loadedTask = taskResult.getResult().toObject(TaskModel.class);
-                if (loadedTask != null) {
-                    loadedTask.setId(taskResult.getResult().getId()); // Asignar el ID
-                    task.setValue(loadedTask);
 
-                    loadAssignedUsers(loadedTask.getAssignedMembers());
-                    loadReviewer(loadedTask.getReviewerId());
-                }
+        // Usar LiveData desde Room (rápido y reactivo)
+        LiveData<TaskModel> taskLiveData = taskRepository.getTaskById(taskId);
+
+        // Remover observer anterior si existe
+        if (taskObserver != null) {
+            taskLiveData.removeObserver(taskObserver);
+        }
+
+        // Crear nuevo observer
+        taskObserver = loadedTask -> {
+            if (loadedTask != null) {
+                task.setValue(loadedTask);
+                loadAssignedUsers(loadedTask.getAssignedMembers());
+                loadReviewer(loadedTask.getReviewerId());
+                isLoading.setValue(false);
             } else {
-                errorMessage.setValue("Error al cargar la tarea.");
+                isLoading.setValue(false);
+                errorMessage.setValue("Tarea no encontrada");
             }
-        });
+        };
+
+        taskLiveData.observeForever(taskObserver);
     }
 
     private void loadAssignedUsers(List<String> userIds) {
@@ -86,24 +100,52 @@ public class TaskDetailViewModel extends ViewModel {
 
     public void deleteTask(String taskId) {
         isLoading.setValue(true);
-        taskRepository.deleteTask(taskId).addOnCompleteListener(task -> {
-            isLoading.setValue(false);
-            if (task.isSuccessful()) {
-                taskDeleted.setValue(true);
-            } else {
-                errorMessage.setValue("Error al eliminar la tarea.");
-            }
-        });
+        taskRepository.deleteTask(taskId)
+                .addOnSuccessListener(aVoid -> {
+                    isLoading.setValue(false);
+                    taskDeleted.setValue(true);
+                })
+                .addOnFailureListener(e -> {
+                    isLoading.setValue(false);
+                    errorMessage.setValue("Error al eliminar la tarea: " + e.getMessage());
+                });
     }
 
     public void updateSubtask(String taskId, String subtaskId, boolean isCompleted) {
         taskRepository.updateSubtaskStatus(taskId, subtaskId, isCompleted)
                 .addOnSuccessListener(aVoid -> {
                     taskUpdated.setValue(true);
-                    taskUpdated.setValue(false); 
+                    taskUpdated.setValue(false); // Reset para permitir nuevas actualizaciones
                 })
                 .addOnFailureListener(e -> {
-                    errorMessage.setValue("Error al actualizar la subtarea.");
+                    errorMessage.setValue("Error al actualizar la subtarea: " + e.getMessage());
                 });
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        taskRepository.detachListeners();
+    }
+
+    /**
+     * Factory para crear TaskDetailViewModel con Application
+     */
+    public static class Factory implements ViewModelProvider.Factory {
+        private final Application application;
+
+        public Factory(Application application) {
+            this.application = application;
+        }
+
+        @NonNull
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+            if (modelClass.isAssignableFrom(TaskDetailViewModel.class)) {
+                return (T) new TaskDetailViewModel(application);
+            }
+            throw new IllegalArgumentException("Unknown ViewModel class");
+        }
     }
 }

@@ -44,7 +44,7 @@ public class VoiceTaskViewModel extends AndroidViewModel {
     public VoiceTaskViewModel(@NonNull Application application) {
         super(application);
         this.aiService = new VoiceTaskAIService();
-        this.taskCreationHelper = new TaskCreationHelper();
+        this.taskCreationHelper = new TaskCreationHelper(application);
         this.memberRepository = new MemberRepository();
     }
 

@@ -1,8 +1,12 @@
 package com.utp.wemake.viewmodels;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
+
+import android.app.Application;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.utp.wemake.models.Subtask;
@@ -14,7 +18,6 @@ import com.utp.wemake.utils.TaskCreationHelper;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class CreateTaskViewModel extends ViewModel {
 
@@ -47,20 +50,19 @@ public class CreateTaskViewModel extends ViewModel {
     // Variable para saber si estamos editando
     private String editingTaskId = null;
 
+    // Observer para limpiar cuando el ViewModel se destruya
+    private androidx.lifecycle.Observer<TaskModel> taskObserver;
 
-    public CreateTaskViewModel() {
-        this.taskRepository = new TaskRepository();
+    public CreateTaskViewModel(@NonNull Application application) {
+        this.taskRepository = new TaskRepository(application);
         this.memberRepository = new MemberRepository();
         this.auth = FirebaseAuth.getInstance();
-        this.taskCreationHelper = new TaskCreationHelper(); // Inicializar helper
+        this.taskCreationHelper = new TaskCreationHelper(application);
     }
 
     /**
      * Carga los datos necesarios para la pantalla. Si se provee un taskId,
      * también carga los datos de esa tarea para edición.
-     *
-     * @param boardId ID del tablero actual.
-     * @param taskId  ID de la tarea a editar (puede ser null para crear una nueva).
      */
     public void loadInitialData(String boardId, String taskId) {
         this.editingTaskId = taskId;
@@ -70,14 +72,26 @@ public class CreateTaskViewModel extends ViewModel {
 
         if (taskId != null && !taskId.isEmpty()) {
             _isLoading.setValue(true);
-            taskRepository.getTaskById(taskId).addOnCompleteListener(task -> {
+
+            // Usar LiveData desde Room
+            LiveData<TaskModel> taskLiveData = taskRepository.getTaskById(taskId);
+
+            // Remover observer anterior si existe
+            if (taskObserver != null) {
+                taskLiveData.removeObserver(taskObserver);
+            }
+
+            // Crear nuevo observer
+            taskObserver = loadedTask -> {
                 _isLoading.setValue(false);
-                if (task.isSuccessful() && task.getResult() != null) {
-                    _taskToEdit.setValue(task.getResult().toObject(TaskModel.class));
+                if (loadedTask != null) {
+                    _taskToEdit.setValue(loadedTask);
                 } else {
                     _errorMessage.setValue("Error al cargar la tarea para editar.");
                 }
-            });
+            };
+
+            taskLiveData.observeForever(taskObserver);
         }
     }
 
@@ -105,8 +119,6 @@ public class CreateTaskViewModel extends ViewModel {
 
     /**
      * Lógica central para guardar o actualizar una tarea.
-     * Ahora maneja los 4 casos: Admin-Crear, Admin-Editar, Usuario-Crear, Usuario-Editar.
-     * REFACTORIZADO: Usa TaskCreationHelper para crear, mantiene lógica propia para editar.
      */
     public void saveTask(String boardId, String title, String description, String priority,
                          List<String> assignedMemberIds, Date deadline, List<Subtask> subtasks,
@@ -143,7 +155,7 @@ public class CreateTaskViewModel extends ViewModel {
                         }
                     }
             );
-            return; // Salir temprano, el callback maneja el resultado
+            return;
         }
 
         // --- CASO 1: El usuario es Administrador Editando ---
@@ -161,7 +173,6 @@ public class CreateTaskViewModel extends ViewModel {
             task.setPenaltyApplied(false);
             task.setReviewerId(reviewerId);
 
-            // Preservar los datos originales que no están en el formulario
             TaskModel originalTask = _taskToEdit.getValue();
             if (originalTask != null) {
                 task.setCreatedBy(originalTask.getCreatedBy());
@@ -181,7 +192,6 @@ public class CreateTaskViewModel extends ViewModel {
 
     /**
      * Función específica para la actualización por parte de un usuario normal.
-     * Carga la tarea original y solo modifica los campos que un usuario normal puede cambiar.
      */
     private void performNonAdminUpdate(String title, String description, String priority,
                                        List<String> assignedMemberIds, List<Subtask> subtasks,
@@ -207,13 +217,41 @@ public class CreateTaskViewModel extends ViewModel {
     }
 
     private void updateExistingTask(TaskModel task) {
-        taskRepository.updateTask(task).addOnCompleteListener(taskResult -> {
-            _isLoading.setValue(false);
-            if (taskResult.isSuccessful()) {
-                _taskSaved.setValue(true);
-            } else {
-                _errorMessage.setValue("Error al actualizar la tarea: " + taskResult.getException().getMessage());
+        taskRepository.updateTask(task)
+                .addOnSuccessListener(aVoid -> {
+                    _isLoading.setValue(false);
+                    _taskSaved.setValue(true);
+                })
+                .addOnFailureListener(e -> {
+                    _isLoading.setValue(false);
+                    _errorMessage.setValue("Error al actualizar la tarea: " + e.getMessage());
+                });
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        taskRepository.detachListeners();
+    }
+
+    /**
+     * Factory para crear CreateTaskViewModel con Application
+     */
+    public static class Factory implements ViewModelProvider.Factory {
+        private final Application application;
+
+        public Factory(Application application) {
+            this.application = application;
+        }
+
+        @NonNull
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+            if (modelClass.isAssignableFrom(CreateTaskViewModel.class)) {
+                return (T) new CreateTaskViewModel(application);
             }
-        });
+            throw new IllegalArgumentException("Unknown ViewModel class");
+        }
     }
 }
