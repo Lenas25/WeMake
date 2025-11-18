@@ -253,6 +253,7 @@ public class VoiceTaskViewModel extends AndroidViewModel {
             int penaltyPoints = TaskCreationHelper.calculatePenaltyPoints(priority);
 
             taskCreationHelper.createTask(
+                    isAdmin,
                     boardId,
                     title,
                     description,

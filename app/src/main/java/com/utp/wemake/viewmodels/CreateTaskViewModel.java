@@ -157,9 +157,12 @@ public class CreateTaskViewModel extends AndroidViewModel {
             if (subtasks != null) {
                 TaskCreationHelper.ensureSubtasksHaveIds(subtasks);
             }
-            
+
+            boolean isAdmin = Boolean.TRUE.equals(_isUserAdmin.getValue());
+
             // Usar el helper para crear la tarea (maneja admin/usuario automáticamente)
-            taskCreationHelper.createTask(boardId,
+            taskCreationHelper.createTask(
+                    isAdmin, boardId,
                     title,
                     description,
                     priority,

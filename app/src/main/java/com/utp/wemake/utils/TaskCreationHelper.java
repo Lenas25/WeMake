@@ -7,6 +7,7 @@ import android.net.NetworkCapabilities;
 import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.utp.wemake.models.Subtask;
 import com.utp.wemake.models.TaskModel;
 import com.utp.wemake.models.TaskProposal;
@@ -101,6 +102,7 @@ public class TaskCreationHelper {
      * @param callback Callback con el resultado (success: true si se creó, false si hubo error, errorMessage: mensaje de error si hubo)
      */
     public void createTask(
+            boolean isAdmin,
             String boardId,
             String title,
             String description,
@@ -139,31 +141,15 @@ public class TaskCreationHelper {
         // Si NO hay internet, usamos el nuevo flujo offline.
         else {
             Log.d(TAG, "Sin conexión a internet. Creando tarea localmente (offline)...");
-            createTaskOffline(
+            createTaskOffline(isAdmin,
                     boardId, title, description, priority, assignedMemberIds, deadline,
                     subtasks, rewardPoints, penaltyPoints, reviewerId, currentUserId, callback
             );
         }
-
-        // Verificar si el usuario es admin
-        memberRepository.isCurrentUserAdminOfBoard(boardId).addOnCompleteListener(adminTask -> {
-            boolean isAdmin = adminTask.isSuccessful() && Boolean.TRUE.equals(adminTask.getResult());
-            
-            if (isAdmin) {
-                createTaskAsAdmin(
-                    boardId, title, description, priority, assignedMemberIds, deadline,
-                    subtasks, rewardPoints, penaltyPoints, reviewerId, currentUserId, callback
-                );
-            } else {
-                createTaskProposalAsUser(
-                    boardId, title, description, priority, assignedMemberIds, deadline,
-                    subtasks, reviewerId, currentUserId, callback
-                );
-            }
-        });
     }
 
-    private void createTaskOffline(String boardId,
+    private void createTaskOffline(
+            boolean isAdmin, String boardId,
                                    String title,
                                    String description,
                                    String priority,
@@ -175,61 +161,77 @@ public class TaskCreationHelper {
                                    String reviewerId,
                                    String currentUserId, TaskCreationCallback callback) {
 
-        memberRepository.isCurrentUserAdminOfBoard(boardId).addOnCompleteListener(adminTask -> {
-            boolean isAdmin = adminTask.isSuccessful() && Boolean.TRUE.equals(adminTask.getResult());
+        if (isAdmin) {
+            // Si el ViewModel nos dice que es un admin, creamos una TAREA local.
+            Log.d(TAG, "Offline: Guardando como TAREA (Admin)");
+            TaskModel task = new TaskModel();
+            task.setTitle(title);
+            task.setDescription(description != null ? description : "");
+            task.setPriority(priority != null ? priority : "media");
+            task.setDeadline(deadline);
+            task.setSubtasks(subtasks != null ? subtasks : new ArrayList<>());
+            task.setAssignedMembers(assignedMemberIds != null ? assignedMemberIds : new ArrayList<>());
+            task.setBoardId(boardId);
+            task.setRewardPoints(rewardPoints);
+            task.setPenaltyPoints(penaltyPoints);
+            task.setReviewerId(reviewerId);
+            task.setCreatedBy(currentUserId);
+            task.setCreatedAt(new Date());
+            task.setApprovedBy(currentUserId); // Admin se auto-aprueba
+            task.setApprovedAt(new Date());
+            task.setStatus("pending");
 
-            String proposerName = "Usuario desconocido";
-            if (auth.getCurrentUser() != null && auth.getCurrentUser().getDisplayName() != null) {
-                proposerName = auth.getCurrentUser().getDisplayName();
+            task.setProposal(false); // <-- No es una propuesta
+            task.setSynced(false);   // <-- Necesita sincronización
+
+            taskRepository.saveTaskLocally(task);
+
+        } else {
+            // Si es un usuario normal, creamos una PROPUESTA local.
+            Log.d(TAG, "Offline: Guardando como PROPUESTA (Usuario)");
+
+            FirebaseUser currentUser = auth.getCurrentUser();
+            String proposerName = "Usuario desconocido"; // Valor por defecto
+            if (currentUser != null && currentUser.getDisplayName() != null && !currentUser.getDisplayName().isEmpty()) {
+                proposerName = currentUser.getDisplayName();
             }
 
-            if (isAdmin) {
-                TaskModel task = new TaskModel();
-                task.setTitle(title);
-                task.setDescription(description != null ? description : "");
-                task.setPriority(priority != null ? priority : "media");
-                task.setDeadline(deadline);
-                task.setSubtasks(subtasks);
-                task.setAssignedMembers(assignedMemberIds != null ? assignedMemberIds : new ArrayList<>());
-                task.setBoardId(boardId);
-                task.setRewardPoints(rewardPoints);
-                task.setPenaltyPoints(penaltyPoints);
-                task.setReviewerId(reviewerId);
-                task.setCreatedBy(currentUserId);
-                task.setCreatedAt(new Date());
-                task.setApprovedBy(currentUserId);
-                task.setApprovedAt(new Date());
-                task.setStatus("pending");
-                task.setProposal(false);
-                task.setSynced(false); // Marcar para sincronización
+            TaskProposal proposal = new TaskProposal();
+            proposal.setTitle(title);
+            proposal.setDescription(description != null ? description : "");
+            proposal.setPriority(priority != null ? priority : "media");
+            proposal.setDeadline(deadline);
+            proposal.setSubtasks(subtasks != null ? subtasks : new ArrayList<>());
+            proposal.setBoardId(boardId);
+            proposal.setProposedBy(currentUserId);
+            proposal.setProposerName(proposerName);
+            proposal.setProposedAt(new Date());
+            proposal.setStatus("awaiting_approval");
+            proposal.setAssignedMembers(assignedMemberIds != null ? assignedMemberIds : new ArrayList<>());
+            proposal.setReviewerId(reviewerId);
 
-                taskRepository.saveTaskLocally(task);
-            } else {
-                TaskProposal proposal = new TaskProposal();
-                proposal.setTitle(title);
-                proposal.setDescription(description != null ? description : "");
-                proposal.setPriority(priority != null ? priority : "media");
-                proposal.setDeadline(deadline);
-                proposal.setSubtasks(subtasks);
-                proposal.setBoardId(boardId);
-                proposal.setProposedBy(currentUserId);
-                proposal.setProposerName(proposerName);
-                proposal.setProposedAt(new Date());
-                proposal.setStatus("awaiting_approval");
-                proposal.setAssignedMembers(assignedMemberIds != null ? assignedMemberIds : new ArrayList<>());
-                proposal.setReviewerId(reviewerId);
-                TaskModel taskToSave = new TaskModel();
-                taskToSave.setProposal(true); // Marcar como propuesta
-                taskToSave.setSynced(false);
+            TaskModel taskToSave = new TaskModel();
+            taskToSave.setTitle(proposal.getTitle());
+            taskToSave.setDescription(proposal.getDescription());
+            taskToSave.setDeadline(proposal.getDeadline());
+            taskToSave.setPriority(proposal.getPriority());
+            taskToSave.setSubtasks(proposal.getSubtasks());
+            taskToSave.setBoardId(proposal.getBoardId());
+            taskToSave.setCreatedBy(proposal.getProposedBy());
+            taskToSave.setCreatedAt(proposal.getProposedAt());
+            taskToSave.setAssignedMembers(proposal.getAssignedMembers());
+            taskToSave.setReviewerId(proposal.getReviewerId());
 
-                taskRepository.saveTaskLocally(taskToSave);
-            }
+            taskToSave.setProposal(true); // <-- Es una propuesta
+            taskToSave.setSynced(false);
 
-            // Notificar inmediatamente que el guardado local fue exitoso
-            if (callback != null) {
-                callback.onResult(true, true, null);
-            }
-        });
+            taskRepository.saveTaskLocally(taskToSave);
+        }
+
+        // Notificar del éxito del guardado local
+        if (callback != null) {
+            callback.onResult(true, true, null);
+        }
     }
 
     private void createTaskOnline( String boardId,
