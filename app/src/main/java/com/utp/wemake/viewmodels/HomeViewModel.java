@@ -1,9 +1,12 @@
 package com.utp.wemake.viewmodels;
 
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import android.app.Application;
 import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -26,7 +29,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class HomeViewModel extends ViewModel {
+public class HomeViewModel extends AndroidViewModel {
 
     private final TaskRepository taskRepository;
     private final FirebaseAuth auth;
@@ -45,8 +48,11 @@ public class HomeViewModel extends ViewModel {
     private final MutableLiveData<Integer> _totalPoints = new MutableLiveData<>();
     private final MutableLiveData<Boolean> _isLoading = new MutableLiveData<>();
     private final MutableLiveData<String> _errorMessage = new MutableLiveData<>();
-    public HomeViewModel() {
-        this.taskRepository = new TaskRepository();
+    private final Application application;
+    public HomeViewModel(@NonNull Application application) {
+        super(application);
+        this.application = application;
+        this.taskRepository = new TaskRepository(application);
         this.auth = FirebaseAuth.getInstance();
         this.apiService = RetrofitClient.getApiService();
         this.memberRepository = new MemberRepository();

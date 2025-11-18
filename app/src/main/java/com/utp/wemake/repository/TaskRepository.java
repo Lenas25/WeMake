@@ -1,5 +1,7 @@
 package com.utp.wemake.repository;
 
+import android.app.Application;
+
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
@@ -10,6 +12,8 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.WriteBatch;
+import com.utp.wemake.db.AppDatabase;
+import com.utp.wemake.db.TaskDao;
 import com.utp.wemake.models.Subtask;
 import com.utp.wemake.models.TaskModel;
 import com.utp.wemake.models.TaskProposal;
@@ -21,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
 
 public class TaskRepository {
     private static final String COLLECTION_TASKS = "tasks";
@@ -31,16 +36,58 @@ public class TaskRepository {
     private final CollectionReference tasksCollection;
     private final List<ListenerRegistration> activeListeners = new ArrayList<>();
 
-    public TaskRepository() {
+    private final TaskDao taskDao;
+
+    public TaskRepository(Application application) {
         this.db = FirebaseFirestore.getInstance();
         this.proposalsCollection = db.collection(COLLECTION_TASK_PROPOSALS);
         tasksCollection = db.collection(COLLECTION_TASKS);
         this.memberRepository = new MemberRepository();
+        AppDatabase database = AppDatabase.getDatabase(application);
+        this.taskDao = database.taskDao();
     }
 
     public interface OnTasksUpdatedListener {
         void onTasksUpdated(List<TaskModel> tasks);
         void onError(Exception e);
+    }
+
+    /**
+     * Guarda una PROPUESTA de tarea localmente y activa la sincronización.
+     */
+    public void createTaskProposalOffline(TaskProposal proposal) {
+        // 1. Crear un objeto TaskModel vacío.
+        TaskModel taskToSave = new TaskModel();
+
+        // 2. Copiar todos los datos relevantes del objeto 'proposal' al 'taskToSave'.
+        taskToSave.setTitle(proposal.getTitle());
+        taskToSave.setDescription(proposal.getDescription());
+        taskToSave.setDeadline(proposal.getDeadline());
+        taskToSave.setPriority(proposal.getPriority());
+        taskToSave.setSubtasks(proposal.getSubtasks());
+        taskToSave.setBoardId(proposal.getBoardId());
+        taskToSave.setCreatedBy(proposal.getProposedBy());
+        taskToSave.setCreatedAt(proposal.getProposedAt());
+
+        // Copiar los campos sugeridos por el usuario, si existen en el modelo TaskProposal
+        taskToSave.setAssignedMembers(proposal.getAssignedMembers());
+        taskToSave.setReviewerId(proposal.getReviewerId());
+
+        // 3. Establecer los "flags" especiales para la sincronización.
+        taskToSave.setProposal(true);
+        taskToSave.setSynced(false);
+
+        // 4. Ejecutar la operación de guardado en la base de datos en un hilo de fondo.
+        new Thread(() -> {
+            taskDao.insertTask(taskToSave);
+        }).start();
+    }
+
+    public void saveTaskLocally(TaskModel task) {
+        // Ejecutar en un hilo de fondo para no bloquear la UI.
+        Executors.newSingleThreadExecutor().execute(() -> {
+            taskDao.insertTask(task);
+        });
     }
 
     /**

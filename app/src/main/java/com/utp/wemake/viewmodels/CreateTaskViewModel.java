@@ -1,31 +1,46 @@
 package com.utp.wemake.viewmodels;
 
+import android.app.Application;
+
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import androidx.work.Constraints;
+import androidx.work.ExistingWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.utp.wemake.models.Subtask;
 import com.utp.wemake.models.TaskModel;
 import com.utp.wemake.repository.MemberRepository;
 import com.utp.wemake.repository.TaskRepository;
+import com.utp.wemake.utils.Event;
 import com.utp.wemake.utils.TaskCreationHelper;
+import com.utp.wemake.workers.SyncWorker;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class CreateTaskViewModel extends ViewModel {
+public class CreateTaskViewModel extends AndroidViewModel {
 
     private final TaskRepository taskRepository;
     private final MemberRepository memberRepository;
     private final FirebaseAuth auth;
     private final TaskCreationHelper taskCreationHelper;
+    private final WorkManager workManager;
 
     // --- Estado de la Interfaz ---
     private final MutableLiveData<Boolean> _isLoading = new MutableLiveData<>(false);
     public final LiveData<Boolean> isLoading = _isLoading;
+
+    private final MutableLiveData<Event<String>> _toastMessage = new MutableLiveData<>();
+    public LiveData<Event<String>> getToastMessage() { return _toastMessage; }
 
     private final MutableLiveData<String> _errorMessage = new MutableLiveData<>();
     public final LiveData<String> errorMessage = _errorMessage;
@@ -48,11 +63,32 @@ public class CreateTaskViewModel extends ViewModel {
     private String editingTaskId = null;
 
 
-    public CreateTaskViewModel() {
-        this.taskRepository = new TaskRepository();
+    public CreateTaskViewModel(@NonNull Application application) {
+        super(application);
+        this.taskRepository = new TaskRepository(application);
         this.memberRepository = new MemberRepository();
         this.auth = FirebaseAuth.getInstance();
-        this.taskCreationHelper = new TaskCreationHelper(); // Inicializar helper
+        this.workManager = WorkManager.getInstance(application);
+        this.taskCreationHelper = new TaskCreationHelper(application);
+    }
+
+    /**
+     * Activa el WorkManager para que intente subir los datos
+     * a Firebase cuando haya conexión.
+     */
+    private void scheduleSync() {
+        final String UNIQUE_SYNC_WORK_NAME = "sync_tasks_to_firebase";
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+        OneTimeWorkRequest syncRequest = new OneTimeWorkRequest.Builder(SyncWorker.class)
+                .setConstraints(constraints)
+                .build();
+        workManager.enqueueUniqueWork(
+                UNIQUE_SYNC_WORK_NAME,
+                ExistingWorkPolicy.KEEP,
+                syncRequest
+        );
     }
 
     /**
@@ -121,10 +157,12 @@ public class CreateTaskViewModel extends ViewModel {
             if (subtasks != null) {
                 TaskCreationHelper.ensureSubtasksHaveIds(subtasks);
             }
-            
+
+            boolean isAdmin = Boolean.TRUE.equals(_isUserAdmin.getValue());
+
             // Usar el helper para crear la tarea (maneja admin/usuario automáticamente)
             taskCreationHelper.createTask(
-                    boardId,
+                    isAdmin, boardId,
                     title,
                     description,
                     priority,
@@ -134,10 +172,18 @@ public class CreateTaskViewModel extends ViewModel {
                     rewardPoints,
                     penaltyPoints,
                     reviewerId,
-                    (success, errorMessage) -> {
+                    (success, wasOffline, errorMessage)  -> {
                         _isLoading.setValue(false);
                         if (success) {
                             _taskSaved.setValue(true);
+
+                            if (wasOffline) {
+                                _toastMessage.setValue(new Event<>("Guardado localmente. Se sincronizará al conectar."));
+                            } else {
+                                _toastMessage.setValue(new Event<>("Tarea creada con éxito."));
+                            }
+
+                            scheduleSync();
                         } else {
                             _errorMessage.setValue(errorMessage);
                         }

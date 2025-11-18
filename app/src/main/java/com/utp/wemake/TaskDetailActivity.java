@@ -18,6 +18,7 @@ import com.google.android.material.chip.Chip;
 import com.utp.wemake.constants.TaskConstants;
 import com.utp.wemake.models.TaskModel;
 import com.utp.wemake.models.User;
+import com.utp.wemake.utils.NetworkUtils;
 import com.utp.wemake.viewmodels.TaskDetailViewModel;
 
 import java.text.SimpleDateFormat;
@@ -93,16 +94,25 @@ public class TaskDetailActivity extends AppCompatActivity {
             }
         });
 
-        viewModel.getTaskUpdated().observe(this, updated -> {
-            if (updated) {
+        viewModel.getTaskUpdated().observe(this, event -> {
+            Boolean updated = event.getContentIfNotHandled();
+            if (updated != null && updated) {
                 Toast.makeText(this, "Tarea actualizada correctamente", Toast.LENGTH_SHORT).show();
             }
         });
 
-        viewModel.getTaskDeleted().observe(this, deleted -> {
-            if (deleted) {
+        viewModel.getTaskDeleted().observe(this, event -> {
+            Boolean deleted = event.getContentIfNotHandled();
+            if (deleted != null && deleted) {
                 Toast.makeText(this, "Tarea eliminada correctamente", Toast.LENGTH_SHORT).show();
                 finish();
+            }
+        });
+
+        viewModel.getToastMessage().observe(this, event -> {
+            String message = event.getContentIfNotHandled();
+            if (message != null) {
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -111,12 +121,22 @@ public class TaskDetailActivity extends AppCompatActivity {
         btnBack.setOnClickListener(v -> finish());
 
         btnEdit.setOnClickListener(v -> {
-            Intent intent = new Intent(this, CreateTaskActivity.class);
-            intent.putExtra(CreateTaskActivity.EXTRA_TASK_ID, taskId);
-            startActivity(intent);
+            if (NetworkUtils.isOnline(this)) {
+                Intent intent = new Intent(this, CreateTaskActivity.class);
+                intent.putExtra(CreateTaskActivity.EXTRA_TASK_ID, taskId);
+                startActivity(intent);
+            } else {
+                viewModel.postToastMessage("La edición no está disponible sin conexión.");
+            }
         });
 
-        btnDelete.setOnClickListener(v -> showDeleteConfirmation());
+        btnDelete.setOnClickListener(v -> {
+            if (NetworkUtils.isOnline(this)) {
+                showDeleteConfirmation();
+            } else {
+                viewModel.postToastMessage("La eliminación no está disponible sin conexión.");
+            }
+        });
     }
 
     private void showDeleteConfirmation() {
@@ -241,7 +261,12 @@ public class TaskDetailActivity extends AppCompatActivity {
     private void setupSubtasksRecycler(TaskModel task) {
         if (task.getSubtasks() != null && !task.getSubtasks().isEmpty()) {
             subtaskAdapter = new SubtaskAdapter(task.getSubtasks(), (subtask, isCompleted) -> {
-                viewModel.updateSubtask(taskId, subtask.getId(), isCompleted);
+                if (NetworkUtils.isOnline(this)) {
+                    viewModel.updateSubtask(taskId, subtask.getId(), isCompleted);
+                } else {
+                    viewModel.postToastMessage("No se puede actualizar sin conexión.");
+                    subtaskAdapter.notifyDataSetChanged();
+                }
             });
             subtasksRecycler.setAdapter(subtaskAdapter);
         } else {

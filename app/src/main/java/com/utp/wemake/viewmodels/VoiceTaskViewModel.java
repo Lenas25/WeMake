@@ -44,7 +44,7 @@ public class VoiceTaskViewModel extends AndroidViewModel {
     public VoiceTaskViewModel(@NonNull Application application) {
         super(application);
         this.aiService = new VoiceTaskAIService();
-        this.taskCreationHelper = new TaskCreationHelper();
+        this.taskCreationHelper = new TaskCreationHelper(application);
         this.memberRepository = new MemberRepository();
     }
 
@@ -253,6 +253,7 @@ public class VoiceTaskViewModel extends AndroidViewModel {
             int penaltyPoints = TaskCreationHelper.calculatePenaltyPoints(priority);
 
             taskCreationHelper.createTask(
+                    isAdmin,
                     boardId,
                     title,
                     description,
@@ -265,16 +266,16 @@ public class VoiceTaskViewModel extends AndroidViewModel {
                     reviewerId,
                     new TaskCreationHelper.TaskCreationCallback() {
                         @Override
-                        public void onResult(boolean success, String errorMsg) {
+                        public void onResult(boolean success, boolean wasOffline, String errorMessage) {
                             isLoading.postValue(false);
                             if (success) {
-                                Log.d(TAG, "Task/Proposal created successfully. IsAdmin: " + isAdmin);
-                                // Crear resultado con información de si fue tarea o propuesta
+                                Log.d(TAG, "Task/Proposal created successfully via Voice. WasOffline: " + wasOffline);
+
                                 CreationResult result = new CreationResult(true, isAdmin);
                                 taskCreated.postValue(new Event<>(result));
                             } else {
-                                Log.e(TAG, "Error creating task/proposal: " + errorMsg);
-                                VoiceTaskViewModel.this.errorMessage.postValue(errorMsg);
+                                Log.e(TAG, "Error creating task/proposal via Voice: " + errorMessage);
+                                VoiceTaskViewModel.this.errorMessage.postValue(errorMessage);
                             }
                         }
                     }

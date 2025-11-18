@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Button;
 import android.content.Context;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -14,6 +15,7 @@ import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.utp.wemake.models.TaskModel;
+import com.utp.wemake.utils.NetworkUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -181,8 +183,12 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             });
 
             changeButton.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onChangeStatusClicked(task);
+                if (NetworkUtils.isOnline(context)) {
+                    if (listener != null) {
+                        listener.onChangeStatusClicked(task);
+                    }
+                } else {
+                    Toast.makeText(context, "El cambio de estado no está disponible sin conexión.", Toast.LENGTH_SHORT).show();
                 }
             });
 
