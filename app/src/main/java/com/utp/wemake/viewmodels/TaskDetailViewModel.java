@@ -1,19 +1,21 @@
 package com.utp.wemake.viewmodels;
 
+import android.app.Application;
+
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
+import com.utp.wemake.utils.Event;
 import com.utp.wemake.models.TaskModel;
 import com.utp.wemake.models.User;
 import com.utp.wemake.repository.TaskRepository;
 import com.utp.wemake.repository.UserRepository;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TaskDetailViewModel extends ViewModel {
+public class TaskDetailViewModel extends AndroidViewModel {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
     private final MutableLiveData<TaskModel> task = new MutableLiveData<>();
@@ -23,9 +25,16 @@ public class TaskDetailViewModel extends ViewModel {
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
     private final MutableLiveData<Boolean> taskUpdated = new MutableLiveData<>();
     private final MutableLiveData<Boolean> taskDeleted = new MutableLiveData<>();
+    private final MutableLiveData<Event<String>> _toastMessage = new MutableLiveData<>();
+    private final MutableLiveData<Event<Boolean>> _taskUpdated = new MutableLiveData<>();
+    private final MutableLiveData<Event<Boolean>> _taskDeleted = new MutableLiveData<>();
+    public LiveData<Event<Boolean>> getTaskUpdated() { return _taskUpdated; }
+    public LiveData<Event<Boolean>> getTaskDeleted() { return _taskDeleted; }
+    public LiveData<Event<String>> getToastMessage() { return _toastMessage; }
 
-    public TaskDetailViewModel() {
-        this.taskRepository = new TaskRepository();
+    public TaskDetailViewModel(@NonNull Application application) {
+        super(application);
+        this.taskRepository = new TaskRepository(application);
         this.userRepository = new UserRepository();
     }
 
@@ -34,8 +43,6 @@ public class TaskDetailViewModel extends ViewModel {
     public LiveData<User> getReviewer() { return reviewer; }
     public LiveData<Boolean> getIsLoading() { return isLoading; }
     public LiveData<String> getErrorMessage() { return errorMessage; }
-    public LiveData<Boolean> getTaskUpdated() { return taskUpdated; }
-    public LiveData<Boolean> getTaskDeleted() { return taskDeleted; }
 
     public void loadTask(String taskId) {
         isLoading.setValue(true);
@@ -89,7 +96,7 @@ public class TaskDetailViewModel extends ViewModel {
         taskRepository.deleteTask(taskId).addOnCompleteListener(task -> {
             isLoading.setValue(false);
             if (task.isSuccessful()) {
-                taskDeleted.setValue(true);
+                _taskDeleted.setValue(new Event<>(true));
             } else {
                 errorMessage.setValue("Error al eliminar la tarea.");
             }
@@ -99,11 +106,14 @@ public class TaskDetailViewModel extends ViewModel {
     public void updateSubtask(String taskId, String subtaskId, boolean isCompleted) {
         taskRepository.updateSubtaskStatus(taskId, subtaskId, isCompleted)
                 .addOnSuccessListener(aVoid -> {
-                    taskUpdated.setValue(true);
-                    taskUpdated.setValue(false); 
+                    _taskUpdated.setValue(new Event<>(true));
                 })
                 .addOnFailureListener(e -> {
                     errorMessage.setValue("Error al actualizar la subtarea.");
                 });
+    }
+
+    public void postToastMessage(String message) {
+        _toastMessage.setValue(new Event<>(message));
     }
 }

@@ -1,8 +1,12 @@
 package com.utp.wemake.viewmodels;
 
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+
+import android.app.Application;
 import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -17,7 +21,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class TasksViewModel extends ViewModel {
+public class TasksViewModel extends AndroidViewModel {
     private final TaskRepository taskRepository;
     private final BoardRepository boardRepository;
     private final FirebaseAuth auth;
@@ -42,8 +46,10 @@ public class TasksViewModel extends ViewModel {
     private String selectedAssignee = null;
     private String selectedDueFilter = null;
 
-    public TasksViewModel() {
-        this.taskRepository = new TaskRepository();
+    public TasksViewModel(@NonNull Application application)
+    {
+        super(application);
+        this.taskRepository = new TaskRepository(application);
         this.boardRepository = new BoardRepository();
         this.auth = FirebaseAuth.getInstance();
     }

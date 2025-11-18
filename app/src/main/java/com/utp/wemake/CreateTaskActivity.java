@@ -158,6 +158,13 @@ public class CreateTaskActivity extends AppCompatActivity {
             }
         });
 
+        viewModel.getToastMessage().observe(this, event -> {
+            String message = event.getContentIfNotHandled();
+            if (message != null && !message.isEmpty()) {
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+            }
+        });
+
         viewModel.errorMessage.observe(this, error -> {
             if (error != null && !error.isEmpty()) {
                 Toast.makeText(this, error, Toast.LENGTH_LONG).show();

@@ -1,16 +1,30 @@
 package com.utp.wemake.models;
 
+import androidx.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
+
 import com.google.firebase.firestore.DocumentId;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
-// Clase modelo que representa una tarea
+import com.utp.wemake.db.Converters;
+
+@Entity(tableName = "tasks_offline") // Room que esta es una tabla
+@TypeConverters(Converters.class)     // Manejar tipos de datos complejos
 public class TaskModel {
+
+    public TaskModel() {
+        this.id = UUID.randomUUID().toString();
+    }
 
     private boolean penaltyApplied = false;
 
+    @PrimaryKey // El ID es la clave única en la tabla local
+    @NonNull
     @DocumentId
-    // Atributos principales de la tarea
     private String id;
     private String title; // Título de la tarea
     private String description; // Descripción breve de la tarea
@@ -21,6 +35,10 @@ public class TaskModel {
     private String boardId;
     private String createdBy; // ID del usuario que la propuso originalmente
     private Date createdAt;
+
+
+    private boolean isSynced = false;   // 'false' si necesita ser subida a Firebase
+    private boolean isProposal = false; // 'true' si debe ir a 'task_proposals'
 
 
     private String status; // "pending", "in_progress", "in_review", "completed"
@@ -159,6 +177,11 @@ public class TaskModel {
     public List<String> getAssignedMembers() {
         return assignedMembers;
     }
+
+    public boolean isSynced() { return isSynced; }
+    public void setSynced(boolean synced) { isSynced = synced; }
+    public boolean isProposal() { return isProposal; }
+    public void setProposal(boolean proposal) { isProposal = proposal; }
     public Date getCompletedAt() { return completedAt; }
     public void setCompletedAt(Date completedAt) { this.completedAt = completedAt; }
 
