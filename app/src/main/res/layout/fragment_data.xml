@@ -5,8 +5,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     android:orientation="vertical"
-    android:background="?attr/colorSurface"
     tools:context=".DataFragment">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -21,7 +21,7 @@
             app:navigationIcon="@drawable/ic_arrow_back"
             app:titleTextColor="?attr/colorOnSurface"
             android:letterSpacing="0.01"
-            tools:title="@string/settings"
+            tools:title="@string/item_stats"
             style="@style/Widget.Material3.Toolbar.Surface"
             />
     </com.google.android.material.appbar.AppBarLayout>
