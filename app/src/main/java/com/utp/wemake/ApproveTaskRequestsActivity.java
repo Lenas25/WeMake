@@ -34,13 +34,23 @@ public class ApproveTaskRequestsActivity extends AppCompatActivity implements Pr
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_approve_requests);
 
+        // Obtener el boardId del Intent
+        String boardId = getIntent().getStringExtra("boardId");
+        if (boardId == null) {
+            Toast.makeText(this, "Error: No se especificó el tablero", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
         viewModel = new ViewModelProvider(this).get(ApproveTaskRequestsViewModel.class);
+
+        // Establecer el boardId en el ViewModel
+        viewModel.setBoardId(boardId);
 
         setupToolbar();
         initializeViews();
         setupRecyclerView();
         observeViewModel();
-
     }
 
     private void setupToolbar() {

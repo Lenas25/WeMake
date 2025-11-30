@@ -33,19 +33,42 @@ public class ApproveTaskRequestsViewModel extends AndroidViewModel {
     public LiveData<Boolean> isLoading = _isLoading;
     private final Application application;
 
+    private String boardId; // ID del tablero para filtrar propuestas
+
     public ApproveTaskRequestsViewModel(@NonNull Application application) {
         super(application);
         this.application = application;
         this.taskRepository = new TaskRepository(application);
+    }
+
+    /**
+     * Establece el ID del tablero y carga las propuestas correspondientes.
+     * @param boardId El ID del tablero.
+     */
+    public void setBoardId(String boardId) {
+        this.boardId = boardId;
         loadTaskProposals();
     }
 
+    /**
+     * Filtra por boardId
+     */
     public void loadTaskProposals() {
+        if (boardId == null) {
+            _operationStatus.setValue(new Event<>("Error: No se especificó el tablero."));
+            return;
+        }
+
         _isLoading.setValue(true);
-        taskRepository.getPendingTaskProposals().addOnCompleteListener(task -> {
+        taskRepository.getPendingTaskProposalsForBoard(boardId).addOnCompleteListener(task -> {
             _isLoading.setValue(false);
             if (task.isSuccessful() && task.getResult() != null) {
-                _proposals.setValue(task.getResult().toObjects(TaskProposal.class));
+                List<TaskProposal> proposals = task.getResult().toObjects(TaskProposal.class);
+                // Asignar IDs a las propuestas
+                for (int i = 0; i < proposals.size(); i++) {
+                    proposals.get(i).setId(task.getResult().getDocuments().get(i).getId());
+                }
+                _proposals.setValue(proposals);
             } else {
                 _operationStatus.setValue(new Event<>("Error al cargar las solicitudes."));
             }
