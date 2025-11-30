@@ -9,6 +9,9 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
 import com.utp.wemake.models.Board;
 import com.utp.wemake.models.User;
 import com.utp.wemake.repository.BoardRepository;
@@ -16,6 +19,7 @@ import com.utp.wemake.utils.BoardSelectionPrefs;
 import com.utp.wemake.repository.UserRepository;
 import com.utp.wemake.utils.Event;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainViewModel extends AndroidViewModel {
@@ -34,6 +38,9 @@ public class MainViewModel extends AndroidViewModel {
     private final MutableLiveData<List<Board>> userBoards = new MutableLiveData<>();
     private final MutableLiveData<Board> selectedBoard = new MutableLiveData<>();
     private final MutableLiveData<Event<JoinBoardResult>> joinBoardResult = new MutableLiveData<>();
+
+    // Listener para los tableros en tiempo real
+    private ListenerRegistration boardsListener;
 
     // Getter para que el Fragment lo observe
     public LiveData<Event<JoinBoardResult>> getJoinBoardResult() {
@@ -56,7 +63,7 @@ public class MainViewModel extends AndroidViewModel {
 
     private void loadInitialData() {
         loadCurrentUser();
-        loadUserBoards();
+        listenToUserBoards(); // Usar listener en tiempo real
     }
 
     /**
@@ -66,23 +73,51 @@ public class MainViewModel extends AndroidViewModel {
         userRepository.getCurrentUserData().addOnCompleteListener(task -> {
             if (task.isSuccessful() && task.getResult() != null) {
                 User user = task.getResult().toObject(User.class);
-                // CAMBIO: Actualizamos el LiveData correcto
                 currentUserData.setValue(user);
             } else {
-                // Opcional: Manejar error, por ejemplo, publicando un valor nulo
                 currentUserData.setValue(null);
             }
         });
     }
 
-    private void loadUserBoards() {
-        boardRepository.getBoardsForCurrentUser().addOnCompleteListener(task -> {
-            if (task.isSuccessful() && task.getResult() != null) {
-                List<Board> boards = task.getResult().toObjects(Board.class);
+    /**
+     * Escucha en tiempo real los tableros del usuario.
+     * Se actualiza automáticamente cuando se crean o eliminan tableros.
+     */
+    private void listenToUserBoards() {
+        String uid = auth.getUid();
+        if (uid == null) return;
+
+        // Detener listener anterior si existe
+        if (boardsListener != null) {
+            boardsListener.remove();
+        }
+
+        // Obtener el Query desde el repositorio
+        Query boardsQuery = boardRepository.getBoardsQueryForCurrentUser();
+        if (boardsQuery == null) return;
+
+        // Crear listener en tiempo real
+        boardsListener = boardsQuery.addSnapshotListener((querySnapshot, e) -> {
+            if (e != null) {
+                Log.e("MainViewModel", "Error listening to boards", e);
+                return;
+            }
+
+            if (querySnapshot != null) {
+                List<Board> boards = new ArrayList<>();
+                for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                    Board board = doc.toObject(Board.class);
+                    if (board != null) {
+                        board.setId(doc.getId());
+                        boards.add(board);
+                    }
+                }
+
                 userBoards.setValue(boards);
 
-                // Después de cargar los tableros, determina cuál está seleccionado
-                determineInitialSelectedBoard(boards);
+                // Determinar el tablero seleccionado
+                determineSelectedBoard(boards);
             }
         });
     }
@@ -97,27 +132,46 @@ public class MainViewModel extends AndroidViewModel {
         }
     }
 
-
-    private void determineInitialSelectedBoard(List<Board> boards) {
-        if (boards == null || boards.isEmpty()) return;
-
-        String savedBoardId = boardSelectionRepo.getSelectedBoardId();
-        Board boardToSelect = null;
-
-        if (savedBoardId != null) {
-            // Intenta encontrar el tablero guardado en la lista actual
-            boardToSelect = boards.stream().filter(b -> b.getId().equals(savedBoardId)).findFirst().orElse(null);
+    /**
+     * Determina qué tablero debe estar seleccionado.
+     * Prioriza el tablero guardado, luego el actual si sigue existiendo, o el primero disponible.
+     */
+    private void determineSelectedBoard(List<Board> boards) {
+        if (boards == null || boards.isEmpty()) {
+            selectedBoard.setValue(null);
+            return;
         }
 
-        // Si no hay un tablero guardado, o si el tablero guardado ya no existe, selecciona el primero de la lista.
+        String savedBoardId = boardSelectionRepo.getSelectedBoardId();
+        Board currentSelected = selectedBoard.getValue();
+        Board boardToSelect = null;
+
+        // 1. Intentar usar el tablero guardado en preferencias
+        if (savedBoardId != null) {
+            boardToSelect = boards.stream()
+                    .filter(b -> b.getId().equals(savedBoardId))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        // 2. Si no existe, intentar mantener el tablero actualmente seleccionado
+        if (boardToSelect == null && currentSelected != null) {
+            boardToSelect = boards.stream()
+                    .filter(b -> b.getId().equals(currentSelected.getId()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        // 3. Si tampoco existe, seleccionar el primero de la lista
         if (boardToSelect == null) {
             boardToSelect = boards.get(0);
-            // Guardar automáticamente el boardId seleccionado por defecto
             boardSelectionRepo.saveSelectedBoardId(boardToSelect.getId());
         }
 
-        // Publica el tablero seleccionado
-        selectedBoard.setValue(boardToSelect);
+        // Solo actualizar si cambió el tablero seleccionado
+        if (currentSelected == null || !currentSelected.getId().equals(boardToSelect.getId())) {
+            selectedBoard.setValue(boardToSelect);
+        }
     }
 
     /**
@@ -163,7 +217,7 @@ public class MainViewModel extends AndroidViewModel {
 
                 boardRepository.joinBoard(boardId, currentUserId).addOnCompleteListener(joinTask -> {
                     if (joinTask.isSuccessful()) {
-                        loadUserBoards();
+                        // No necesitamos llamar loadUserBoards() porque el listener se actualizará automáticamente
                         joinBoardResult.setValue(new Event<>(JoinBoardResult.SUCCESS));
                     } else {
                         joinBoardResult.setValue(new Event<>(JoinBoardResult.ERROR));
@@ -178,4 +232,16 @@ public class MainViewModel extends AndroidViewModel {
         });
     }
 
+    /**
+     * Limpia el listener cuando el ViewModel se destruye.
+     * CRÍTICO para evitar memory leaks.
+     */
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        // Detener el listener cuando el ViewModel se destruye
+        if (boardsListener != null) {
+            boardsListener.remove();
+        }
+    }
 }
