@@ -12,4 +12,7 @@
 /captures
 .externalNativeBuild
 .cxx
+
+# API Keys y configuración local
 local.properties
+google-services.json

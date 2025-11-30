@@ -8,7 +8,7 @@ import android.os.Looper;
 import com.cloudinary.android.MediaManager;
 import com.cloudinary.android.callback.ErrorInfo;
 import com.cloudinary.android.callback.UploadCallback;
-import com.utp.wemake.R;
+import com.utp.wemake.BuildConfig;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,9 +26,9 @@ public class ImageRepository {
     // Constructor para inicializar MediaManager (llámalo en tu clase Application)
     public static void initialize(Context context) {
         Map<String, String> config = new HashMap<>();
-        config.put("cloud_name", context.getString(R.string.cloudinary_cloud_name));
-        config.put("api_key", context.getString(R.string.cloudinary_api_key));
-        config.put("api_secret", context.getString(R.string.cloudinary_api_secret));
+        config.put("cloud_name", BuildConfig.CLOUDINARY_CLOUD_NAME);
+        config.put("api_key", BuildConfig.CLOUDINARY_API_KEY);
+        config.put("api_secret", BuildConfig.CLOUDINARY_API_SECRET);
         MediaManager.init(context, config);
     }
 
