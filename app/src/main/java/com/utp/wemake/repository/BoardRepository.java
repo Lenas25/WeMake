@@ -19,7 +19,6 @@ import com.utp.wemake.models.Coupon;
 import com.utp.wemake.models.Member;
 import com.utp.wemake.models.RedemptionRequest;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class BoardRepository {
@@ -34,6 +33,15 @@ public class BoardRepository {
         String uid = auth.getUid();
         if (uid == null) return null;
         return db.collection(COLLECTION_BOARDS).whereArrayContains("members", uid).get();
+    }
+
+    /**
+     * Retorna un Query para escuchar en tiempo real los tableros del usuario.
+     */
+    public Query getBoardsQueryForCurrentUser() {
+        String uid = auth.getUid();
+        if (uid == null) return null;
+        return db.collection(COLLECTION_BOARDS).whereArrayContains("members", uid);
     }
 
     /**

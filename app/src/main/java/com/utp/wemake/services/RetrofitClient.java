@@ -1,16 +1,26 @@
 package com.utp.wemake.services;
 
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
 
-    // Reemplaza esto con la IP de tu PC donde corre la API.
-    private static final String BASE_URL = "http://192.168.50.45:8080/";
+    // URL de la API desplegada en Render
+    private static final String BASE_URL = "https://wemakeapiprediction.onrender.com/";
     private static Retrofit retrofit = null;
 
     public static ApiService getApiService() {
         if (retrofit == null) {
+            // Cliente HTTP con timeouts extendidos para Render
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .connectTimeout(60, TimeUnit.SECONDS)
+                    .readTimeout(60, TimeUnit.SECONDS)
+                    .writeTimeout(60, TimeUnit.SECONDS)
+                    .build();
+
             retrofit = new Retrofit.Builder()
                     .baseUrl(BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create())

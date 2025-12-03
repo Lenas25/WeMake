@@ -132,6 +132,17 @@ public class TaskRepository {
     }
 
     /**
+     * Obtiene las propuestas de tareas pendientes de aprobación para un tablero específico.
+     * @param boardId El ID del tablero para filtrar las propuestas.
+     */
+    public Task<QuerySnapshot> getPendingTaskProposalsForBoard(String boardId) {
+        return proposalsCollection
+                .whereEqualTo("status", "awaiting_approval")
+                .whereEqualTo("boardId", boardId)
+                .get();
+    }
+
+    /**
      * Aprueba una propuesta, moviéndola a la colección de tareas y eliminando la original.
      * @param proposalId El ID de la propuesta a aprobar.
      * @param newTask El objeto TaskModel completo que se creará.

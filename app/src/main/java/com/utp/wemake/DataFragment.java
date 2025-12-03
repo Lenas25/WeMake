@@ -150,21 +150,66 @@ public class DataFragment extends Fragment {
         });
     }
 
+    /**
+     * MÉTODO CORREGIDO: populateUI()
+     * Ahora incluye validaciones null-safe para evitar crashes
+     */
     private void populateUI(DashboardResponse data) {
-        // Popular tarjetas de resumen
-        tvTotalTasks.setText(String.valueOf(data.summary.totalTasks));
-        tvOnTimeRate.setText(String.format(Locale.US, "%.1f%%", data.productivity.onTimeCompletionRate));
+        // Validar que data no sea null
+        if (data == null) {
+            showEmptyState("No hay datos disponibles");
+            return;
+        }
 
-        // Popular gráficos
+        // Validar summary
+        if (data.summary == null) {
+            showEmptyState("No hay resumen disponible");
+            return;
+        }
+
+        // Validar productivity
+        if (data.productivity == null) {
+            showEmptyState("No hay datos de productividad");
+            return;
+        }
+
+        // Popular tarjetas de resumen de forma segura
+        tvTotalTasks.setText(String.valueOf(data.summary.totalTasks));
+
+        // Evitar división por cero y valores inválidos
+        double onTimeRate = data.productivity.onTimeCompletionRate;
+        if (Double.isNaN(onTimeRate) || Double.isInfinite(onTimeRate)) {
+            onTimeRate = 0.0;
+        }
+        tvOnTimeRate.setText(String.format(Locale.US, "%.1f%%", onTimeRate));
+
+        // Popular gráficos con validación
         setupBarChart(data.productivity.tasksCompletedPerWeek);
         setupPieChart(data.productivity.priorityDistribution);
 
         // Popular lista de tareas en riesgo
-        if (data.predictions.atRiskTasks != null && !data.predictions.atRiskTasks.isEmpty()) {
+        if (data.predictions != null && data.predictions.atRiskTasks != null && !data.predictions.atRiskTasks.isEmpty()) {
             rvAtRiskTasks.setAdapter(new AtRiskTasksAdapter(data.predictions.atRiskTasks));
+            rvAtRiskTasks.setVisibility(View.VISIBLE);
+        } else {
+            rvAtRiskTasks.setVisibility(View.GONE);
         }
     }
 
+    /**
+     * Muestra un mensaje cuando no hay datos disponibles
+     */
+    private void showEmptyState(String message) {
+        contentScrollView.setVisibility(View.GONE);
+        tvMessage.setVisibility(View.VISIBLE);
+        tvMessage.setText(message);
+        progressBar.setVisibility(View.GONE);
+    }
+
+    /**
+     * MÉTODO CORREGIDO: setupBarChart()
+     * Ahora maneja correctamente datos vacíos o nulos
+     */
     private void setupBarChart(Map<String, Integer> data) {
         if (data == null || data.isEmpty()) {
             barChart.setVisibility(View.GONE);
@@ -183,9 +228,16 @@ public class DataFragment extends Fragment {
  
         for (int i = 0; i < labels.size(); i++) {
             String label = labels.get(i);
-            entries.add(new BarEntry(i, data.get(label) != null ? data.get(label) : 0));
+            Integer value = data.get(label);
+            // Validar que el valor no sea null
+            entries.add(new BarEntry(i, value != null ? value : 0));
         }
 
+        // Validar que tengamos al menos una entrada
+        if (entries.isEmpty()) {
+            barChart.setVisibility(View.GONE);
+            return;
+        }
 
         BarDataSet dataSet = new BarDataSet(entries, "Tareas Completadas");
         dataSet.setColors(new int[]{
@@ -194,7 +246,7 @@ public class DataFragment extends Fragment {
                 ContextCompat.getColor(requireContext(), R.color.chart_color_3),
                 ContextCompat.getColor(requireContext(), R.color.chart_color_4)
         });
-        dataSet.setValueTextColor(textColor); // <-- CAMBIO CLAVE: Usar color del tema
+        dataSet.setValueTextColor(textColor);
         dataSet.setValueTextSize(10f);
 
         BarData barData = new BarData(dataSet);
@@ -239,17 +291,29 @@ public class DataFragment extends Fragment {
         List<PieEntry> entries = new ArrayList<>();
         List<Integer> colors = new ArrayList<>();
 
-        if (data.containsKey("high") && data.get("high") > 0) {
-            entries.add(new PieEntry(data.get("high"), "Alta"));
+        // Validar y agregar entradas solo si tienen valores mayores a 0
+        Integer highValue = data.get("high");
+        if (highValue != null && highValue > 0) {
+            entries.add(new PieEntry(highValue, "Alta"));
             colors.add(ContextCompat.getColor(requireContext(), R.color.priority_high_border));
         }
-        if (data.containsKey("medium") && data.get("medium") > 0) {
-            entries.add(new PieEntry(data.get("medium"), "Media"));
+
+        Integer mediumValue = data.get("medium");
+        if (mediumValue != null && mediumValue > 0) {
+            entries.add(new PieEntry(mediumValue, "Media"));
             colors.add(ContextCompat.getColor(requireContext(), R.color.priority_medium_border));
         }
-        if (data.containsKey("low") && data.get("low") > 0) {
-            entries.add(new PieEntry(data.get("low"), "Baja"));
+
+        Integer lowValue = data.get("low");
+        if (lowValue != null && lowValue > 0) {
+            entries.add(new PieEntry(lowValue, "Baja"));
             colors.add(ContextCompat.getColor(requireContext(), R.color.priority_low_border));
+        }
+
+        // Si no hay entradas, ocultar el gráfico
+        if (entries.isEmpty()) {
+            pieChart.setVisibility(View.GONE);
+            return;
         }
 
         PieDataSet dataSet = new PieDataSet(entries, "");
@@ -263,7 +327,7 @@ public class DataFragment extends Fragment {
 
         pieChart.setData(pieData);
 
-        // --- Personalización de Estilo ---
+        // Personalización de Estilo
         pieChart.getDescription().setEnabled(false);
         pieChart.getLegend().setTextColor(textColor); // Color de la leyenda
         pieChart.setUsePercentValues(true);
