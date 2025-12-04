@@ -423,4 +423,9 @@ public class TaskRepository {
 
         return batch.commit();
     }
+
+    public Task<Void> updateTaskField(String taskId, String fieldName, Object value) {
+        return db.collection("tasks").document(taskId)
+                .update(fieldName, value);
+    }
 }

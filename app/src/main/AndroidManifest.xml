@@ -65,7 +65,22 @@
             android:exported="false" />
         <activity
             android:name=".TaskDetailActivity"
-            android:exported="false" />
+            android:exported="true">
+
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!--
+                    Define el patrón de URL que esta Activity puede manejar.
+                    URL real de Firebase Hosting.
+                -->
+                <data
+                    android:scheme="https"
+                    android:host="wemake-c1a90.web.app"
+                    android:pathPrefix="/task.html" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".CreateTaskActivity"
             android:exported="false" />
@@ -80,6 +95,9 @@
             android:exported="false" />
         <activity
             android:name=".LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".DailyTimelineActivity"
             android:exported="false" />
         <activity
             android:name=".SplashActivity"

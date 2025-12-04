@@ -56,6 +56,8 @@ dependencies {
     implementation libs.databinding.adapters
     implementation libs.work.runtime
 
+    implementation 'com.applandeo:material-calendar-view:1.9.0-rc04'
+
     // Room (para SQLite)
     def room_version = "2.6.1"
     implementation "androidx.room:room-runtime:$room_version"

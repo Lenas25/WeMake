@@ -23,6 +23,7 @@ import com.utp.wemake.utils.TaskCreationHelper;
 import com.utp.wemake.workers.SyncWorker;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -261,5 +262,22 @@ public class CreateTaskViewModel extends AndroidViewModel {
                 _errorMessage.setValue("Error al actualizar la tarea: " + taskResult.getException().getMessage());
             }
         });
+    }
+
+    public void updateTaskDeadline(String taskId, Date newDeadline) {
+        _isLoading.setValue(true);
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("deadline", newDeadline);
+
+        taskRepository.updateTaskField(taskId, "deadline", newDeadline)
+                .addOnCompleteListener(task -> {
+                    _isLoading.setValue(false);
+                    if (task.isSuccessful()) {
+                        _toastMessage.setValue(new Event<>("Fecha límite actualizada"));
+                    } else {
+                        _errorMessage.setValue("Error al actualizar fecha");
+                    }
+                });
     }
 }

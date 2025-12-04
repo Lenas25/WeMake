@@ -2,6 +2,7 @@ package com.utp.wemake;
 
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -41,8 +42,22 @@ public class TaskDetailActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_task_detail);
 
-        taskId = getIntent().getStringExtra("taskId");
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        Uri data = intent.getData();
+
+        if (Intent.ACTION_VIEW.equals(action) && data != null) {
+            // El host debe coincidir con tu URL de Firebase Hosting
+            if ("wemake-c1a90.web.app".equals(data.getHost())) {
+                taskId = data.getQueryParameter("id");
+            }
+        } else {
+            // Si no, fue abierto por un Intent normal
+            taskId = intent.getStringExtra("taskId");
+        }
+
         if (taskId == null) {
+            Toast.makeText(this, "ID de tarea no encontrado.", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }

@@ -1,5 +1,7 @@
 package com.utp.wemake;
 
+import static android.content.Intent.getIntent;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -59,6 +61,7 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
     public HomeFragment() {
     }
 
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,6 +77,29 @@ public class HomeFragment extends Fragment implements TaskAdapter.OnTaskInteract
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        com.google.android.material.button.MaterialButton btnTimeline = view.findViewById(R.id.btn_open_timeline);
+
+        btnTimeline.setOnClickListener(v -> {
+            Intent intent = new Intent(requireContext(), DailyTimelineActivity.class);
+
+            if (mainViewModel != null &&
+                    mainViewModel.getSelectedBoard() != null &&
+                    mainViewModel.getSelectedBoard().getValue() != null) {
+
+                Board currentBoard = mainViewModel.getSelectedBoard().getValue();
+
+                if (currentBoard.getId() != null) {
+                    intent.putExtra("EXTRA_BOARD_ID", currentBoard.getId());
+                    intent.putExtra("EXTRA_BOARD_NAME", currentBoard.getName());
+                }
+            } else {
+                Toast.makeText(getContext(), "Selecciona un tablero primero", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            startActivity(intent);
+        });
 
         initializeViews(view);
         setupListeners(view);

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WeMake - Ver Tarea</title>
+    <style>
+      /* =========================================== */
+      /* ===          ESTILOS GENERALES          === */
+      /* =========================================== */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        /* Usamos la fuente del sistema del dispositivo para un look nativo y limpio */
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        margin: 0;
+
+        /* Fondo base con un color sólido de respaldo */
+        background-color: #f0f2f5; /* Un gris muy claro como base */
+
+        /* Usamos flexbox para centrar perfectamente la tarjeta en la pantalla */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+
+        /* Efecto de gradiente sutil en las esquinas para un look premium */
+        position: relative;
+        overflow: hidden !important;
+      }
+
+      /* Creamos dos pseudo-elementos para los gradientes de las esquinas */
+      body::before,
+      body::after {
+        content: "";
+        position: absolute;
+        width: 50vw;
+        height: 50vh;
+        border-radius: 50%;
+        filter: blur(100px); /* El truco para que el color sea muy difuminado */
+        z-index: -1;
+      }
+
+      /* Gradiente superior izquierdo (Verde) */
+      body::before {
+        background-color: rgba(
+          231,
+          241,
+          168,
+          0.4
+        ); /* Verde Claro con transparencia */
+        top: -10%;
+        left: -10%;
+      }
+
+      /* Gradiente inferior derecho (Azul) */
+      body::after {
+        background-color: rgba(
+          149,
+          129,
+          238,
+          0.3
+        ); /* Azul Claro con transparencia */
+        bottom: -10%;
+        right: -10%;
+      }
+
+      /* =========================================== */
+      /* ===     ESTILOS DE LA TARJETA CENTRAL     === */
+      /* =========================================== */
+
+      .card {
+        background-color: rgba(
+          255,
+          253,
+          245,
+          0.85
+        ); /* Blanco Base con ligera transparencia */
+        backdrop-filter: blur(
+          10px
+        ); /* Efecto "vidrio esmerilado" para un look moderno */
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: 0 8px 32px rgba(54, 76, 132, 0.15); /* Sombra suave con el color Azul Oscuro */
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+      }
+
+      .logo-container {
+        margin: 0 auto 24px auto; /* Centrar el logo y darle espacio debajo */
+        width: 90px;
+        height: 90px;
+      }
+
+      .logo {
+        width: 100%;
+        height: auto;
+      }
+
+      /* Título principal (h1) */
+      h1 {
+        color: #364c84; /* Azul Oscuro */
+        font-size: 26px;
+        font-weight: 700; /* Más grueso para mayor impacto */
+        margin: 0 0 12px 0;
+      }
+
+      /* Párrafo de descripción (p) */
+      p {
+        color: #364c84; /* Azul Claro */
+        font-size: 16px;
+        line-height: 1.6;
+        margin: 0 0 28px 0;
+      }
+
+      /* Botón principal de llamada a la acción (Call To Action) */
+      .cta-button {
+        background-color: #364c84; /* Azul Oscuro */
+        color: #ffffff;
+        padding: 14px 28px;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease; /* Transición suave */
+      }
+
+      /* Efecto al pasar el ratón por encima del botón */
+      .cta-button:hover {
+        transform: translateY(-3px); /* Levanta el botón ligeramente */
+        box-shadow: 0 8px 25px rgba(54, 76, 132, 0.3); /* Sombra más pronunciada */
+      }
+
+      /* Para pantallas pequeñas, reducimos el padding de la tarjeta */
+      @media (max-width: 480px) {
+        .card {
+          padding: 30px 25px;
+        }
+        h1 {
+          font-size: 22px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <!-- Logo de tu aplicación -->
+      <div class="logo-container">
+        <img src="assets/logo.webp" alt="Logo de WeMake" class="logo" />
+      </div>
+
+      <h1>Estás a un paso de la tarea</h1>
+      <p>Para colaborar y ver los detalles, necesitas la aplicación WeMake.</p>
+
+      <!-- Enlace a la Play Store -->
+      <a
+        href="https://play.google.com/store/apps/details?id=com.utp.wemake"
+        class="cta-button"
+      >
+        Descargar WeMake
+      </a>
+    </div>
+  </body>
+</html>

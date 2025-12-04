@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:id="@+id/main"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cambiar fecha límite"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:paddingHorizontal="24dp"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Contenedor clickeable que simula un input -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_date_selector"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="24dp"
+        app:cardCornerRadius="8dp"
+        app:strokeColor="#CCCCCC"
+        app:strokeWidth="1dp"
+        app:cardElevation="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_menu_my_calendar"
+                app:tint="?attr/colorPrimary"/>
+
+            <TextView
+                android:id="@+id/tv_selected_date"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="16dp"
+                android:text="Seleccionar fecha"
+                android:textSize="18sp"/>
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_menu_edit"
+                app:tint="#757575"/>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_save_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="?attr/colorPrimary"
+        android:textColor="?attr/colorOnSurfaceInverse"
+        android:layout_marginHorizontal="24dp"
+        android:paddingVertical="12dp"
+        android:text="@string/btn_save"
+        android:textSize="15sp"/>
+
+</LinearLayout>

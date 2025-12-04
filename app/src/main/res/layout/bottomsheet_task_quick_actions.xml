@@ -49,6 +49,7 @@
             android:text="@string/action_reassign"
             app:chipIcon="@drawable/ic_person_add" />
 
+        <!--
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_comment"
             style="@style/Widget.Material3.Chip.Assist"
@@ -56,6 +57,7 @@
             android:layout_height="wrap_content"
             android:text="@string/action_comment"
             app:chipIcon="@drawable/ic_comment" />
+            -->
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_checklist"
@@ -65,6 +67,7 @@
             android:text="@string/action_checklist"
             app:chipIcon="@drawable/ic_checklist" />
 
+        <!--
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_attach"
             style="@style/Widget.Material3.Chip.Assist"
@@ -72,6 +75,7 @@
             android:layout_height="wrap_content"
             android:text="@string/action_attach"
             app:chipIcon="@drawable/ic_attachment" />
+            -->
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_snooze"

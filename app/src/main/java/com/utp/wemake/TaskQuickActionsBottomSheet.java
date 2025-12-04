@@ -111,13 +111,13 @@ public class TaskQuickActionsBottomSheet extends BottomSheetDialogFragment {
         }
 
         // Chip: Comentar
-        Chip chipComment = view.findViewById(R.id.chip_comment);
-        if (chipComment != null) {
-            chipComment.setOnClickListener(v -> {
-                Toast.makeText(getContext(), "Comentarios próximamente", Toast.LENGTH_SHORT).show();
-                dismiss();
-            });
-        }
+        //Chip chipComment = view.findViewById(R.id.chip_comment);
+        //if (chipComment != null) {
+            //chipComment.setOnClickListener(v -> {
+            //    Toast.makeText(getContext(), "Comentarios próximamente", Toast.LENGTH_SHORT).show();
+            //    dismiss();
+            //});
+        //}
 
         // Chip: Checklist
         Chip chipChecklist = view.findViewById(R.id.chip_checklist);
@@ -131,19 +131,28 @@ public class TaskQuickActionsBottomSheet extends BottomSheetDialogFragment {
         }
 
         // Chip: Adjuntar
-        Chip chipAttach = view.findViewById(R.id.chip_attach);
-        if (chipAttach != null) {
-            chipAttach.setOnClickListener(v -> {
-                Toast.makeText(getContext(), "Adjuntar archivo próximamente", Toast.LENGTH_SHORT).show();
-                dismiss();
-            });
-        }
+        //Chip chipAttach = view.findViewById(R.id.chip_attach);
+        //if (chipAttach != null) {
+            //chipAttach.setOnClickListener(v -> {
+            //    Toast.makeText(getContext(), "Adjuntar archivo próximamente", Toast.LENGTH_SHORT).show();
+            //    dismiss();
+            //});
+        //}
 
         // Chip: Posponer
         Chip chipSnooze = view.findViewById(R.id.chip_snooze);
         if (chipSnooze != null) {
             chipSnooze.setOnClickListener(v -> {
-                Toast.makeText(getContext(), "Posponer tarea próximamente", Toast.LENGTH_SHORT).show();
+                long currentDeadline = 0;
+                if (task.getDeadline() != null) {
+                    currentDeadline = task.getDeadline().getTime();
+                }
+                EditDeadlineBottomSheet deadlineSheet = EditDeadlineBottomSheet.newInstance(
+                        task.getId(),
+                        currentDeadline
+                );
+                deadlineSheet.show(getParentFragmentManager(), "EditDeadlineSheet");
+
                 dismiss();
             });
         }
@@ -152,9 +161,22 @@ public class TaskQuickActionsBottomSheet extends BottomSheetDialogFragment {
         Chip chipShare = view.findViewById(R.id.chip_share);
         if (chipShare != null) {
             chipShare.setOnClickListener(v -> {
-                Toast.makeText(getContext(), "Compartir próximamente", Toast.LENGTH_SHORT).show();
-                dismiss();
+                shareTaskLink(task.getId(), task.getTitle());
             });
         }
+    }
+
+    private void shareTaskLink(String taskId, String taskTitle) {
+        // --- CONSTRUIR EL ENLACE WEB NORMAL ---
+        // Reemplaza "tu-proyecto-id.web.app" con tu URL de Firebase Hosting
+        String shareLink = "https://wemake-c1a90.web.app/task.html?id=" + taskId;
+
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Tarea: " + taskTitle);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, "¡Echa un vistazo a esta tarea en WeMake!\n" + shareLink);
+
+        startActivity(Intent.createChooser(shareIntent, "Compartir tarea vía"));
+        dismiss();
     }
 }
