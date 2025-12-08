@@ -1,97 +1,187 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#7986CB"> <!-- Color Azul Suave (ajusta a tu gusto) -->
+    android:background="#7986CB"
+    android:fitsSystemWindows="true">
 
-    <!-- Toolbar simple -->
-    <LinearLayout
-        android:id="@+id/header_layout"
+    <!-- AppBar con Toolbar y fechas -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="center_vertical">
+        android:background="#7986CB"
+        app:elevation="0dp">
 
-        <ImageView
-            android:id="@+id/btn_back"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_arrow_back"
-            app:tint="@android:color/white"/>
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Timeline"
-            android:textColor="@android:color/white"
-            android:textSize="20sp"
-            android:gravity="center"
-            android:textStyle="bold"/>
-    </LinearLayout>
-
-    <!-- Lista Horizontal de Fechas -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_dates"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/header_layout"
-        android:paddingBottom="20dp"
-        android:clipToPadding="false"
-        android:paddingHorizontal="8dp"/>
-
-    <!-- Hoja Blanca de Contenido -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/recycler_dates"
-        android:background="@drawable/bg_bottom_sheet_rounded"
-        android:orientation="vertical"
-        android:paddingTop="24dp"
-        android:layout_marginTop="-10dp"> <!-- Efecto de solapamiento -->
-
-        <!-- Encabezado de la lista -->
-        <RelativeLayout
+        <!-- Header -->
+        <LinearLayout
+            android:id="@+id/header_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingHorizontal="24dp"
-            android:layout_marginBottom="16dp">
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:id="@+id/btn_back"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_arrow_back"
+                app:tint="@android:color/white"
+                android:clickable="true"
+                android:focusable="true"/>
 
             <TextView
-                android:id="@+id/tv_today_label"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Plan del día"
-                android:textSize="18sp"
-                android:textColor="#424242"/>
+                android:layout_weight="1"
+                android:text="Timeline"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:gravity="center"
+                android:textStyle="bold"/>
+        </LinearLayout>
 
-            <TextView
-                android:id="@+id/tv_task_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:text="0/0"
-                android:textSize="16sp"
-                android:textColor="#757575"/>
-
-            <!-- Barra rosa decorativa -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="2dp"
-                android:background="#E91E63"
-                android:layout_below="@id/tv_today_label"
-                android:layout_marginTop="8dp"/>
-        </RelativeLayout>
-
-        <!-- Lista de tareas Vertical -->
+        <!-- Lista Horizontal de Fechas -->
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_daily_tasks"
+            android:id="@+id/recycler_dates"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
-    </LinearLayout>
+            android:layout_height="wrap_content"
+            android:paddingBottom="20dp"
+            android:paddingTop="8dp"
+            android:clipToPadding="false"
+            android:paddingHorizontal="8dp"
+            app:layout_scrollFlags="scroll|enterAlways"/>
+    </com.google.android.material.appbar.AppBarLayout>
 
+        <!-- Hoja Blanca para el Contenido principal -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_bottom_sheet_rounded"
+            android:orientation="vertical"
+            android:paddingTop="24dp"
+            android:layout_marginTop="-10dp"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-</RelativeLayout>
+            <!-- Encabezado de la lista -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="24dp"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:id="@+id/today_container"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_today_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Plan del día"
+                        android:textSize="18sp"
+                        android:textColor="#424242"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:id="@+id/tv_selected_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Hoy"
+                        android:textSize="14sp"
+                        android:textColor="#757575"
+                        android:layout_marginTop="4dp"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:orientation="vertical"
+                    android:gravity="end">
+
+                    <TextView
+                        android:id="@+id/tv_task_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 tareas"
+                        android:textSize="16sp"
+                        android:textColor="#757575"/>
+
+                    <TextView
+                        android:id="@+id/tv_completed_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 completadas"
+                        android:textSize="12sp"
+                        android:textColor="#4CAF50"
+                        android:layout_marginTop="2dp"/>
+                </LinearLayout>
+
+                <!-- Barra rosa decorativa -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:background="#E91E63"
+                    android:layout_below="@id/today_container"
+                    android:layout_marginTop="12dp"
+                    android:layout_alignParentStart="true"/>
+            </RelativeLayout>
+
+            <!-- Empty State -->
+            <LinearLayout
+                android:id="@+id/empty_state_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="48dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:src="@drawable/ic_calendar"
+                    app:tint="#BDBDBD"
+                    android:layout_marginBottom="16dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="No hay tareas para este día"
+                    android:textSize="16sp"
+                    android:textColor="#757575"
+                    android:gravity="center"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Crea una nueva tarea para comenzar"
+                    android:textSize="14sp"
+                    android:textColor="#9E9E9E"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"/>
+            </LinearLayout>
+
+            <!-- Lista de tareas con SwipeRefreshLayout -->
+            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                android:id="@+id/swipe_refresh"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recycler_daily_tasks"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="24dp"
+                    android:clipToPadding="false"/>
+            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

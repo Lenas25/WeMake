@@ -315,7 +315,6 @@
                 app:backgroundTint="?attr/colorSecondaryContainer"
                 app:icon="@drawable/ic_calendar"
                 app:iconGravity="textStart" />
-            <!-- Nota: Asegúrate de tener un icono ic_calendar_today o similar -->
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView

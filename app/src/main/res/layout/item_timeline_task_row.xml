@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingVertical="12dp"
-    android:paddingHorizontal="16dp">
+    android:paddingHorizontal="24dp"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
 
     <!-- Hora -->
     <TextView
@@ -12,48 +16,152 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="07:00\nAM"
-        android:textSize="13sp"
+        android:textSize="12sp"
         android:gravity="center"
         android:textColor="#757575"
+        android:lineSpacingExtra="2dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/tv_task_title"
-        app:layout_constraintBottom_toBottomOf="@id/tv_task_desc"/>
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="@id/view_dot"/>
 
-    <!-- Línea divisoria o Punto -->
+    <!-- Punto de timeline con color según prioridad -->
     <View
         android:id="@+id/view_dot"
         android:layout_width="10dp"
         android:layout_height="10dp"
         android:background="@drawable/bg_date_selected"
         android:backgroundTint="#7986CB"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         app:layout_constraintStart_toEndOf="@id/tv_task_time"
-        app:layout_constraintEnd_toStartOf="@id/tv_task_title"
-        app:layout_constraintTop_toTopOf="@id/tv_task_title"
-        app:layout_constraintBottom_toBottomOf="@id/tv_task_title"
-        android:layout_marginHorizontal="16dp"/>
+        app:layout_constraintTop_toTopOf="parent"/>
 
-    <!-- Título -->
+    <!-- Línea vertical de timeline -->
+    <View
+        android:id="@+id/view_timeline_line"
+        android:layout_width="2dp"
+        android:layout_height="0dp"
+        android:background="#E0E0E0"
+        android:layout_marginTop="4dp"
+        app:layout_constraintStart_toStartOf="@id/view_dot"
+        app:layout_constraintTop_toBottomOf="@id/view_dot"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <!-- Badge rojo: tarea atrasada -->
     <TextView
-        android:id="@+id/tv_task_title"
+        android:id="@+id/badge_overdue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Atrasada"
+        android:textSize="10sp"
+        android:textColor="@android:color/white"
+        android:background="@drawable/bg_badge_overdue"
+        android:paddingHorizontal="6dp"
+        android:paddingVertical="2dp"
+        android:layout_marginStart="8dp"
+        android:visibility="gone"
+        app:layout_constraintStart_toEndOf="@id/view_dot"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <!-- Título + icono de prioridad -->
+    <LinearLayout
+        android:id="@+id/layout_title_row"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Sport"
-        android:textSize="18sp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="4dp"
+        android:layout_marginStart="16dp"
         app:layout_constraintStart_toEndOf="@id/view_dot"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@id/badge_overdue">
+
+        <TextView
+            android:id="@+id/tv_task_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Título de la tarea"
+            android:textSize="16sp"
+            android:textColor="#212121"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end"/>
+
+        <!-- Indicador de prioridad (icono pequeño) -->
+        <ImageView
+            android:id="@+id/iv_priority"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_priority_high"
+            app:tint="#FFCDD2"
+            android:visibility="gone"/>
+    </LinearLayout>
 
     <!-- Descripción -->
     <TextView
         android:id="@+id/tv_task_desc"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Run for 1 hour"
+        android:text="Descripción de la tarea"
         android:textSize="14sp"
-        android:textColor="#9E9E9E"
+        android:textColor="#757575"
+        android:maxLines="2"
+        android:ellipsize="end"
         android:layout_marginTop="4dp"
-        app:layout_constraintStart_toStartOf="@id/tv_task_title"
+        app:layout_constraintStart_toStartOf="@id/layout_title_row"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_task_title"/>
+        app:layout_constraintTop_toBottomOf="@id/layout_title_row"/>
+
+    <!-- Fila de metadata: estado, miembros, puntos -->
+    <LinearLayout
+        android:id="@+id/layout_metadata"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toStartOf="@id/layout_title_row"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_task_desc"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- Badge de estado -->
+        <TextView
+            android:id="@+id/badge_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pendiente"
+            android:textSize="10sp"
+            android:textColor="@android:color/white"
+            android:background="@drawable/bg_status_badge"
+            android:backgroundTint="#5C6BC0"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"/>
+
+        <!-- Avatares de miembros asignados -->
+        <LinearLayout
+            android:id="@+id/layout_members"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginStart="8dp"
+            android:gravity="center_vertical">
+
+            <!-- Se llenarán dinámicamente -->
+        </LinearLayout>
+
+        <!-- Puntos -->
+        <TextView
+            android:id="@+id/tv_reward_points"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="+10 pts"
+            android:textSize="11sp"
+            android:textColor="#4CAF50"
+            android:layout_marginStart="8dp"
+            android:visibility="gone"/>
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
