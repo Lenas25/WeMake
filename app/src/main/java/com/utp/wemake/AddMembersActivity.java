@@ -141,6 +141,13 @@ public class AddMembersActivity extends AppCompatActivity
     }
 
     private void observeViewModel() {
+        // Observar mensajes específicos del estado del envío de correo
+        viewModel.emailStatus.observe(this, message -> {
+            if (message != null && !message.isEmpty()) {
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+            }
+        });
+
         // Observar miembros del tablero
         viewModel.members.observe(this, members -> {
             if (members != null && !members.isEmpty()) {
@@ -261,13 +268,13 @@ public class AddMembersActivity extends AppCompatActivity
     }
 
     @Override
-    public void onMemberAdded(String userId) {
-        viewModel.addMemberToBoard(boardId, userId);
+    public void onMemberAdded(User user) {
+        viewModel.addMemberToBoard(boardId, user);
     }
 
     @Override
     public void onUserClick(User user) {
-        viewModel.addMemberToBoard(boardId, user.getUserid());
+        viewModel.addMemberToBoard(boardId, user);
         etSearch.setText(""); // Limpiar búsqueda
     }
 }

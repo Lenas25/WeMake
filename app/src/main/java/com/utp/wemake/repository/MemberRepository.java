@@ -16,6 +16,8 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.WriteBatch;
 import com.utp.wemake.models.Member;
 import com.utp.wemake.models.User;
+import com.utp.wemake.utils.EmailService;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -118,18 +120,27 @@ public class MemberRepository {
         return batch.commit();
     }
 
-    public Task<Void> addMember(String boardId, String userId) {
+    public Task<Void> addMember(String boardId, User userToAdd, EmailService.EmailCallback emailCallback) {
         Member newMember = new Member("user", 0);
+        String userId = userToAdd.getUserid();
 
         DocumentReference boardRef = db.collection(COLLECTION_BOARDS).document(boardId);
         DocumentReference memberDetailsRef = boardRef.collection(COLLECTION_MEMBERS_DETAILS).document(userId);
 
         WriteBatch batch = db.batch();
         batch.set(memberDetailsRef, newMember);
-
         batch.update(boardRef, "members", FieldValue.arrayUnion(userId));
 
-        return batch.commit();
+        return batch.commit().addOnSuccessListener(aVoid -> {
+            boardRef.get().addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    String boardName = documentSnapshot.getString("name");
+                    if (boardName == null) boardName = "Proyecto WeMake";
+
+                    EmailService.sendInvitationEmail(userToAdd.getEmail(), userToAdd.getName(), boardName, emailCallback);
+                }
+            });
+        });
     }
 
     public Task<List<User>> searchUsers(String query) {

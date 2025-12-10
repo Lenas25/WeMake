@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.utp.wemake.models.User;
 import com.utp.wemake.repository.MemberRepository;
+import com.utp.wemake.utils.EmailService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,9 @@ public class AddMembersViewModel extends ViewModel {
 
     private final MutableLiveData<Boolean> _isLoading = new MutableLiveData<>();
     public LiveData<Boolean> isLoading = _isLoading;
+
+    private final MutableLiveData<String> _emailStatus = new MutableLiveData<>();
+    public LiveData<String> emailStatus = _emailStatus;
 
     public AddMembersViewModel() {
         this.memberRepository = new MemberRepository();
@@ -82,24 +86,32 @@ public class AddMembersViewModel extends ViewModel {
             if (task.isSuccessful()) {
                 _searchResults.setValue(task.getResult());
             } else {
-                // Opcional: puedes crear un LiveData de error de búsqueda
                 _errorMessage.setValue("Error al buscar usuarios.");
             }
         });
     }
 
-    public void addMemberToBoard(String boardId, String userId) {
+    public void addMemberToBoard(String boardId, User user) {
         _isLoading.setValue(true);
-        memberRepository.addMember(boardId, userId).addOnCompleteListener(task -> {
+
+        memberRepository.addMember(boardId, user, new EmailService.EmailCallback() {
+            @Override
+            public void onSuccess() {
+                _emailStatus.postValue("Miembro agregado y correo de invitación enviado.");
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                _emailStatus.postValue("Miembro agregado, pero falló el envío del correo: " + errorMessage);
+            }
+        }).addOnCompleteListener(task -> {
             _isLoading.setValue(false);
             if (task.isSuccessful()) {
-                // Si se añade con éxito, recargamos la lista de miembros actuales
                 loadMembers(boardId);
-                // Opcional: puedes limpiar los resultados de búsqueda
                 _searchResults.setValue(new ArrayList<>());
                 _updateSuccess.setValue(true);
             } else {
-                _errorMessage.setValue("Error al añadir miembro.");
+                _errorMessage.setValue("Error al añadir miembro en la base de datos.");
             }
         });
     }

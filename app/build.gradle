@@ -31,6 +31,8 @@ android {
         buildConfigField "String", "CLOUDINARY_CLOUD_NAME", "\"${localProperties.getProperty('CLOUDINARY_CLOUD_NAME', '')}\""
         buildConfigField "String", "CLOUDINARY_API_KEY", "\"${localProperties.getProperty('CLOUDINARY_API_KEY', '')}\""
         buildConfigField "String", "CLOUDINARY_API_SECRET", "\"${localProperties.getProperty('CLOUDINARY_API_SECRET', '')}\""
+        buildConfigField "String", "EMAIL_SENDER", "\"${localProperties.getProperty('EMAIL_SENDER', '')}\""
+        buildConfigField "String", "EMAIL_SECRET", "\"${localProperties.getProperty('EMAIL_SECRET', '')}\""
     }
 
     buildTypes {
@@ -50,6 +52,15 @@ android {
         buildConfig = true
         viewBinding
     }
+
+    packaging {
+        resources {
+            excludes += "/META-INF/LICENSE.md"
+            excludes += "/META-INF/NOTICE.md"
+            excludes += "/META-INF/license.txt"
+            excludes += "/META-INF/notice.txt"
+        }
+    }
 }
 
 dependencies {
@@ -57,6 +68,8 @@ dependencies {
     implementation libs.work.runtime
 
     implementation 'com.applandeo:material-calendar-view:1.9.0-rc04'
+    implementation 'com.sun.mail:android-mail:1.6.7'
+    implementation 'com.sun.mail:android-activation:1.6.7'
 
     // Room (para SQLite)
     def room_version = "2.6.1"

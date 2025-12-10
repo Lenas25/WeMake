@@ -30,7 +30,7 @@ public class MembersAdapter extends RecyclerView.Adapter<MembersAdapter.MemberVi
     public interface OnMemberClickListener {
         void onMemberClick(Map<String, Object> memberData);
         void onMemberDeleted(String userId);
-        void onMemberAdded(String userId);
+        void onMemberAdded(User user);
     }
 
     public MembersAdapter(List<Map<String, Object>> membersDataList, String currentUserId, OnMemberClickListener listener) {
